@@ -3,8 +3,8 @@ import { visit } from "unist-util-visit"
 // Type definitions for Quartz plugin interface
 interface BuildCtx {
   allSlugs: string[]
-  cfg: any
-  argv: any
+  cfg: Record<string, any> // Quartz configuration object
+  argv: Record<string, any> // Command-line arguments
 }
 
 interface QuartzTransformerPluginInstance {
@@ -101,7 +101,8 @@ export const MMLABCTransformer: QuartzTransformerPlugin<MMLABCOptions | undefine
             contentType: "external",
           },
           {
-            // Load mml2abc from CDN
+            // Load mml2abc from GitHub via jsDelivr CDN
+            // Using @main for latest version - consider pinning to a commit hash for production
             src: "https://cdn.jsdelivr.net/gh/cat2151/mml2abc@main/dist/mml2abc.mjs",
             loadTime: "afterDOMReady",
             contentType: "external",
@@ -147,8 +148,8 @@ export const MMLABCTransformer: QuartzTransformerPlugin<MMLABCOptions | undefine
       if (type === 'mml') {
         const mmlData = element.getAttribute('data-mml');
         if (mmlData) {
-          // For MML, we need to dynamically import mml2abc
-          // Since it's an ES module, we use dynamic import
+          // Dynamically import mml2abc ES module from CDN
+          // Note: Using @main for latest version - consider pinning to commit hash for production
           const mml2abcModule = await import('https://cdn.jsdelivr.net/gh/cat2151/mml2abc@main/dist/mml2abc.mjs');
           abcNotation = mml2abcModule.parse(mmlData);
         }

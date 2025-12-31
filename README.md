@@ -95,6 +95,7 @@ The plugin is functional for MML notation. Chord support structure is in place b
 - The actual music notation conversion and rendering happens in the browser
 - MML to ABC conversion uses mml2abc loaded from CDN
 - abcjs is loaded from CDN for rendering
+- **Production Note**: The plugin currently loads mml2abc from the `@main` branch. For production use, consider forking the repository and pinning to a specific commit hash to ensure stability
 
 ## Dependencies
 
