@@ -22,8 +22,6 @@
   "license": "MIT",
   "dependencies": {
     "abcjs": "^6.4.0",
-    "chord2mml": "github:cat2151/chord2mml",
-    "mml2abc": "github:cat2151/mml2abc",
     "unified": "^11.0.4",
     "unist-util-visit": "^5.0.0"
   },

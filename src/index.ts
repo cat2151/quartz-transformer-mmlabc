@@ -64,48 +64,28 @@ export const MMLABCTransformer: QuartzTransformerPlugin<MMLABCOptions | undefine
             visit(tree, "code", (node: any) => {
               const lang = node.lang?.toLowerCase()
 
-              // Handle MML blocks
+              // Handle MML blocks - replace with HTML that will be processed in browser
               if (opts.enableMML && lang === "mml") {
                 const mmlCode = node.value as string
-                try {
-                  // Lazy load mml2abc
-                  const mml2abc = require("mml2abc")
-                  const abcNotation = mml2abc(mmlCode)
 
-                  // Replace the code block with an HTML block containing abcjs rendering
-                  node.type = "html"
-                  node.value = `<div class="abc-notation mml-block" data-abc="${escapeHtml(
-                    abcNotation,
-                  )}"></div>`
-                  delete node.lang
-                } catch (error) {
-                  console.error("Error converting MML to ABC:", error)
-                  // Keep original code block on error
-                }
+                // Replace the code block with an HTML block containing the MML data
+                node.type = "html"
+                node.value = `<div class="abc-notation mml-block" data-mml="${escapeHtml(
+                  mmlCode,
+                )}" data-type="mml"></div>`
+                delete node.lang
               }
 
-              // Handle chord blocks
+              // Handle chord blocks - replace with HTML that will be processed in browser
               if (opts.enableChord && lang === "chord") {
                 const chordCode = node.value as string
-                try {
-                  // Lazy load chord2mml and mml2abc
-                  const chord2mml = require("chord2mml")
-                  const mml2abc = require("mml2abc")
 
-                  // Convert chord -> MML -> ABC
-                  const mmlCode = chord2mml(chordCode)
-                  const abcNotation = mml2abc(mmlCode)
-
-                  // Replace the code block with an HTML block containing abcjs rendering
-                  node.type = "html"
-                  node.value = `<div class="abc-notation chord-block" data-abc="${escapeHtml(
-                    abcNotation,
-                  )}"></div>`
-                  delete node.lang
-                } catch (error) {
-                  console.error("Error converting Chord to ABC:", error)
-                  // Keep original code block on error
-                }
+                // Replace the code block with an HTML block containing the chord data
+                node.type = "html"
+                node.value = `<div class="abc-notation chord-block" data-chord="${escapeHtml(
+                  chordCode,
+                )}" data-type="chord"></div>`
+                delete node.lang
               }
             })
           }
@@ -117,6 +97,12 @@ export const MMLABCTransformer: QuartzTransformerPlugin<MMLABCOptions | undefine
         js: [
           {
             src: "https://cdn.jsdelivr.net/npm/abcjs@6.4.0/dist/abcjs-basic-min.js",
+            loadTime: "afterDOMReady",
+            contentType: "external",
+          },
+          {
+            // Load mml2abc from CDN
+            src: "https://cdn.jsdelivr.net/gh/cat2151/mml2abc@main/dist/mml2abc.mjs",
             loadTime: "afterDOMReady",
             contentType: "external",
           },
@@ -142,23 +128,54 @@ export const MMLABCTransformer: QuartzTransformerPlugin<MMLABCOptions | undefine
         ],
         afterDOMLoaded: `
 // Initialize abcjs rendering for all ABC notation blocks
-if (typeof ABCJS !== 'undefined') {
-  document.querySelectorAll('.abc-notation').forEach(function(element) {
-    const abcData = element.getAttribute('data-abc');
-    if (abcData) {
-      try {
-        ABCJS.renderAbc(element, abcData, {
+(async function() {
+  // Wait for ABCJS to be available
+  if (typeof ABCJS === 'undefined') {
+    console.error('ABCJS library not loaded');
+    return;
+  }
+
+  // Process all abc-notation blocks
+  const blocks = document.querySelectorAll('.abc-notation');
+  
+  for (const element of blocks) {
+    const type = element.getAttribute('data-type');
+    
+    try {
+      let abcNotation = '';
+      
+      if (type === 'mml') {
+        const mmlData = element.getAttribute('data-mml');
+        if (mmlData) {
+          // For MML, we need to dynamically import mml2abc
+          // Since it's an ES module, we use dynamic import
+          const mml2abcModule = await import('https://cdn.jsdelivr.net/gh/cat2151/mml2abc@main/dist/mml2abc.mjs');
+          abcNotation = mml2abcModule.parse(mmlData);
+        }
+      } else if (type === 'chord') {
+        const chordData = element.getAttribute('data-chord');
+        if (chordData) {
+          // For chord notation, we would need chord2mml + mml2abc
+          // For now, show a message that chord support needs additional setup
+          element.innerHTML = '<p>Chord notation support requires additional setup. MML support is available.</p><pre>' + chordData + '</pre>';
+          continue;
+        }
+      }
+      
+      if (abcNotation) {
+        // Render the ABC notation with abcjs
+        ABCJS.renderAbc(element, abcNotation, {
           responsive: 'resize',
           staffwidth: 600,
           scale: 1.0
         });
-      } catch (error) {
-        console.error('Error rendering ABC notation:', error);
-        element.textContent = 'Error rendering music notation';
       }
+    } catch (error) {
+      console.error('Error rendering notation:', error);
+      element.innerHTML = '<p style="color: red;">Error rendering music notation</p>';
     }
-  });
-}
+  }
+})();
         `.trim(),
       }
     },
@@ -178,3 +195,4 @@ function escapeHtml(text: string): string {
   }
   return text.replace(/[&<>"']/g, (m) => map[m])
 }
+
