@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MML ABC Transformer Demo</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            line-height: 1.6;
+        }
+        h1 {
+            color: #333;
+        }
+        .abc-notation {
+            margin: 1em 0;
+            padding: 1em;
+            background-color: #f5f5f5;
+            border-radius: 4px;
+            overflow-x: auto;
+        }
+        .abc-notation svg {
+            max-width: 100%;
+            height: auto;
+        }
+        .source-code {
+            background-color: #2d2d2d;
+            color: #f8f8f2;
+            padding: 1em;
+            border-radius: 4px;
+            overflow-x: auto;
+            margin: 1em 0;
+        }
+        .section {
+            margin: 2em 0;
+            padding: 1em;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+    </style>
+</head>
+<body>
+    <h1>MML ABC Transformer Demo</h1>
+    
+    <p>This page demonstrates the MML to ABC notation transformation and rendering with abcjs.</p>
+    
+    <div class="section">
+        <h2>Example 1: Simple Melody</h2>
+        <p>Source MML:</p>
+        <div class="source-code">t120 l4 cdefgab&gt;c</div>
+        <p>Rendered notation:</p>
+        <div class="abc-notation mml-block" data-mml="t120 l4 cdefgab>c" data-type="mml"></div>
+    </div>
+    
+    <div class="section">
+        <h2>Example 2: Complex Melody</h2>
+        <p>Source MML:</p>
+        <div class="source-code">t140 l8 o4 c d e f g4 g4 a g f e d4 d4 c2</div>
+        <p>Rendered notation:</p>
+        <div class="abc-notation mml-block" data-mml="t140 l8 o4 c d e f g4 g4 a g f e d4 d4 c2" data-type="mml"></div>
+    </div>
+    
+    <div class="section">
+        <h2>Example 3: Different Tempo</h2>
+        <p>Source MML:</p>
+        <div class="source-code">t90 l4 o5 c d e c c d e c e f g2 e f g2</div>
+        <p>Rendered notation:</p>
+        <div class="abc-notation mml-block" data-mml="t90 l4 o5 c d e c c d e c e f g2 e f g2" data-type="mml"></div>
+    </div>
+
+    <!-- Load abcjs from CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/abcjs@6.4.0/dist/abcjs-basic-min.js"></script>
+    
+    <!-- Initialize abcjs rendering for all ABC notation blocks -->
+    <script type="module">
+        (async function() {
+            // Wait for ABCJS to be available
+            if (typeof ABCJS === 'undefined') {
+                console.error('ABCJS library not loaded');
+                return;
+            }
+
+            // Process all abc-notation blocks
+            const blocks = document.querySelectorAll('.abc-notation');
+            
+            for (const element of blocks) {
+                const type = element.getAttribute('data-type');
+                
+                try {
+                    let abcNotation = '';
+                    
+                    if (type === 'mml') {
+                        const mmlData = element.getAttribute('data-mml');
+                        if (mmlData) {
+                            // For MML, we need to dynamically import mml2abc
+                            const mml2abcModule = await import('https://cdn.jsdelivr.net/gh/cat2151/mml2abc@main/dist/mml2abc.mjs');
+                            abcNotation = mml2abcModule.parse(mmlData);
+                            console.log('Converted MML to ABC:', abcNotation);
+                        }
+                    }
+                    
+                    if (abcNotation) {
+                        // Render the ABC notation with abcjs
+                        ABCJS.renderAbc(element, abcNotation, {
+                            responsive: 'resize',
+                            staffwidth: 600,
+                            scale: 1.0
+                        });
+                    }
+                } catch (error) {
+                    console.error('Error rendering notation:', error);
+                    element.innerHTML = '<p style="color: red;">Error rendering music notation: ' + error.message + '</p>';
+                }
+            }
+        })();
+    </script>
+</body>
+</html>
