@@ -76,16 +76,11 @@ export const MMLABCTransformer: QuartzTransformerPlugin<MMLABCOptions | undefine
                 delete node.lang
               }
 
-              // Handle chord blocks - replace with HTML that will be processed in browser
+              // Handle chord blocks - skip for now as chord2mml integration is incomplete
               if (opts.enableChord && lang === "chord") {
-                const chordCode = node.value as string
-
-                // Replace the code block with an HTML block containing the chord data
-                node.type = "html"
-                node.value = `<div class="abc-notation chord-block" data-chord="${escapeHtml(
-                  chordCode,
-                )}" data-type="chord"></div>`
-                delete node.lang
+                // Chord notation rendering is not currently enabled.
+                // Leave the code block as-is until chord2mml CDN integration is complete
+                console.warn("Chord notation block detected but rendering is not enabled. Skipping block.")
               }
             })
           }
@@ -97,13 +92,6 @@ export const MMLABCTransformer: QuartzTransformerPlugin<MMLABCOptions | undefine
         js: [
           {
             src: "https://cdn.jsdelivr.net/npm/abcjs@6.4.0/dist/abcjs-basic-min.js",
-            loadTime: "afterDOMReady",
-            contentType: "external",
-          },
-          {
-            // Load mml2abc from GitHub via jsDelivr CDN
-            // Using @main for latest version - consider pinning to a commit hash for production
-            src: "https://cdn.jsdelivr.net/gh/cat2151/mml2abc@main/dist/mml2abc.mjs",
             loadTime: "afterDOMReady",
             contentType: "external",
           },
@@ -148,18 +136,9 @@ export const MMLABCTransformer: QuartzTransformerPlugin<MMLABCOptions | undefine
       if (type === 'mml') {
         const mmlData = element.getAttribute('data-mml');
         if (mmlData) {
-          // Dynamically import mml2abc ES module from CDN
-          // Note: Using @main for latest version - consider pinning to commit hash for production
-          const mml2abcModule = await import('https://cdn.jsdelivr.net/gh/cat2151/mml2abc@main/dist/mml2abc.mjs');
+          // Dynamically import mml2abc ES module from CDN (pinned to specific commit)
+          const mml2abcModule = await import('https://cdn.jsdelivr.net/gh/cat2151/mml2abc@c32f3f36022201547b68d76e0307a62a4c2b173b/dist/mml2abc.mjs');
           abcNotation = mml2abcModule.parse(mmlData);
-        }
-      } else if (type === 'chord') {
-        const chordData = element.getAttribute('data-chord');
-        if (chordData) {
-          // For chord notation, we would need chord2mml + mml2abc
-          // For now, show a message that chord support needs additional setup
-          element.innerHTML = '<p>Chord notation support requires additional setup. MML support is available.</p><pre>' + chordData + '</pre>';
-          continue;
         }
       }
       
@@ -173,7 +152,14 @@ export const MMLABCTransformer: QuartzTransformerPlugin<MMLABCOptions | undefine
       }
     } catch (error) {
       console.error('Error rendering notation:', error);
-      element.innerHTML = '<p style="color: red;">Error rendering music notation</p>';
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+      if (errorMessage.includes('Failed to fetch') || errorMessage.includes('import')) {
+        element.innerHTML = '<p style="color: red;">Error loading music notation library. Please check your internet connection.</p>';
+      } else if (errorMessage.includes('parse')) {
+        element.innerHTML = '<p style="color: red;">Error parsing MML notation. Please check the syntax.</p>';
+      } else {
+        element.innerHTML = '<p style="color: red;">Error rendering music notation: ' + errorMessage + '</p>';
+      }
     }
   }
 })();
@@ -184,7 +170,7 @@ export const MMLABCTransformer: QuartzTransformerPlugin<MMLABCOptions | undefine
 }
 
 /**
- * Escape HTML special characters
+ * Escape HTML special characters including newlines and whitespace
  */
 function escapeHtml(text: string): string {
   const map: { [key: string]: string } = {
@@ -193,7 +179,10 @@ function escapeHtml(text: string): string {
     ">": "&gt;",
     '"': "&quot;",
     "'": "&#039;",
+    "\n": "&#10;",
+    "\r": "&#13;",
+    "\t": "&#9;",
   }
-  return text.replace(/[&<>"']/g, (m) => map[m])
+  return text.replace(/[&<>"'\n\r\t]/g, (m) => map[m])
 }
 

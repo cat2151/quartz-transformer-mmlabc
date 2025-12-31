@@ -31,5 +31,10 @@
   },
   "peerDependencies": {
     "quartz": "*"
+  },
+  "peerDependenciesMeta": {
+    "quartz": {
+      "optional": true
+    }
   }
 }

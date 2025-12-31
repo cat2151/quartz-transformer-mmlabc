@@ -95,8 +95,8 @@
                     if (type === 'mml') {
                         const mmlData = element.getAttribute('data-mml');
                         if (mmlData) {
-                            // For MML, we need to dynamically import mml2abc
-                            const mml2abcModule = await import('https://cdn.jsdelivr.net/gh/cat2151/mml2abc@main/dist/mml2abc.mjs');
+                            // Dynamically import mml2abc ES module from CDN (pinned to specific commit)
+                            const mml2abcModule = await import('https://cdn.jsdelivr.net/gh/cat2151/mml2abc@c32f3f36022201547b68d76e0307a62a4c2b173b/dist/mml2abc.mjs');
                             abcNotation = mml2abcModule.parse(mmlData);
                             console.log('Converted MML to ABC:', abcNotation);
                         }

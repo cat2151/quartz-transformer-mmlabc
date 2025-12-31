@@ -45,19 +45,19 @@ export default {
 
 #### MML notation
 
-```markdown
-\`\`\`mml
+````markdown
+```mml
 t120 l4 cdefgab>c
-\`\`\`
 ```
+````
 
 #### Chord notation
 
-```markdown
-\`\`\`chord
+````markdown
+```chord
 C Dm7 G7 C
-\`\`\`
 ```
+````
 
 ## Options
 
@@ -84,18 +84,27 @@ MMLABCTransformer({
 
 - ✅ MML block detection and transformation
 - ✅ ABC notation rendering with abcjs
-- ⚠️  Chord block detection (structure in place)
-- ⏳ Chord to MML conversion (requires additional CDN integration)
+- ✅ CDN dependencies pinned to specific commit hash
+- ❌ Chord block rendering (not yet implemented - see Future Work section)
 
-The plugin is functional for MML notation. Chord support structure is in place but requires additional CDN-based chord2mml integration.
+The plugin is functional for MML notation. Chord notation blocks are recognized but not transformed, as chord2mml CDN integration is incomplete.
 
 ## Notes
 
 - The transformation to HTML happens during Quartz's build process
 - The actual music notation conversion and rendering happens in the browser
-- MML to ABC conversion uses mml2abc loaded from CDN
+- MML to ABC conversion uses mml2abc loaded from CDN (pinned to commit `c32f3f3`)
 - abcjs is loaded from CDN for rendering
-- **Production Note**: The plugin currently loads mml2abc from the `@main` branch. For production use, consider forking the repository and pinning to a specific commit hash to ensure stability
+- Libraries are loaded dynamically to avoid bundling issues
+
+## Testing
+
+The plugin currently lacks automated tests. Future contributions should include:
+- Unit tests for AST transformation logic
+- Tests for HTML escaping (especially newlines and special characters)
+- Integration tests for the complete transformation pipeline
+
+For manual testing, use the included `demo.html` file.
 
 ## Dependencies
 
