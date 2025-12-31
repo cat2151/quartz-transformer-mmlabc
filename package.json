@@ -1,0 +1,40 @@
+{
+  "name": "quartz-transformer-mmlabc",
+  "version": "0.1.0",
+  "description": "Quartz transformer plugin for MML and chord notation to ABC notation with abcjs rendering",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "build": "tsc",
+    "prepublishOnly": "npm run build"
+  },
+  "keywords": [
+    "quartz",
+    "transformer",
+    "plugin",
+    "mml",
+    "abc",
+    "chord",
+    "music",
+    "notation"
+  ],
+  "author": "",
+  "license": "MIT",
+  "dependencies": {
+    "unified": "^11.0.4",
+    "unist-util-visit": "^5.0.0"
+  },
+  "devDependencies": {
+    "@types/mdast": "^4.0.4",
+    "@types/node": "^20.10.0",
+    "typescript": "^5.3.3"
+  },
+  "peerDependencies": {
+    "quartz": "*"
+  },
+  "peerDependenciesMeta": {
+    "quartz": {
+      "optional": true
+    }
+  }
+}
