@@ -14,14 +14,16 @@ A Quartz transformer plugin that converts MML (Music Macro Language) and chord n
 
 ## Installation
 
+Since this package is not published to npm, install directly from GitHub:
+
 ```bash
-npm install quartz-transformer-mmlabc
+npm install cat2151/quartz-transformer-mmlabc
 ```
 
 Or with yarn:
 
 ```bash
-yarn add quartz-transformer-mmlabc
+yarn add cat2151/quartz-transformer-mmlabc
 ```
 
 ## Usage
