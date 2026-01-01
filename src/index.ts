@@ -251,7 +251,13 @@ export const MMLABCTransformer: QuartzTransformerPlugin<MMLABCOptions | undefine
           try {
             // Create audio context once (requires user gesture for first time)
             if (!sharedAudioContext) {
-              sharedAudioContext = new (window.AudioContext || window.webkitAudioContext)();
+              const AudioContextClass = window.AudioContext || window.webkitAudioContext;
+              if (AudioContextClass) {
+                sharedAudioContext = new AudioContextClass();
+              } else {
+                console.error('Web Audio API not supported');
+                return;
+              }
             }
             
             // Get the visual object for this element
@@ -287,11 +293,23 @@ export const MMLABCTransformer: QuartzTransformerPlugin<MMLABCOptions | undefine
                 }
               };
               
-              // Start playback with callbacks
+              // Start playback
               currentSynth.start();
               
-              // Use a combination of estimated duration and checking synth state
+              // Check playback status with safety limit
+              let pollCount = 0;
+              const maxPolls = 6000; // Max 10 minutes (6000 * 100ms)
+              
               const checkPlaybackStatus = function() {
+                pollCount++;
+                
+                // Safety check: stop after max polls
+                if (pollCount >= maxPolls) {
+                  console.warn('Playback check timeout reached');
+                  cleanup();
+                  return;
+                }
+                
                 // Check if synth is still playing
                 if (currentSynth && currentSynth.isRunning && !currentSynth.isRunning()) {
                   cleanup();
