@@ -98,7 +98,7 @@ describe('MMLABCTransformer', () => {
 
       expect(tree.children[0].type).toBe('html')
       expect(tree.children[0].value).toContain('&#10;')
-      expect(tree.children[0].value).not.toContain('\n')
+      expect(tree.children[0].value).toMatch(/data-mml="[^"]*&#10;[^"]*"/)
     })
 
     it('should escape tabs and carriage returns in MML code', () => {
