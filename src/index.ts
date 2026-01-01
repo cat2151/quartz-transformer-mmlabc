@@ -180,7 +180,7 @@ export const MMLABCTransformer: QuartzTransformerPlugin<MMLABCOptions | undefine
       if (errorMessage.includes('Failed to fetch') || errorMessage.includes('import')) {
         errorParagraph.textContent = 'Error loading music notation library. Please check your internet connection.';
       } else if (errorMessage.includes('parse')) {
-        errorParagraph.textContent = 'Error parsing MML notation. Please check the syntax.';
+        errorParagraph.textContent = 'Error parsing music notation. Please check the syntax.';
       } else {
         errorParagraph.textContent = 'Error rendering music notation';
       }

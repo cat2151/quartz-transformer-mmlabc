@@ -157,7 +157,7 @@
                     console.error('Error rendering notation:', error);
                     const errorParagraph = document.createElement('p');
                     errorParagraph.style.color = 'red';
-                    errorParagraph.textContent = 'Error rendering music notation: ' + (error instanceof Error ? error.message : 'Unknown error');
+                    errorParagraph.textContent = 'Error rendering music notation. Check console for details.';
                     element.innerHTML = '';
                     element.appendChild(errorParagraph);
                 }
