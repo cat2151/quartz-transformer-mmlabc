@@ -39,11 +39,13 @@ interface Root {
 interface MMLABCOptions {
   enableMML?: boolean
   enableChord?: boolean
+  enableABC?: boolean
 }
 
 const defaultOptions: MMLABCOptions = {
   enableMML: true,
   enableChord: true,
+  enableABC: true,
 }
 
 /**
@@ -85,6 +87,18 @@ export const MMLABCTransformer: QuartzTransformerPlugin<MMLABCOptions | undefine
                 node.value = `<div class="abc-notation chord-block" data-chord="${escapeHtml(
                   chordCode,
                 )}" data-type="chord"></div>`
+                delete node.lang
+              }
+
+              // Handle ABC blocks - replace with HTML that will be processed in browser
+              if (opts.enableABC && lang === "abc") {
+                const abcCode = node.value as string
+
+                // Replace the code block with an HTML block containing the ABC data
+                node.type = "html"
+                node.value = `<div class="abc-notation abc-block" data-abc="${escapeHtml(
+                  abcCode,
+                )}" data-type="abc"></div>`
                 delete node.lang
               }
             })
@@ -162,6 +176,12 @@ export const MMLABCTransformer: QuartzTransformerPlugin<MMLABCOptions | undefine
           }
           abcNotation = mml2abcModule.parse(mmlData);
         }
+      } else if (type === 'abc') {
+        // For ABC notation, no conversion needed - use directly
+        const abcData = element.getAttribute('data-abc');
+        if (abcData) {
+          abcNotation = abcData;
+        }
       }
       
       if (abcNotation) {
@@ -180,7 +200,7 @@ export const MMLABCTransformer: QuartzTransformerPlugin<MMLABCOptions | undefine
       if (errorMessage.includes('Failed to fetch') || errorMessage.includes('import')) {
         errorParagraph.textContent = 'Error loading music notation library. Please check your internet connection.';
       } else if (errorMessage.includes('parse')) {
-        const notationType = type === 'chord' ? 'chord' : 'MML';
+        const notationType = type === 'chord' ? 'chord' : type === 'abc' ? 'ABC' : 'MML';
         errorParagraph.textContent = 'Error parsing ' + notationType + ' notation. Please check the syntax.';
       } else {
         errorParagraph.textContent = 'Error rendering music notation';

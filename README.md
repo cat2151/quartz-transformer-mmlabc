@@ -6,6 +6,7 @@ A Quartz transformer plugin that converts MML (Music Macro Language) and chord n
 
 - 🎵 Converts `mml` code blocks to ABC notation and renders with abcjs
 - 🎸 Converts `chord` code blocks to MML, then ABC notation, and renders with abcjs
+- 🎼 Supports direct `abc` notation code blocks for troubleshooting and direct usage
 - 🎨 Automatic rendering of music notation as SVG
 - ⚡ Lightweight and standalone npm module
 - 🔧 TypeScript support
@@ -59,6 +60,21 @@ C Dm7 G7 C
 ```
 ````
 
+#### ABC notation (direct)
+
+````markdown
+```abc
+X:1
+T:Simple Scale
+M:4/4
+L:1/4
+K:C
+C D E F|G A B c|
+```
+````
+
+This is useful for troubleshooting or when you prefer to write ABC notation directly.
+
 ## Options
 
 The plugin accepts optional configuration:
@@ -67,27 +83,28 @@ The plugin accepts optional configuration:
 MMLABCTransformer({
   enableMML: true,    // Enable MML block transformation (default: true)
   enableChord: true,  // Enable chord block transformation (default: true)
+  enableABC: true,    // Enable ABC block transformation (default: true)
 })
 ```
 
 ## How it works
 
-1. The plugin detects code blocks with `mml` or `chord` language tags during Quartz's build process
+1. The plugin detects code blocks with `mml`, `chord`, or `abc` language tags during Quartz's build process
 2. Replaces these code blocks with HTML div elements containing the source notation as data attributes
 3. In the browser:
    - Loads abcjs and mml2abc from CDN
    - For MML blocks: converts MML to ABC notation using mml2abc
-   - For chord blocks: (planned) converts chords to MML, then to ABC notation
+   - For chord blocks: converts chords to MML using chord2mml, then to ABC notation
+   - For ABC blocks: uses the notation directly without conversion
    - Renders the ABC notation as interactive SVG using abcjs
 
 ## Current Status
 
 - ✅ MML block detection and transformation
+- ✅ Chord block detection and transformation
+- ✅ ABC block detection and direct rendering (useful for troubleshooting)
 - ✅ ABC notation rendering with abcjs
 - ✅ CDN dependencies pinned to specific commit hash
-- ❌ Chord block rendering (not yet implemented - see Future Work section)
-
-The plugin is functional for MML notation. Chord notation blocks are recognized but not transformed, as chord2mml CDN integration is incomplete.
 
 ## Notes
 
