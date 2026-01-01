@@ -99,10 +99,29 @@ The plugin is functional for MML notation. Chord notation blocks are recognized 
 
 ## Testing
 
-The plugin currently lacks automated tests. Future contributions should include:
+The plugin includes a comprehensive automated test suite using Vitest:
+
+### Running tests
+
+```bash
+# Run tests once
+npm test
+
+# Run tests in watch mode
+npm run test:watch
+
+# Run tests with UI
+npm run test:ui
+```
+
+### Test coverage
+
+The test suite includes:
 - Unit tests for AST transformation logic
-- Tests for HTML escaping (especially newlines and special characters)
-- Integration tests for the complete transformation pipeline
+- Tests for HTML escaping (newlines, tabs, special characters)
+- Tests for plugin options and configuration
+- Edge case handling
+- External resource validation
 
 For manual testing, use the included `demo.html` file.
 
