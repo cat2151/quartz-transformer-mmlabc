@@ -30,7 +30,7 @@
 
 3. **視覚的証拠**
    - CDNがブロックされた場合: "Rendered notation:"セクションが空
-   - CDNが正常に動作する場合: PR #14のスクリーンショットで五線譜が表示されている
+   - CDNが正常に動作する場合: [PR #14のスクリーンショット](https://github.com/user-attachments/assets/da994517-7b3a-45b3-8551-7fbfd41c73e4)で五線譜が表示されている
 
 ### 検証方法
 

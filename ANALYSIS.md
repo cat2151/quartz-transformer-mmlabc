@@ -45,7 +45,7 @@ The "Rendered notation:" sections are empty because:
 
 **Expected appearance when CDN works:**
 PR #14 included a screenshot showing working staff notation:
-`https://github.com/user-attachments/assets/da994517-7b3a-45b3-8551-7fbfd41c73e4`
+[View working staff notation screenshot](https://github.com/user-attachments/assets/da994517-7b3a-45b3-8551-7fbfd41c73e4)
 
 ## Why This Affects PR Screenshots
 
