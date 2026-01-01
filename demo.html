@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>MML ABC Transformer Demo - MML and Chord Notation</title>
+    <title>MML ABC Transformer Demo - MML, Chord, and ABC Notation</title>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -45,7 +45,7 @@
 <body>
     <h1>MML ABC Transformer Demo</h1>
     
-    <p>This page demonstrates the MML and Chord notation transformation to ABC notation and rendering with abcjs.</p>
+    <p>This page demonstrates the MML, Chord, and ABC notation transformation to ABC notation and rendering with abcjs.</p>
     
     <div class="section">
         <h2>Example 1: Simple Melody</h2>
@@ -95,6 +95,14 @@
         <div class="abc-notation chord-block" data-chord="C G Am F" data-type="chord"></div>
     </div>
 
+    <div class="section">
+        <h2>Example 7: Direct ABC Notation (Troubleshooting)</h2>
+        <p>Source ABC:</p>
+        <div class="source-code">X:1&#10;T:Twinkle Twinkle Little Star&#10;M:4/4&#10;L:1/4&#10;K:C&#10;C C G G|A A G2|F F E E|D D C2|</div>
+        <p>Rendered notation:</p>
+        <div class="abc-notation abc-block" data-abc="X:1&#10;T:Twinkle Twinkle Little Star&#10;M:4/4&#10;L:1/4&#10;K:C&#10;C C G G|A A G2|F F E E|D D C2|" data-type="abc"></div>
+    </div>
+
     <!-- Load abcjs from CDN -->
     <script src="https://cdn.jsdelivr.net/npm/abcjs@6.4.0/dist/abcjs-basic-min.js"></script>
     
@@ -140,6 +148,12 @@
                             }
                             abcNotation = mml2abcModule.parse(mmlData);
                         }
+                    } else if (type === 'abc') {
+                        // For ABC notation, no conversion needed - use directly
+                        const abcData = element.getAttribute('data-abc');
+                        if (abcData) {
+                            abcNotation = abcData;
+                        }
                     }
                     
                     if (abcNotation) {
@@ -158,7 +172,7 @@
                     if (errorMessage.includes('Failed to fetch') || errorMessage.includes('import')) {
                         errorParagraph.textContent = 'Error loading music notation library. Please check your internet connection.';
                     } else if (errorMessage.includes('parse')) {
-                        const notationType = type === 'chord' ? 'chord' : 'MML';
+                        const notationType = type === 'chord' ? 'chord' : type === 'abc' ? 'ABC' : 'MML';
                         errorParagraph.textContent = 'Error parsing ' + notationType + ' notation. Please check the syntax.';
                     } else {
                         errorParagraph.textContent = 'Error rendering music notation';

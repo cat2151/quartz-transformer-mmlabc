@@ -36,8 +36,22 @@ t140 l8 o4 c d e f g4 g4 a g f e d4 d4 c2
 Cmaj7 Am7 Dm7 G7
 ```
 
+## ABC Notation Example
+
+Here's a direct ABC notation (useful for troubleshooting):
+
+```abc
+X:1
+T:Twinkle Twinkle Little Star
+M:4/4
+L:1/4
+K:C
+C C G G|A A G2|F F E E|D D C2|
+```
+
 ## Notes
 
-- The plugin automatically detects `mml` and `chord` code blocks
+- The plugin automatically detects `mml`, `chord`, and `abc` code blocks
 - Music notation is rendered using abcjs
 - The rendering is responsive and interactive
+- ABC notation blocks are useful for troubleshooting and direct ABC input
