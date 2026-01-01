@@ -130,7 +130,7 @@ export const MMLABCTransformer: QuartzTransformerPlugin<MMLABCOptions | undefine
   }
 
   // Cache the mml2abc module to avoid duplicate imports
-  let mml2abcModule = null;
+  let mml2abcModule: any = null;
 
   // Process all abc-notation blocks
   const blocks = document.querySelectorAll('.abc-notation');
@@ -175,13 +175,17 @@ export const MMLABCTransformer: QuartzTransformerPlugin<MMLABCOptions | undefine
     } catch (error) {
       console.error('Error rendering notation:', error);
       const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+      const errorParagraph = document.createElement('p');
+      errorParagraph.style.color = 'red';
       if (errorMessage.includes('Failed to fetch') || errorMessage.includes('import')) {
-        element.innerHTML = '<p style="color: red;">Error loading music notation library. Please check your internet connection.</p>';
+        errorParagraph.textContent = 'Error loading music notation library. Please check your internet connection.';
       } else if (errorMessage.includes('parse')) {
-        element.innerHTML = '<p style="color: red;">Error parsing MML notation. Please check the syntax.</p>';
+        errorParagraph.textContent = 'Error parsing MML notation. Please check the syntax.';
       } else {
-        element.innerHTML = '<p style="color: red;">Error rendering music notation</p>';
+        errorParagraph.textContent = 'Error rendering music notation';
       }
+      element.innerHTML = '';
+      element.appendChild(errorParagraph);
     }
   }
 })();
