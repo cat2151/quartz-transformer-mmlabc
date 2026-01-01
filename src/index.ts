@@ -74,7 +74,7 @@ export const MMLABCTransformer: QuartzTransformerPlugin<MMLABCOptions | undefine
                 node.type = "html"
                 node.value = `<div class="abc-notation mml-block" data-mml="${escapeHtml(
                   mmlCode,
-                )}" data-type="mml"></div>`
+                )}" data-type="mml" role="button" tabindex="0" aria-label="Play music notation"></div>`
                 delete node.lang
               }
 
@@ -86,7 +86,7 @@ export const MMLABCTransformer: QuartzTransformerPlugin<MMLABCOptions | undefine
                 node.type = "html"
                 node.value = `<div class="abc-notation chord-block" data-chord="${escapeHtml(
                   chordCode,
-                )}" data-type="chord"></div>`
+                )}" data-type="chord" role="button" tabindex="0" aria-label="Play music notation"></div>`
                 delete node.lang
               }
 
@@ -98,7 +98,7 @@ export const MMLABCTransformer: QuartzTransformerPlugin<MMLABCOptions | undefine
                 node.type = "html"
                 node.value = `<div class="abc-notation abc-block" data-abc="${escapeHtml(
                   abcCode,
-                )}" data-type="abc"></div>`
+                )}" data-type="abc" role="button" tabindex="0" aria-label="Play music notation"></div>`
                 delete node.lang
               }
             })
@@ -124,11 +124,35 @@ export const MMLABCTransformer: QuartzTransformerPlugin<MMLABCOptions | undefine
   background-color: #f5f5f5;
   border-radius: 4px;
   overflow-x: auto;
+  cursor: pointer;
+  position: relative;
 }
 
 .abc-notation svg {
   max-width: 100%;
   height: auto;
+}
+
+.abc-notation.playing {
+  background-color: #e8f5e9;
+}
+
+.abc-notation::before {
+  content: "▶ Click to play";
+  position: absolute;
+  top: 0.5em;
+  right: 0.5em;
+  font-size: 0.8em;
+  color: #666;
+  background-color: rgba(255, 255, 255, 0.9);
+  padding: 0.3em 0.6em;
+  border-radius: 3px;
+  pointer-events: none;
+}
+
+.abc-notation.playing::before {
+  content: "🔊 Playing...";
+  color: #2e7d32;
 }
             `.trim(),
             inline: true,
@@ -144,7 +168,17 @@ export const MMLABCTransformer: QuartzTransformerPlugin<MMLABCOptions | undefine
   }
 
   // Cache the mml2abc module to avoid duplicate imports
-  let mml2abcModule: any = null;
+  let mml2abcModule = null;
+  
+  // Global synth instance for audio playback
+  let currentSynth = null;
+  let currentPlayingElement = null;
+  
+  // Shared AudioContext (create once and reuse)
+  let sharedAudioContext = null;
+  
+  // WeakMap to store visual objects for each element
+  const visualObjMap = new WeakMap();
 
   // Process all abc-notation blocks
   const blocks = document.querySelectorAll('.abc-notation');
@@ -186,10 +220,150 @@ export const MMLABCTransformer: QuartzTransformerPlugin<MMLABCOptions | undefine
       
       if (abcNotation) {
         // Render the ABC notation with abcjs
-        ABCJS.renderAbc(element, abcNotation, {
+        const visualObj = ABCJS.renderAbc(element, abcNotation, {
           responsive: 'resize',
           staffwidth: 600,
           scale: 1.0
+        });
+        
+        // Store the visual object using WeakMap
+        visualObjMap.set(element, visualObj);
+        
+        // Define the playback handler function
+        const handlePlayback = async function(e) {
+          e.preventDefault();
+          
+          // Stop any currently playing music
+          if (currentSynth) {
+            currentSynth.stop();
+            if (currentPlayingElement) {
+              currentPlayingElement.classList.remove('playing');
+            }
+          }
+          
+          // If clicking the same element that's playing, just stop
+          if (currentPlayingElement === element) {
+            currentPlayingElement = null;
+            currentSynth = null;
+            return;
+          }
+          
+          try {
+            // Create audio context once (requires user gesture for first time)
+            if (!sharedAudioContext) {
+              const AudioContextClass = window.AudioContext || window.webkitAudioContext;
+              if (AudioContextClass) {
+                sharedAudioContext = new AudioContextClass();
+              } else {
+                console.error('Web Audio API not supported');
+                return;
+              }
+            }
+            
+            // Ensure audio context is running (some browsers start it in a suspended state)
+            if (sharedAudioContext && sharedAudioContext.state === 'suspended') {
+              await sharedAudioContext.resume();
+            }
+            
+            // Get the visual object for this element
+            const visualObj = visualObjMap.get(element);
+            if (!visualObj || !visualObj[0]) {
+              console.error('Visual object not found for element');
+              return;
+            }
+            
+            // Create synth
+            if (ABCJS.synth.CreateSynth) {
+              currentSynth = new ABCJS.synth.CreateSynth();
+              
+              // Initialize synth
+              await currentSynth.init({
+                audioContext: sharedAudioContext,
+                visualObj: visualObj[0]
+              });
+              
+              // Prime the synth with the tune
+              await currentSynth.prime();
+              
+              // Mark as playing
+              element.classList.add('playing');
+              currentPlayingElement = element;
+              
+              // Set up event listener for when playback finishes
+              const cleanup = function() {
+                if (currentPlayingElement === element) {
+                  element.classList.remove('playing');
+                  currentPlayingElement = null;
+                  if (currentSynth && typeof currentSynth.stop === 'function') {
+                    currentSynth.stop();
+                  }
+                  currentSynth = null;
+                }
+              };
+              
+              // Start playback
+              currentSynth.start();
+              
+              // Store a unique ID for this playback to handle race conditions
+              const playbackId = Date.now();
+              element.setAttribute('data-playback-id', playbackId.toString());
+              
+              // Check playback status with safety limit
+              let pollCount = 0;
+              const maxPolls = 6000; // Max 10 minutes (6000 * 100ms)
+              
+              const checkPlaybackStatus = function() {
+                pollCount++;
+                
+                // Check if this playback has been superseded
+                const currentPlaybackId = element.getAttribute('data-playback-id');
+                if (currentPlaybackId !== playbackId.toString()) {
+                  return; // Stop polling for this playback
+                }
+                
+                // Safety check: stop after max polls
+                if (pollCount >= maxPolls) {
+                  console.warn('Playback check timeout reached');
+                  cleanup();
+                  return;
+                }
+                
+                // Check if synth is still playing
+                if (currentSynth && currentSynth.isRunning && !currentSynth.isRunning()) {
+                  cleanup();
+                } else if (currentSynth) {
+                  // Check again in 100ms
+                  setTimeout(checkPlaybackStatus, 100);
+                }
+              };
+              
+              // Start checking after a short delay
+              setTimeout(checkPlaybackStatus, 100);
+            } else {
+              console.error('ABCJS synth API not available');
+              const errorParagraph = document.createElement('p');
+              errorParagraph.style.color = 'orange';
+              errorParagraph.style.fontSize = '0.9em';
+              errorParagraph.textContent = 'Audio playback is not available in this version of abcjs.';
+              element.appendChild(errorParagraph);
+            }
+          } catch (error) {
+            console.error('Error playing music:', error);
+            element.classList.remove('playing');
+            currentPlayingElement = null;
+            currentSynth = null;
+          }
+        };
+        
+        // Add click handler for audio playback
+        element.addEventListener('click', handlePlayback);
+        
+        // Add keyboard handler for accessibility (Enter and Space keys)
+        element.addEventListener('keydown', async function(e) {
+          if (e.key === 'Enter' || e.key === ' ') {
+            e.preventDefault();
+            await handlePlayback(e);
+          }
         });
       }
     } catch (error) {

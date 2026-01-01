@@ -170,6 +170,30 @@ describe('MMLABCTransformer', () => {
       expect(tree.children[0].value).toContain('data-type="mml"')
     })
 
+    it('should include ARIA attributes for accessibility', () => {
+      const plugin = MMLABCTransformer()
+      const markdownPlugins = plugin.markdownPlugins!()
+      const transformer = markdownPlugins[0]()
+
+      const tree = {
+        type: 'root',
+        children: [
+          {
+            type: 'code',
+            lang: 'mml',
+            value: 't120 l4 c'
+          }
+        ]
+      }
+
+      transformer(tree, null)
+
+      expect(tree.children[0].type).toBe('html')
+      expect(tree.children[0].value).toContain('role="button"')
+      expect(tree.children[0].value).toContain('tabindex="0"')
+      expect(tree.children[0].value).toContain('aria-label="Play music notation"')
+    })
+
     it('should not transform MML blocks when enableMML is false', () => {
       const plugin = MMLABCTransformer({ enableMML: false })
       const markdownPlugins = plugin.markdownPlugins!()
