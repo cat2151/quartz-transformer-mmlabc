@@ -14,14 +14,16 @@ MML（Music Macro Language）とコード進行記法のコードブロックを
 
 ## インストール
 
+このパッケージはnpmに公開されていないため、GitHubから直接インストールしてください：
+
 ```bash
-npm install quartz-transformer-mmlabc
+npm install github:cat2151/quartz-transformer-mmlabc
 ```
 
 またはyarnを使用する場合：
 
 ```bash
-yarn add quartz-transformer-mmlabc
+yarn add github:cat2151/quartz-transformer-mmlabc
 ```
 
 ## 使い方
