@@ -76,11 +76,16 @@ export const MMLABCTransformer: QuartzTransformerPlugin<MMLABCOptions | undefine
                 delete node.lang
               }
 
-              // Handle chord blocks - skip for now as chord2mml integration is incomplete
+              // Handle chord blocks - replace with HTML that will be processed in browser
               if (opts.enableChord && lang === "chord") {
-                // Chord notation rendering is not currently enabled.
-                // Leave the code block as-is until chord2mml CDN integration is complete
-                console.warn("Chord notation block detected but rendering is not enabled. Skipping block.")
+                const chordCode = node.value as string
+
+                // Replace the code block with an HTML block containing the chord data
+                node.type = "html"
+                node.value = `<div class="abc-notation chord-block" data-chord="${escapeHtml(
+                  chordCode,
+                )}" data-type="chord"></div>`
+                delete node.lang
               }
             })
           }
@@ -137,6 +142,16 @@ export const MMLABCTransformer: QuartzTransformerPlugin<MMLABCOptions | undefine
         const mmlData = element.getAttribute('data-mml');
         if (mmlData) {
           // Dynamically import mml2abc ES module from CDN (pinned to specific commit)
+          const mml2abcModule = await import('https://cdn.jsdelivr.net/gh/cat2151/mml2abc@c32f3f36022201547b68d76e0307a62a4c2b173b/dist/mml2abc.mjs');
+          abcNotation = mml2abcModule.parse(mmlData);
+        }
+      } else if (type === 'chord') {
+        const chordData = element.getAttribute('data-chord');
+        if (chordData) {
+          // Dynamically import chord2mml ES module from CDN (pinned to version v0.0.4)
+          const chord2mmlModule = await import('https://cdn.jsdelivr.net/gh/cat2151/chord2mml@v0.0.4/dist/chord2mml.mjs');
+          const mmlData = chord2mmlModule.parse(chordData);
+          // Then convert MML to ABC
           const mml2abcModule = await import('https://cdn.jsdelivr.net/gh/cat2151/mml2abc@c32f3f36022201547b68d76e0307a62a4c2b173b/dist/mml2abc.mjs');
           abcNotation = mml2abcModule.parse(mmlData);
         }
