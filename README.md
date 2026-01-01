@@ -8,6 +8,7 @@ A Quartz transformer plugin that converts MML (Music Macro Language) and chord n
 - 🎸 Converts `chord` code blocks to MML, then ABC notation, and renders with abcjs
 - 🎼 Supports direct `abc` notation code blocks for troubleshooting and direct usage
 - 🎨 Automatic rendering of music notation as SVG (displays staff notation)
+- 🎧 Click-to-play audio playback - click on any rendered notation to hear the music
 - ⚡ Lightweight and standalone npm module
 - 🔧 TypeScript support
 
@@ -97,6 +98,8 @@ MMLABCTransformer({
    - For chord blocks: converts chords to MML using chord2mml, then to ABC notation
    - For ABC blocks: uses the notation directly without conversion
    - Renders the ABC notation as interactive SVG using abcjs
+   - Initializes audio synthesizer for playback
+   - Adds click event handlers to enable music playback when clicking on the notation
 
 ## Current Status
 
@@ -106,11 +109,11 @@ MMLABCTransformer({
 - ✅ ABC block detection and direct rendering (useful for troubleshooting)
 - ✅ ABC notation rendering with abcjs (staff notation display)
 - ✅ CDN dependencies pinned to specific commit hash
-
-### Not Yet Implemented
-- ❌ Interactive playback features (click to play music from the beginning)
-  - Currently only displays staff notation
-  - To implement audio playback, additional abcjs audio library (`abcjs-audio-min.js`) and synthesizer controls would need to be added
+- ✅ Interactive audio playback (click on notation to play music from the beginning)
+  - Uses abcjs synth API with Web Audio API
+  - Visual feedback during playback (background color change and status indicator)
+  - Automatic stop when playback completes
+  - Click again to stop playback
 
 ## Notes
 
