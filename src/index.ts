@@ -124,11 +124,35 @@ export const MMLABCTransformer: QuartzTransformerPlugin<MMLABCOptions | undefine
   background-color: #f5f5f5;
   border-radius: 4px;
   overflow-x: auto;
+  cursor: pointer;
+  position: relative;
 }
 
 .abc-notation svg {
   max-width: 100%;
   height: auto;
+}
+
+.abc-notation.playing {
+  background-color: #e8f5e9;
+}
+
+.abc-notation::before {
+  content: "▶ Click to play";
+  position: absolute;
+  top: 0.5em;
+  right: 0.5em;
+  font-size: 0.8em;
+  color: #666;
+  background-color: rgba(255, 255, 255, 0.9);
+  padding: 0.3em 0.6em;
+  border-radius: 3px;
+  pointer-events: none;
+}
+
+.abc-notation.playing::before {
+  content: "⏸ Playing...";
+  color: #2e7d32;
 }
             `.trim(),
             inline: true,
@@ -144,7 +168,11 @@ export const MMLABCTransformer: QuartzTransformerPlugin<MMLABCOptions | undefine
   }
 
   // Cache the mml2abc module to avoid duplicate imports
-  let mml2abcModule: any = null;
+  let mml2abcModule = null;
+  
+  // Global synth instance for audio playback
+  let currentSynth = null;
+  let currentPlayingElement = null;
 
   // Process all abc-notation blocks
   const blocks = document.querySelectorAll('.abc-notation');
@@ -186,10 +214,84 @@ export const MMLABCTransformer: QuartzTransformerPlugin<MMLABCOptions | undefine
       
       if (abcNotation) {
         // Render the ABC notation with abcjs
-        ABCJS.renderAbc(element, abcNotation, {
+        const visualObj = ABCJS.renderAbc(element, abcNotation, {
           responsive: 'resize',
           staffwidth: 600,
           scale: 1.0
+        });
+        
+        // Store the ABC notation and visual object for playback
+        element.setAttribute('data-abc-notation', abcNotation);
+        element._visualObj = visualObj;
+        
+        // Add click handler for audio playback
+        element.addEventListener('click', async function(e) {
+          e.preventDefault();
+          
+          // Stop any currently playing music
+          if (currentSynth) {
+            currentSynth.stop();
+            if (currentPlayingElement) {
+              currentPlayingElement.classList.remove('playing');
+            }
+          }
+          
+          // If clicking the same element that's playing, just stop
+          if (currentPlayingElement === element) {
+            currentPlayingElement = null;
+            currentSynth = null;
+            return;
+          }
+          
+          try {
+            // Create audio context (requires user gesture)
+            const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+            
+            // Create synth
+            if (ABCJS.synth.CreateSynth) {
+              currentSynth = new ABCJS.synth.CreateSynth();
+              
+              // Initialize synth
+              await currentSynth.init({
+                audioContext: audioContext,
+                visualObj: visualObj[0]
+              });
+              
+              // Prime the synth with the tune
+              await currentSynth.prime();
+              
+              // Mark as playing
+              element.classList.add('playing');
+              currentPlayingElement = element;
+              
+              // Start playback
+              currentSynth.start();
+              
+              // Remove playing class when finished
+              // Use a simple timeout based on duration, or listen for completion
+              const onEnded = function() {
+                if (currentPlayingElement === element) {
+                  element.classList.remove('playing');
+                  currentPlayingElement = null;
+                  currentSynth = null;
+                }
+              };
+              
+              // Estimate duration and set timeout
+              if (visualObj[0] && visualObj[0].millisecondsPerMeasure) {
+                const duration = visualObj[0].millisecondsPerMeasure() * (visualObj[0].lines ? visualObj[0].lines.length : 1);
+                setTimeout(onEnded, duration);
+              } else {
+                // Fallback: 5 second timeout
+                setTimeout(onEnded, 5000);
+              }
+            }
+          } catch (error) {
+            console.error('Error playing music:', error);
+            element.classList.remove('playing');
+            currentPlayingElement = null;
+            currentSynth = null;
+          }
         });
       }
     } catch (error) {
