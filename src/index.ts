@@ -129,6 +129,9 @@ export const MMLABCTransformer: QuartzTransformerPlugin<MMLABCOptions | undefine
     return;
   }
 
+  // Cache the mml2abc module to avoid duplicate imports
+  let mml2abcModule = null;
+
   // Process all abc-notation blocks
   const blocks = document.querySelectorAll('.abc-notation');
   
@@ -142,7 +145,9 @@ export const MMLABCTransformer: QuartzTransformerPlugin<MMLABCOptions | undefine
         const mmlData = element.getAttribute('data-mml');
         if (mmlData) {
           // Dynamically import mml2abc ES module from CDN (pinned to specific commit)
-          const mml2abcModule = await import('https://cdn.jsdelivr.net/gh/cat2151/mml2abc@c32f3f36022201547b68d76e0307a62a4c2b173b/dist/mml2abc.mjs');
+          if (!mml2abcModule) {
+            mml2abcModule = await import('https://cdn.jsdelivr.net/gh/cat2151/mml2abc@c32f3f36022201547b68d76e0307a62a4c2b173b/dist/mml2abc.mjs');
+          }
           abcNotation = mml2abcModule.parse(mmlData);
         }
       } else if (type === 'chord') {
@@ -151,8 +156,10 @@ export const MMLABCTransformer: QuartzTransformerPlugin<MMLABCOptions | undefine
           // Dynamically import chord2mml ES module from CDN (pinned to version v0.0.4)
           const chord2mmlModule = await import('https://cdn.jsdelivr.net/gh/cat2151/chord2mml@v0.0.4/dist/chord2mml.mjs');
           const mmlData = chord2mmlModule.parse(chordData);
-          // Then convert MML to ABC
-          const mml2abcModule = await import('https://cdn.jsdelivr.net/gh/cat2151/mml2abc@c32f3f36022201547b68d76e0307a62a4c2b173b/dist/mml2abc.mjs');
+          // Then convert MML to ABC (reuse cached module)
+          if (!mml2abcModule) {
+            mml2abcModule = await import('https://cdn.jsdelivr.net/gh/cat2151/mml2abc@c32f3f36022201547b68d76e0307a62a4c2b173b/dist/mml2abc.mjs');
+          }
           abcNotation = mml2abcModule.parse(mmlData);
         }
       }
@@ -173,7 +180,7 @@ export const MMLABCTransformer: QuartzTransformerPlugin<MMLABCOptions | undefine
       } else if (errorMessage.includes('parse')) {
         element.innerHTML = '<p style="color: red;">Error parsing MML notation. Please check the syntax.</p>';
       } else {
-        element.innerHTML = '<p style="color: red;">Error rendering music notation: ' + errorMessage + '</p>';
+        element.innerHTML = '<p style="color: red;">Error rendering music notation</p>';
       }
     }
   }
