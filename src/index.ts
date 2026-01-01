@@ -76,11 +76,16 @@ export const MMLABCTransformer: QuartzTransformerPlugin<MMLABCOptions | undefine
                 delete node.lang
               }
 
-              // Handle chord blocks - skip for now as chord2mml integration is incomplete
+              // Handle chord blocks - replace with HTML that will be processed in browser
               if (opts.enableChord && lang === "chord") {
-                // Chord notation rendering is not currently enabled.
-                // Leave the code block as-is until chord2mml CDN integration is complete
-                console.warn("Chord notation block detected but rendering is not enabled. Skipping block.")
+                const chordCode = node.value as string
+
+                // Replace the code block with an HTML block containing the chord data
+                node.type = "html"
+                node.value = `<div class="abc-notation chord-block" data-chord="${escapeHtml(
+                  chordCode,
+                )}" data-type="chord"></div>`
+                delete node.lang
               }
             })
           }
@@ -124,6 +129,9 @@ export const MMLABCTransformer: QuartzTransformerPlugin<MMLABCOptions | undefine
     return;
   }
 
+  // Cache the mml2abc module to avoid duplicate imports
+  let mml2abcModule: any = null;
+
   // Process all abc-notation blocks
   const blocks = document.querySelectorAll('.abc-notation');
   
@@ -137,7 +145,21 @@ export const MMLABCTransformer: QuartzTransformerPlugin<MMLABCOptions | undefine
         const mmlData = element.getAttribute('data-mml');
         if (mmlData) {
           // Dynamically import mml2abc ES module from CDN (pinned to specific commit)
-          const mml2abcModule = await import('https://cdn.jsdelivr.net/gh/cat2151/mml2abc@c32f3f36022201547b68d76e0307a62a4c2b173b/dist/mml2abc.mjs');
+          if (!mml2abcModule) {
+            mml2abcModule = await import('https://cdn.jsdelivr.net/gh/cat2151/mml2abc@c32f3f36022201547b68d76e0307a62a4c2b173b/dist/mml2abc.mjs');
+          }
+          abcNotation = mml2abcModule.parse(mmlData);
+        }
+      } else if (type === 'chord') {
+        const chordData = element.getAttribute('data-chord');
+        if (chordData) {
+          // Dynamically import chord2mml ES module from CDN (pinned to version v0.0.4)
+          const chord2mmlModule = await import('https://cdn.jsdelivr.net/gh/cat2151/chord2mml@v0.0.4/dist/chord2mml.mjs');
+          const mmlData = chord2mmlModule.parse(chordData);
+          // Then convert MML to ABC (reuse cached module)
+          if (!mml2abcModule) {
+            mml2abcModule = await import('https://cdn.jsdelivr.net/gh/cat2151/mml2abc@c32f3f36022201547b68d76e0307a62a4c2b173b/dist/mml2abc.mjs');
+          }
           abcNotation = mml2abcModule.parse(mmlData);
         }
       }
@@ -153,13 +175,18 @@ export const MMLABCTransformer: QuartzTransformerPlugin<MMLABCOptions | undefine
     } catch (error) {
       console.error('Error rendering notation:', error);
       const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+      const errorParagraph = document.createElement('p');
+      errorParagraph.style.color = 'red';
       if (errorMessage.includes('Failed to fetch') || errorMessage.includes('import')) {
-        element.innerHTML = '<p style="color: red;">Error loading music notation library. Please check your internet connection.</p>';
+        errorParagraph.textContent = 'Error loading music notation library. Please check your internet connection.';
       } else if (errorMessage.includes('parse')) {
-        element.innerHTML = '<p style="color: red;">Error parsing MML notation. Please check the syntax.</p>';
+        const notationType = type === 'chord' ? 'chord' : 'MML';
+        errorParagraph.textContent = 'Error parsing ' + notationType + ' notation. Please check the syntax.';
       } else {
-        element.innerHTML = '<p style="color: red;">Error rendering music notation: ' + errorMessage + '</p>';
+        errorParagraph.textContent = 'Error rendering music notation';
       }
+      element.innerHTML = '';
+      element.appendChild(errorParagraph);
     }
   }
 })();

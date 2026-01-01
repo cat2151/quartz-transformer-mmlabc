@@ -194,7 +194,7 @@ describe('MMLABCTransformer', () => {
   })
 
   describe('AST transformation - Chord blocks', () => {
-    it('should not transform chord blocks (feature not implemented)', () => {
+    it('should transform chord blocks to HTML', () => {
       const plugin = MMLABCTransformer()
       const markdownPlugins = plugin.markdownPlugins!()
       const transformer = markdownPlugins[0]()
@@ -212,7 +212,78 @@ describe('MMLABCTransformer', () => {
 
       transformer(tree, null)
 
-      // Chord blocks should remain as code blocks
+      expect(tree.children[0].type).toBe('html')
+      expect(tree.children[0].value).toContain('class="abc-notation chord-block"')
+      expect(tree.children[0].value).toContain('data-chord=')
+      expect(tree.children[0].value).toContain('data-type="chord"')
+      expect(tree.children[0].value).toContain('C Dm7 G7 C')
+    })
+
+    it('should escape HTML special characters in chord code', () => {
+      const plugin = MMLABCTransformer()
+      const markdownPlugins = plugin.markdownPlugins!()
+      const transformer = markdownPlugins[0]()
+
+      const tree = {
+        type: 'root',
+        children: [
+          {
+            type: 'code',
+            lang: 'chord',
+            value: 'C<maj7> D&m "test"'
+          }
+        ]
+      }
+
+      transformer(tree, null)
+
+      expect(tree.children[0].type).toBe('html')
+      expect(tree.children[0].value).toContain('&lt;maj7&gt;')
+      expect(tree.children[0].value).toContain('&amp;m')
+      expect(tree.children[0].value).toContain('&quot;test&quot;')
+    })
+
+    it('should handle case-insensitive chord language tags', () => {
+      const plugin = MMLABCTransformer()
+      const markdownPlugins = plugin.markdownPlugins!()
+      const transformer = markdownPlugins[0]()
+
+      const tree = {
+        type: 'root',
+        children: [
+          {
+            type: 'code',
+            lang: 'CHORD',
+            value: 'C Am F G'
+          }
+        ]
+      }
+
+      transformer(tree, null)
+
+      expect(tree.children[0].type).toBe('html')
+      expect(tree.children[0].value).toContain('data-type="chord"')
+    })
+
+    it('should not transform chord blocks when enableChord is false', () => {
+      const plugin = MMLABCTransformer({ enableChord: false })
+      const markdownPlugins = plugin.markdownPlugins!()
+      const transformer = markdownPlugins[0]()
+
+      const tree = {
+        type: 'root',
+        children: [
+          {
+            type: 'code',
+            lang: 'chord',
+            value: 'C Dm7 G7 C'
+          }
+        ]
+      }
+
+      transformer(tree, null)
+
+      // Chord blocks should remain as code blocks when enableChord is false
       expect(tree.children[0].type).toBe('code')
       expect(tree.children[0].lang).toBe('chord')
     })
@@ -237,6 +308,50 @@ describe('MMLABCTransformer', () => {
 
       expect(tree.children[0].type).toBe('code')
       expect(tree.children[0].lang).toBe('chord')
+    })
+
+    it('should handle empty chord code', () => {
+      const plugin = MMLABCTransformer()
+      const markdownPlugins = plugin.markdownPlugins!()
+      const transformer = markdownPlugins[0]()
+
+      const tree = {
+        type: 'root',
+        children: [
+          {
+            type: 'code',
+            lang: 'chord',
+            value: ''
+          }
+        ]
+      }
+
+      transformer(tree, null)
+
+      expect(tree.children[0].type).toBe('html')
+      expect(tree.children[0].value).toContain('data-chord=""')
+    })
+
+    it('should escape newlines in chord code', () => {
+      const plugin = MMLABCTransformer()
+      const markdownPlugins = plugin.markdownPlugins!()
+      const transformer = markdownPlugins[0]()
+
+      const tree = {
+        type: 'root',
+        children: [
+          {
+            type: 'code',
+            lang: 'chord',
+            value: 'C Am\nF G\nC'
+          }
+        ]
+      }
+
+      transformer(tree, null)
+
+      expect(tree.children[0].type).toBe('html')
+      expect(tree.children[0].value).toContain('&#10;')
     })
   })
 
@@ -268,6 +383,64 @@ describe('MMLABCTransformer', () => {
       expect(tree.children[0].value).toContain('t120 l4 c')
       expect(tree.children[1].type).toBe('html')
       expect(tree.children[1].value).toContain('t140 l8 defg')
+    })
+
+    it('should transform multiple chord blocks in the same tree', () => {
+      const plugin = MMLABCTransformer()
+      const markdownPlugins = plugin.markdownPlugins!()
+      const transformer = markdownPlugins[0]()
+
+      const tree = {
+        type: 'root',
+        children: [
+          {
+            type: 'code',
+            lang: 'chord',
+            value: 'C Am F G'
+          },
+          {
+            type: 'code',
+            lang: 'chord',
+            value: 'Dm7 G7 Cmaj7'
+          }
+        ]
+      }
+
+      transformer(tree, null)
+
+      expect(tree.children[0].type).toBe('html')
+      expect(tree.children[0].value).toContain('C Am F G')
+      expect(tree.children[1].type).toBe('html')
+      expect(tree.children[1].value).toContain('Dm7 G7 Cmaj7')
+    })
+
+    it('should transform both MML and chord blocks in the same tree', () => {
+      const plugin = MMLABCTransformer()
+      const markdownPlugins = plugin.markdownPlugins!()
+      const transformer = markdownPlugins[0]()
+
+      const tree = {
+        type: 'root',
+        children: [
+          {
+            type: 'code',
+            lang: 'mml',
+            value: 't120 l4 c'
+          },
+          {
+            type: 'code',
+            lang: 'chord',
+            value: 'C Am F G'
+          }
+        ]
+      }
+
+      transformer(tree, null)
+
+      expect(tree.children[0].type).toBe('html')
+      expect(tree.children[0].value).toContain('data-type="mml"')
+      expect(tree.children[1].type).toBe('html')
+      expect(tree.children[1].value).toContain('data-type="chord"')
     })
 
     it('should not transform non-MML code blocks', () => {
@@ -332,6 +505,7 @@ describe('MMLABCTransformer', () => {
       expect(resources.afterDOMLoaded).toBeDefined()
       expect(resources.afterDOMLoaded).toContain('ABCJS')
       expect(resources.afterDOMLoaded).toContain('mml2abc')
+      expect(resources.afterDOMLoaded).toContain('chord2mml')
       expect(resources.afterDOMLoaded).toContain('renderAbc')
     })
 
@@ -340,6 +514,13 @@ describe('MMLABCTransformer', () => {
       const resources = plugin.externalResources!()
 
       expect(resources.afterDOMLoaded).toContain('c32f3f36022201547b68d76e0307a62a4c2b173b')
+    })
+
+    it('should pin chord2mml to specific version', () => {
+      const plugin = MMLABCTransformer()
+      const resources = plugin.externalResources!()
+
+      expect(resources.afterDOMLoaded).toContain('v0.0.4')
     })
   })
 
