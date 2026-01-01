@@ -1,0 +1,419 @@
+import { describe, it, expect } from 'vitest'
+import { MMLABCTransformer } from './index'
+
+describe('MMLABCTransformer', () => {
+  describe('Plugin initialization', () => {
+    it('should create a plugin with default options', () => {
+      const plugin = MMLABCTransformer()
+      expect(plugin).toBeDefined()
+      expect(plugin.name).toBe('MMLABCTransformer')
+    })
+
+    it('should have markdownPlugins function', () => {
+      const plugin = MMLABCTransformer()
+      expect(plugin.markdownPlugins).toBeDefined()
+      expect(typeof plugin.markdownPlugins).toBe('function')
+    })
+
+    it('should have externalResources function', () => {
+      const plugin = MMLABCTransformer()
+      expect(plugin.externalResources).toBeDefined()
+      expect(typeof plugin.externalResources).toBe('function')
+    })
+
+    it('should accept custom options', () => {
+      const plugin = MMLABCTransformer({ enableMML: false, enableChord: false })
+      expect(plugin).toBeDefined()
+      expect(plugin.name).toBe('MMLABCTransformer')
+    })
+  })
+
+  describe('AST transformation - MML blocks', () => {
+    it('should transform MML code blocks to HTML', () => {
+      const plugin = MMLABCTransformer()
+      const markdownPlugins = plugin.markdownPlugins!()
+      const transformer = markdownPlugins[0]()
+
+      const tree = {
+        type: 'root',
+        children: [
+          {
+            type: 'code',
+            lang: 'mml',
+            value: 't120 l4 cdefgab>c'
+          }
+        ]
+      }
+
+      transformer(tree, null)
+
+      expect(tree.children[0].type).toBe('html')
+      expect(tree.children[0].value).toContain('class="abc-notation mml-block"')
+      expect(tree.children[0].value).toContain('data-mml=')
+      expect(tree.children[0].value).toContain('data-type="mml"')
+      expect(tree.children[0].value).toContain('t120 l4 cdefgab&gt;c')
+    })
+
+    it('should escape HTML special characters in MML code', () => {
+      const plugin = MMLABCTransformer()
+      const markdownPlugins = plugin.markdownPlugins!()
+      const transformer = markdownPlugins[0]()
+
+      const tree = {
+        type: 'root',
+        children: [
+          {
+            type: 'code',
+            lang: 'mml',
+            value: '<script>alert("xss")</script>'
+          }
+        ]
+      }
+
+      transformer(tree, null)
+
+      expect(tree.children[0].type).toBe('html')
+      expect(tree.children[0].value).toContain('&lt;script&gt;')
+      expect(tree.children[0].value).toContain('&quot;xss&quot;')
+      expect(tree.children[0].value).not.toContain('<script>')
+    })
+
+    it('should escape newlines in MML code', () => {
+      const plugin = MMLABCTransformer()
+      const markdownPlugins = plugin.markdownPlugins!()
+      const transformer = markdownPlugins[0]()
+
+      const tree = {
+        type: 'root',
+        children: [
+          {
+            type: 'code',
+            lang: 'mml',
+            value: 'line1\nline2\nline3'
+          }
+        ]
+      }
+
+      transformer(tree, null)
+
+      expect(tree.children[0].type).toBe('html')
+      expect(tree.children[0].value).toContain('&#10;')
+      expect(tree.children[0].value).not.toContain('\n')
+    })
+
+    it('should escape tabs and carriage returns in MML code', () => {
+      const plugin = MMLABCTransformer()
+      const markdownPlugins = plugin.markdownPlugins!()
+      const transformer = markdownPlugins[0]()
+
+      const tree = {
+        type: 'root',
+        children: [
+          {
+            type: 'code',
+            lang: 'mml',
+            value: 'tab\there\rcarriage'
+          }
+        ]
+      }
+
+      transformer(tree, null)
+
+      expect(tree.children[0].type).toBe('html')
+      expect(tree.children[0].value).toContain('&#9;')
+      expect(tree.children[0].value).toContain('&#13;')
+    })
+
+    it('should escape ampersands and quotes in MML code', () => {
+      const plugin = MMLABCTransformer()
+      const markdownPlugins = plugin.markdownPlugins!()
+      const transformer = markdownPlugins[0]()
+
+      const tree = {
+        type: 'root',
+        children: [
+          {
+            type: 'code',
+            lang: 'mml',
+            value: 'test & "quote" \'single\''
+          }
+        ]
+      }
+
+      transformer(tree, null)
+
+      expect(tree.children[0].type).toBe('html')
+      expect(tree.children[0].value).toContain('&amp;')
+      expect(tree.children[0].value).toContain('&quot;')
+      expect(tree.children[0].value).toContain('&#039;')
+    })
+
+    it('should handle case-insensitive language tags', () => {
+      const plugin = MMLABCTransformer()
+      const markdownPlugins = plugin.markdownPlugins!()
+      const transformer = markdownPlugins[0]()
+
+      const tree = {
+        type: 'root',
+        children: [
+          {
+            type: 'code',
+            lang: 'MML',
+            value: 't120 l4 c'
+          }
+        ]
+      }
+
+      transformer(tree, null)
+
+      expect(tree.children[0].type).toBe('html')
+      expect(tree.children[0].value).toContain('data-type="mml"')
+    })
+
+    it('should not transform MML blocks when enableMML is false', () => {
+      const plugin = MMLABCTransformer({ enableMML: false })
+      const markdownPlugins = plugin.markdownPlugins!()
+      const transformer = markdownPlugins[0]()
+
+      const tree = {
+        type: 'root',
+        children: [
+          {
+            type: 'code',
+            lang: 'mml',
+            value: 't120 l4 cdefgab>c'
+          }
+        ]
+      }
+
+      transformer(tree, null)
+
+      expect(tree.children[0].type).toBe('code')
+      expect(tree.children[0].lang).toBe('mml')
+    })
+  })
+
+  describe('AST transformation - Chord blocks', () => {
+    it('should not transform chord blocks (feature not implemented)', () => {
+      const plugin = MMLABCTransformer()
+      const markdownPlugins = plugin.markdownPlugins!()
+      const transformer = markdownPlugins[0]()
+
+      const tree = {
+        type: 'root',
+        children: [
+          {
+            type: 'code',
+            lang: 'chord',
+            value: 'C Dm7 G7 C'
+          }
+        ]
+      }
+
+      transformer(tree, null)
+
+      // Chord blocks should remain as code blocks
+      expect(tree.children[0].type).toBe('code')
+      expect(tree.children[0].lang).toBe('chord')
+    })
+
+    it('should not process chord blocks when enableChord is false', () => {
+      const plugin = MMLABCTransformer({ enableChord: false })
+      const markdownPlugins = plugin.markdownPlugins!()
+      const transformer = markdownPlugins[0]()
+
+      const tree = {
+        type: 'root',
+        children: [
+          {
+            type: 'code',
+            lang: 'chord',
+            value: 'C Dm7 G7 C'
+          }
+        ]
+      }
+
+      transformer(tree, null)
+
+      expect(tree.children[0].type).toBe('code')
+      expect(tree.children[0].lang).toBe('chord')
+    })
+  })
+
+  describe('AST transformation - Multiple blocks', () => {
+    it('should transform multiple MML blocks in the same tree', () => {
+      const plugin = MMLABCTransformer()
+      const markdownPlugins = plugin.markdownPlugins!()
+      const transformer = markdownPlugins[0]()
+
+      const tree = {
+        type: 'root',
+        children: [
+          {
+            type: 'code',
+            lang: 'mml',
+            value: 't120 l4 c'
+          },
+          {
+            type: 'code',
+            lang: 'mml',
+            value: 't140 l8 defg'
+          }
+        ]
+      }
+
+      transformer(tree, null)
+
+      expect(tree.children[0].type).toBe('html')
+      expect(tree.children[0].value).toContain('t120 l4 c')
+      expect(tree.children[1].type).toBe('html')
+      expect(tree.children[1].value).toContain('t140 l8 defg')
+    })
+
+    it('should not transform non-MML code blocks', () => {
+      const plugin = MMLABCTransformer()
+      const markdownPlugins = plugin.markdownPlugins!()
+      const transformer = markdownPlugins[0]()
+
+      const tree = {
+        type: 'root',
+        children: [
+          {
+            type: 'code',
+            lang: 'javascript',
+            value: 'console.log("hello")'
+          },
+          {
+            type: 'code',
+            lang: 'mml',
+            value: 't120 l4 c'
+          }
+        ]
+      }
+
+      transformer(tree, null)
+
+      expect(tree.children[0].type).toBe('code')
+      expect(tree.children[0].lang).toBe('javascript')
+      expect(tree.children[1].type).toBe('html')
+    })
+  })
+
+  describe('External resources', () => {
+    it('should include abcjs library from CDN', () => {
+      const plugin = MMLABCTransformer()
+      const resources = plugin.externalResources!()
+
+      expect(resources.js).toBeDefined()
+      expect(resources.js!.length).toBeGreaterThan(0)
+      
+      const abcjsScript = resources.js!.find(js => js.src?.includes('abcjs'))
+      expect(abcjsScript).toBeDefined()
+      expect(abcjsScript?.loadTime).toBe('afterDOMReady')
+      expect(abcjsScript?.contentType).toBe('external')
+    })
+
+    it('should include CSS for abc-notation class', () => {
+      const plugin = MMLABCTransformer()
+      const resources = plugin.externalResources!()
+
+      expect(resources.css).toBeDefined()
+      expect(resources.css!.length).toBeGreaterThan(0)
+      
+      const css = resources.css![0]
+      expect(css.content).toContain('.abc-notation')
+      expect(css.inline).toBe(true)
+    })
+
+    it('should include afterDOMLoaded script', () => {
+      const plugin = MMLABCTransformer()
+      const resources = plugin.externalResources!()
+
+      expect(resources.afterDOMLoaded).toBeDefined()
+      expect(resources.afterDOMLoaded).toContain('ABCJS')
+      expect(resources.afterDOMLoaded).toContain('mml2abc')
+      expect(resources.afterDOMLoaded).toContain('renderAbc')
+    })
+
+    it('should pin mml2abc to specific commit hash', () => {
+      const plugin = MMLABCTransformer()
+      const resources = plugin.externalResources!()
+
+      expect(resources.afterDOMLoaded).toContain('c32f3f36022201547b68d76e0307a62a4c2b173b')
+    })
+  })
+
+  describe('Edge cases', () => {
+    it('should handle empty MML code', () => {
+      const plugin = MMLABCTransformer()
+      const markdownPlugins = plugin.markdownPlugins!()
+      const transformer = markdownPlugins[0]()
+
+      const tree = {
+        type: 'root',
+        children: [
+          {
+            type: 'code',
+            lang: 'mml',
+            value: ''
+          }
+        ]
+      }
+
+      transformer(tree, null)
+
+      expect(tree.children[0].type).toBe('html')
+      expect(tree.children[0].value).toContain('data-mml=""')
+    })
+
+    it('should handle code blocks without lang property', () => {
+      const plugin = MMLABCTransformer()
+      const markdownPlugins = plugin.markdownPlugins!()
+      const transformer = markdownPlugins[0]()
+
+      const tree = {
+        type: 'root',
+        children: [
+          {
+            type: 'code',
+            value: 'no language'
+          }
+        ]
+      }
+
+      transformer(tree, null)
+
+      expect(tree.children[0].type).toBe('code')
+    })
+
+    it('should handle complex MML with all special characters', () => {
+      const plugin = MMLABCTransformer()
+      const markdownPlugins = plugin.markdownPlugins!()
+      const transformer = markdownPlugins[0]()
+
+      const complexMml = 't120 l4\ncdefg<ab>c\n& "test" \'quote\'\r\n\ttab'
+      const tree = {
+        type: 'root',
+        children: [
+          {
+            type: 'code',
+            lang: 'mml',
+            value: complexMml
+          }
+        ]
+      }
+
+      transformer(tree, null)
+
+      expect(tree.children[0].type).toBe('html')
+      expect(tree.children[0].value).toContain('&lt;')
+      expect(tree.children[0].value).toContain('&gt;')
+      expect(tree.children[0].value).toContain('&amp;')
+      expect(tree.children[0].value).toContain('&quot;')
+      expect(tree.children[0].value).toContain('&#039;')
+      expect(tree.children[0].value).toContain('&#10;')
+      expect(tree.children[0].value).toContain('&#13;')
+      expect(tree.children[0].value).toContain('&#9;')
+    })
+  })
+})
