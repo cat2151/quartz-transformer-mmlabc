@@ -173,6 +173,12 @@ export const MMLABCTransformer: QuartzTransformerPlugin<MMLABCOptions | undefine
   // Global synth instance for audio playback
   let currentSynth = null;
   let currentPlayingElement = null;
+  
+  // Shared AudioContext (create once and reuse)
+  let sharedAudioContext = null;
+  
+  // WeakMap to store visual objects for each element
+  const visualObjMap = new WeakMap();
 
   // Process all abc-notation blocks
   const blocks = document.querySelectorAll('.abc-notation');
@@ -220,9 +226,8 @@ export const MMLABCTransformer: QuartzTransformerPlugin<MMLABCOptions | undefine
           scale: 1.0
         });
         
-        // Store the ABC notation and visual object for playback
-        element.setAttribute('data-abc-notation', abcNotation);
-        element._visualObj = visualObj;
+        // Store the visual object using WeakMap
+        visualObjMap.set(element, visualObj);
         
         // Add click handler for audio playback
         element.addEventListener('click', async function(e) {
@@ -244,8 +249,17 @@ export const MMLABCTransformer: QuartzTransformerPlugin<MMLABCOptions | undefine
           }
           
           try {
-            // Create audio context (requires user gesture)
-            const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+            // Create audio context once (requires user gesture for first time)
+            if (!sharedAudioContext) {
+              sharedAudioContext = new (window.AudioContext || window.webkitAudioContext)();
+            }
+            
+            // Get the visual object for this element
+            const visualObj = visualObjMap.get(element);
+            if (!visualObj || !visualObj[0]) {
+              console.error('Visual object not found for element');
+              return;
+            }
             
             // Create synth
             if (ABCJS.synth.CreateSynth) {
@@ -253,7 +267,7 @@ export const MMLABCTransformer: QuartzTransformerPlugin<MMLABCOptions | undefine
               
               // Initialize synth
               await currentSynth.init({
-                audioContext: audioContext,
+                audioContext: sharedAudioContext,
                 visualObj: visualObj[0]
               });
               
@@ -264,12 +278,8 @@ export const MMLABCTransformer: QuartzTransformerPlugin<MMLABCOptions | undefine
               element.classList.add('playing');
               currentPlayingElement = element;
               
-              // Start playback
-              currentSynth.start();
-              
-              // Remove playing class when finished
-              // Use a simple timeout based on duration, or listen for completion
-              const onEnded = function() {
+              // Set up event listener for when playback finishes
+              const cleanup = function() {
                 if (currentPlayingElement === element) {
                   element.classList.remove('playing');
                   currentPlayingElement = null;
@@ -277,14 +287,22 @@ export const MMLABCTransformer: QuartzTransformerPlugin<MMLABCOptions | undefine
                 }
               };
               
-              // Estimate duration and set timeout
-              if (visualObj[0] && visualObj[0].millisecondsPerMeasure) {
-                const duration = visualObj[0].millisecondsPerMeasure() * (visualObj[0].lines ? visualObj[0].lines.length : 1);
-                setTimeout(onEnded, duration);
-              } else {
-                // Fallback: 5 second timeout
-                setTimeout(onEnded, 5000);
-              }
+              // Start playback with callbacks
+              currentSynth.start();
+              
+              // Use a combination of estimated duration and checking synth state
+              const checkPlaybackStatus = function() {
+                // Check if synth is still playing
+                if (currentSynth && currentSynth.isRunning && !currentSynth.isRunning()) {
+                  cleanup();
+                } else if (currentSynth) {
+                  // Check again in 100ms
+                  setTimeout(checkPlaybackStatus, 100);
+                }
+              };
+              
+              // Start checking after a short delay
+              setTimeout(checkPlaybackStatus, 100);
             }
           } catch (error) {
             console.error('Error playing music:', error);
