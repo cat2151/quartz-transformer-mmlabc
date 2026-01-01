@@ -74,7 +74,7 @@ export const MMLABCTransformer: QuartzTransformerPlugin<MMLABCOptions | undefine
                 node.type = "html"
                 node.value = `<div class="abc-notation mml-block" data-mml="${escapeHtml(
                   mmlCode,
-                )}" data-type="mml"></div>`
+                )}" data-type="mml" role="button" tabindex="0" aria-label="Play music notation"></div>`
                 delete node.lang
               }
 
@@ -86,7 +86,7 @@ export const MMLABCTransformer: QuartzTransformerPlugin<MMLABCOptions | undefine
                 node.type = "html"
                 node.value = `<div class="abc-notation chord-block" data-chord="${escapeHtml(
                   chordCode,
-                )}" data-type="chord"></div>`
+                )}" data-type="chord" role="button" tabindex="0" aria-label="Play music notation"></div>`
                 delete node.lang
               }
 
@@ -98,7 +98,7 @@ export const MMLABCTransformer: QuartzTransformerPlugin<MMLABCOptions | undefine
                 node.type = "html"
                 node.value = `<div class="abc-notation abc-block" data-abc="${escapeHtml(
                   abcCode,
-                )}" data-type="abc"></div>`
+                )}" data-type="abc" role="button" tabindex="0" aria-label="Play music notation"></div>`
                 delete node.lang
               }
             })
@@ -151,7 +151,7 @@ export const MMLABCTransformer: QuartzTransformerPlugin<MMLABCOptions | undefine
 }
 
 .abc-notation.playing::before {
-  content: "⏸ Playing...";
+  content: "🔊 Playing...";
   color: #2e7d32;
 }
             `.trim(),
@@ -229,8 +229,8 @@ export const MMLABCTransformer: QuartzTransformerPlugin<MMLABCOptions | undefine
         // Store the visual object using WeakMap
         visualObjMap.set(element, visualObj);
         
-        // Add click handler for audio playback
-        element.addEventListener('click', async function(e) {
+        // Define the playback handler function
+        const handlePlayback = async function(e) {
           e.preventDefault();
           
           // Stop any currently playing music
@@ -258,6 +258,11 @@ export const MMLABCTransformer: QuartzTransformerPlugin<MMLABCOptions | undefine
                 console.error('Web Audio API not supported');
                 return;
               }
+            }
+            
+            // Ensure audio context is running (some browsers start it in a suspended state)
+            if (sharedAudioContext && sharedAudioContext.state === 'suspended') {
+              await sharedAudioContext.resume();
             }
             
             // Get the visual object for this element
@@ -289,6 +294,9 @@ export const MMLABCTransformer: QuartzTransformerPlugin<MMLABCOptions | undefine
                 if (currentPlayingElement === element) {
                   element.classList.remove('playing');
                   currentPlayingElement = null;
+                  if (currentSynth && typeof currentSynth.stop === 'function') {
+                    currentSynth.stop();
+                  }
                   currentSynth = null;
                 }
               };
@@ -296,12 +304,22 @@ export const MMLABCTransformer: QuartzTransformerPlugin<MMLABCOptions | undefine
               // Start playback
               currentSynth.start();
               
+              // Store a unique ID for this playback to handle race conditions
+              const playbackId = Date.now();
+              element.setAttribute('data-playback-id', playbackId.toString());
+              
               // Check playback status with safety limit
               let pollCount = 0;
               const maxPolls = 6000; // Max 10 minutes (6000 * 100ms)
               
               const checkPlaybackStatus = function() {
                 pollCount++;
+                
+                // Check if this playback has been superseded
+                const currentPlaybackId = element.getAttribute('data-playback-id');
+                if (currentPlaybackId !== playbackId.toString()) {
+                  return; // Stop polling for this playback
+                }
                 
                 // Safety check: stop after max polls
                 if (pollCount >= maxPolls) {
@@ -321,12 +339,30 @@ export const MMLABCTransformer: QuartzTransformerPlugin<MMLABCOptions | undefine
               
               // Start checking after a short delay
               setTimeout(checkPlaybackStatus, 100);
+            } else {
+              console.error('ABCJS synth API not available');
+              const errorParagraph = document.createElement('p');
+              errorParagraph.style.color = 'orange';
+              errorParagraph.style.fontSize = '0.9em';
+              errorParagraph.textContent = 'Audio playback is not available in this version of abcjs.';
+              element.appendChild(errorParagraph);
             }
           } catch (error) {
             console.error('Error playing music:', error);
             element.classList.remove('playing');
             currentPlayingElement = null;
             currentSynth = null;
+          }
+        };
+        
+        // Add click handler for audio playback
+        element.addEventListener('click', handlePlayback);
+        
+        // Add keyboard handler for accessibility (Enter and Space keys)
+        element.addEventListener('keydown', async function(e) {
+          if (e.key === 'Enter' || e.key === ' ') {
+            e.preventDefault();
+            await handlePlayback(e);
           }
         });
       }

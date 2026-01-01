@@ -44,7 +44,7 @@
             pointer-events: none;
         }
         .abc-notation.playing::before {
-            content: "⏸ Playing...";
+            content: "🔊 Playing...";
             color: #2e7d32;
         }
         .source-code {
@@ -73,7 +73,7 @@
         <p>Source MML:</p>
         <div class="source-code">t120 l4 cdefgab&gt;c</div>
         <p>Rendered notation:</p>
-        <div class="abc-notation mml-block" data-mml="t120 l4 cdefgab>c" data-type="mml"></div>
+        <div class="abc-notation mml-block" data-mml="t120 l4 cdefgab>c" data-type="mml" role="button" tabindex="0" aria-label="Play music notation"></div>
     </div>
     
     <div class="section">
@@ -81,7 +81,7 @@
         <p>Source MML:</p>
         <div class="source-code">t140 l8 o4 c d e f g4 g4 a g f e d4 d4 c2</div>
         <p>Rendered notation:</p>
-        <div class="abc-notation mml-block" data-mml="t140 l8 o4 c d e f g4 g4 a g f e d4 d4 c2" data-type="mml"></div>
+        <div class="abc-notation mml-block" data-mml="t140 l8 o4 c d e f g4 g4 a g f e d4 d4 c2" data-type="mml" role="button" tabindex="0" aria-label="Play music notation"></div>
     </div>
     
     <div class="section">
@@ -89,7 +89,7 @@
         <p>Source MML:</p>
         <div class="source-code">t90 l4 o5 c d e c c d e c e f g2 e f g2</div>
         <p>Rendered notation:</p>
-        <div class="abc-notation mml-block" data-mml="t90 l4 o5 c d e c c d e c e f g2 e f g2" data-type="mml"></div>
+        <div class="abc-notation mml-block" data-mml="t90 l4 o5 c d e c c d e c e f g2 e f g2" data-type="mml" role="button" tabindex="0" aria-label="Play music notation"></div>
     </div>
 
     <div class="section">
@@ -97,7 +97,7 @@
         <p>Source Chord:</p>
         <div class="source-code">C Am F G</div>
         <p>Rendered notation:</p>
-        <div class="abc-notation chord-block" data-chord="C Am F G" data-type="chord"></div>
+        <div class="abc-notation chord-block" data-chord="C Am F G" data-type="chord" role="button" tabindex="0" aria-label="Play music notation"></div>
     </div>
 
     <div class="section">
@@ -105,7 +105,7 @@
         <p>Source Chord:</p>
         <div class="source-code">Cmaj7 Am7 Dm7 G7</div>
         <p>Rendered notation:</p>
-        <div class="abc-notation chord-block" data-chord="Cmaj7 Am7 Dm7 G7" data-type="chord"></div>
+        <div class="abc-notation chord-block" data-chord="Cmaj7 Am7 Dm7 G7" data-type="chord" role="button" tabindex="0" aria-label="Play music notation"></div>
     </div>
 
     <div class="section">
@@ -113,7 +113,7 @@
         <p>Source Chord:</p>
         <div class="source-code">C G Am F</div>
         <p>Rendered notation:</p>
-        <div class="abc-notation chord-block" data-chord="C G Am F" data-type="chord"></div>
+        <div class="abc-notation chord-block" data-chord="C G Am F" data-type="chord" role="button" tabindex="0" aria-label="Play music notation"></div>
     </div>
 
     <div class="section">
@@ -121,7 +121,7 @@
         <p>Source ABC:</p>
         <div class="source-code">X:1&#10;T:Twinkle Twinkle Little Star&#10;M:4/4&#10;L:1/4&#10;K:C&#10;C C G G|A A G2|F F E E|D D C2|</div>
         <p>Rendered notation:</p>
-        <div class="abc-notation abc-block" data-abc="X:1&#10;T:Twinkle Twinkle Little Star&#10;M:4/4&#10;L:1/4&#10;K:C&#10;C C G G|A A G2|F F E E|D D C2|" data-type="abc"></div>
+        <div class="abc-notation abc-block" data-abc="X:1&#10;T:Twinkle Twinkle Little Star&#10;M:4/4&#10;L:1/4&#10;K:C&#10;C C G G|A A G2|F F E E|D D C2|" data-type="abc" role="button" tabindex="0" aria-label="Play music notation"></div>
     </div>
 
     <!-- Load abcjs from CDN -->
@@ -198,8 +198,8 @@
                         // Store the visual object using WeakMap
                         visualObjMap.set(element, visualObj);
                         
-                        // Add click handler for audio playback
-                        element.addEventListener('click', async function(e) {
+                        // Define the playback handler function
+                        const handlePlayback = async function(e) {
                             e.preventDefault();
                             
                             // Stop any currently playing music
@@ -227,6 +227,11 @@
                                         console.error('Web Audio API not supported');
                                         return;
                                     }
+                                }
+                                
+                                // Ensure audio context is running (some browsers start it in a suspended state)
+                                if (sharedAudioContext && sharedAudioContext.state === 'suspended') {
+                                    await sharedAudioContext.resume();
                                 }
                                 
                                 // Get the visual object for this element
@@ -258,6 +263,9 @@
                                         if (currentPlayingElement === element) {
                                             element.classList.remove('playing');
                                             currentPlayingElement = null;
+                                            if (currentSynth && typeof currentSynth.stop === 'function') {
+                                                currentSynth.stop();
+                                            }
                                             currentSynth = null;
                                         }
                                     };
@@ -265,12 +273,22 @@
                                     // Start playback
                                     currentSynth.start();
                                     
+                                    // Store a unique ID for this playback to handle race conditions
+                                    const playbackId = Date.now();
+                                    element.setAttribute('data-playback-id', playbackId.toString());
+                                    
                                     // Check playback status with safety limit
                                     let pollCount = 0;
                                     const maxPolls = 6000; // Max 10 minutes (6000 * 100ms)
                                     
                                     const checkPlaybackStatus = function() {
                                         pollCount++;
+                                        
+                                        // Check if this playback has been superseded
+                                        const currentPlaybackId = element.getAttribute('data-playback-id');
+                                        if (currentPlaybackId !== playbackId.toString()) {
+                                            return; // Stop polling for this playback
+                                        }
                                         
                                         // Safety check: stop after max polls
                                         if (pollCount >= maxPolls) {
@@ -290,12 +308,30 @@
                                     
                                     // Start checking after a short delay
                                     setTimeout(checkPlaybackStatus, 100);
+                                } else {
+                                    console.error('ABCJS synth API not available');
+                                    const errorParagraph = document.createElement('p');
+                                    errorParagraph.style.color = 'orange';
+                                    errorParagraph.style.fontSize = '0.9em';
+                                    errorParagraph.textContent = 'Audio playback is not available in this version of abcjs.';
+                                    element.appendChild(errorParagraph);
                                 }
                             } catch (error) {
                                 console.error('Error playing music:', error);
                                 element.classList.remove('playing');
                                 currentPlayingElement = null;
                                 currentSynth = null;
+                            }
+                        };
+                        
+                        // Add click handler for audio playback
+                        element.addEventListener('click', handlePlayback);
+                        
+                        // Add keyboard handler for accessibility (Enter and Space keys)
+                        element.addEventListener('keydown', async function(e) {
+                            if (e.key === 'Enter' || e.key === ' ') {
+                                e.preventDefault();
+                                await handlePlayback(e);
                             }
                         });
                     }
