@@ -67,19 +67,37 @@ const defaultOptions: MMLABCOptions = {
  * 
  * @example
  * ```typescript
+ * // quartz.config.ts
+ * import { QuartzConfig } from "./quartz/cfg"
+ * import * as Plugin from "./quartz/plugins"
  * import { MMLABCTransformer } from "quartz-transformer-mmlabc"
  * 
- * export default {
+ * const config: QuartzConfig = {
+ *   configuration: {
+ *     // ... your Quartz configuration (siteTitle, theme, etc.)
+ *   },
  *   plugins: {
  *     transformers: [
+ *       // Built-in Quartz transformers
+ *       Plugin.FrontMatter(),
+ *       Plugin.TableOfContents(),
+ *       // Add the MML/Chord/ABC transformer
  *       MMLABCTransformer({
  *         enableMML: true,
  *         enableChord: true,
  *         enableABC: true,
  *       }),
  *     ],
+ *     filters: [
+ *       // ... your filters
+ *     ],
+ *     emitters: [
+ *       // ... your emitters
+ *     ],
  *   },
  * }
+ * 
+ * export default config
  * ```
  */
 export const MMLABCTransformer: QuartzTransformerPlugin<MMLABCOptions | undefined> = (
