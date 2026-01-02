@@ -205,7 +205,7 @@ npm run test:ui
 **重要**: 以下のライブラリバージョンは、@cat2151 により[easychord2mml](https://github.com/cat2151/easychord2mml/blob/main/index.html)での動作確認に基づいて強く指定されています。これらのURLを変更しないでください。
 
 - [abcjs](https://github.com/paulrosen/abcjs) - ABC音楽記法をレンダリングするJavaScriptライブラリ
-  - CDN: `https://cdn.jsdelivr.net/npm/abcjs@6/dist/abcjs-basic-min.js`
+  - CDN: `https://cdn.jsdelivr.net/npm/abcjs@6/dist/abcjs-basic-min.min.js`
 - [mml2abc](https://github.com/cat2151/mml2abc) - Music Macro LanguageをABC記法に変換
   - CDN: `https://cdn.jsdelivr.net/gh/cat2151/mml2abc/dist/mml2abc.mjs`
 - [chord2mml](https://github.com/cat2151/chord2mml) - コード進行記法をMMLに変換

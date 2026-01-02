@@ -158,7 +158,7 @@ export const MMLABCTransformer: QuartzTransformerPlugin<MMLABCOptions | undefine
       return {
         js: [
           {
-            src: "https://cdn.jsdelivr.net/npm/abcjs@6/dist/abcjs-basic-min.js",
+            src: "https://cdn.jsdelivr.net/npm/abcjs@6/dist/abcjs-basic-min.min.js",
             loadTime: "afterDOMReady",
             contentType: "external",
           },
