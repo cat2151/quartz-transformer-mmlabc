@@ -288,7 +288,8 @@ export const MMLABCTransformer: QuartzTransformerPlugin<MMLABCOptions | undefine
               // Initialize synth
               await currentSynth.init({
                 audioContext: sharedAudioContext,
-                visualObj: visualObj[0]
+                visualObj: visualObj[0],
+                options: {}
               });
               
               // Prime the synth with the tune
