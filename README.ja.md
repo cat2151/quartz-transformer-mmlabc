@@ -28,6 +28,22 @@ npm install github:cat2151/quartz-transformer-mmlabc
 yarn add github:cat2151/quartz-transformer-mmlabc
 ```
 
+## ビルド
+
+**⚠️ 重要:** インストール後、`dist`ディレクトリを生成するためにプラグインをビルドする必要があります：
+
+```bash
+cd node_modules/quartz-transformer-mmlabc
+npm run build
+```
+
+この手順が必要な理由：
+- プラグインはGitHubから直接インストールされます（npmからではありません）
+- コンパイルされたJavaScriptを含む`dist`ディレクトリはリポジトリに含まれていません
+- ビルドプロセスがTypeScriptソースファイルを必要なJavaScriptファイルにコンパイルします
+
+この手順をスキップすると、プラグインのエントリーポイント（`dist/index.js`）が存在しないため、Quartzの実行時にエラーが発生します。
+
 ## 使い方
 
 ### Quartz設定での使用
