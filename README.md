@@ -28,6 +28,22 @@ Or if you use yarn:
 yarn add github:cat2151/quartz-transformer-mmlabc
 ```
 
+## Build
+
+**⚠️ Important:** After installation, you must build the plugin to generate the `dist` directory:
+
+```bash
+cd node_modules/quartz-transformer-mmlabc
+npm run build
+```
+
+This step is required because:
+- The plugin is installed directly from GitHub (not from npm)
+- The `dist` directory containing compiled JavaScript is not included in the repository
+- The build process compiles TypeScript source files into the required JavaScript files
+
+If you skip this step, you will encounter errors when running Quartz because the plugin's entry point (`dist/index.js`) will not exist.
+
 ## Usage
 
 ### Using in Quartz Configuration
