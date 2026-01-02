@@ -41,6 +41,14 @@ build/Release
 node_modules/
 jspm_packages/
 
+# Test libraries (cloned for local testing)
+test/lib/
+
+# Playwright test results
+test-results/
+playwright-report/
+test/*.png
+
 # Snowpack dependency directory (https://snowpack.dev/)
 web_modules/
 
