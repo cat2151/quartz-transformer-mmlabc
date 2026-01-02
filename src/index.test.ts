@@ -714,20 +714,22 @@ describe('MMLABCTransformer', () => {
       expect(inlineScript?.script).toContain('renderAbc')
     })
 
-    it('should pin mml2abc to specific commit hash', () => {
+    it('should use mml2abc from CDN without version tag', () => {
       const plugin = MMLABCTransformer()
       const resources = plugin.externalResources!(mockBuildCtx)
 
       const inlineScript = resources.js!.find(js => js.contentType === 'inline')
-      expect(inlineScript?.script).toContain('c32f3f36022201547b68d76e0307a62a4c2b173b')
+      expect(inlineScript?.script).toContain('cat2151/mml2abc/dist/mml2abc.mjs')
+      expect(inlineScript?.script).not.toContain('mml2abc@')
     })
 
-    it('should pin chord2mml to specific version', () => {
+    it('should use chord2mml from CDN without version tag', () => {
       const plugin = MMLABCTransformer()
       const resources = plugin.externalResources!(mockBuildCtx)
 
       const inlineScript = resources.js!.find(js => js.contentType === 'inline')
-      expect(inlineScript?.script).toContain('chord2mml@main')
+      expect(inlineScript?.script).toContain('cat2151/chord2mml/dist/chord2mml.js')
+      expect(inlineScript?.script).not.toContain('chord2mml@')
     })
   })
 
