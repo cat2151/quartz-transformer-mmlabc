@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Staff Notation Test - Local Libraries</title>
+    <title>Staff Notation Test - CDN Blocked Demo</title>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -62,13 +62,13 @@ L:1/4
 K:C
 C D E F|G A B c|`;
 
-        // We'll use a simple inline rendering if ABCJS is available
-        // Otherwise show error message
+        // In this test environment we always show an explanatory message
+        // and placeholder instead of actually rendering with ABCJS
         const statusDiv = document.getElementById('status');
         const notation1 = document.getElementById('notation1');
         
-        // For this test, we'll create a simple visual representation
-        // to show what should appear
+        // This demo shows what happens when the CDN is blocked:
+        // an error message and placeholder appear instead of rendered notation
         statusDiv.className = 'status error';
         statusDiv.innerHTML = `
             <strong>CDN Blocked:</strong> The abcjs library from jsdelivr CDN cannot load due to browser/network restrictions.<br>

@@ -171,9 +171,9 @@ When working correctly, you should see:
 
 ### Technical Stack
 
-- **abcjs v6.4.0**: Renders ABC notation as SVG
+- **abcjs 6.4.0**: Renders ABC notation as SVG
 - **mml2abc** (commit c32f3f3): Converts MML to ABC  
-- **chord2mml** (v0.0.4): Converts chord notation to MML
+- **chord2mml** (0.0.4): Converts chord notation to MML
 
 All loaded dynamically from CDN at runtime.
 

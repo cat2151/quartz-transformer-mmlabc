@@ -93,9 +93,9 @@ When CDN is blocked, you see empty boxes:
    ```
 
 ### Dependencies
-- **abcjs v6.4.0**: Renders ABC as SVG staff notation
+- **abcjs 6.4.0**: Renders ABC as SVG staff notation
 - **mml2abc**: Converts MML to ABC (commit c32f3f3)
-- **chord2mml**: Converts chords to MML (v0.0.4)
+- **chord2mml**: Converts chords to MML (0.0.4)
 
 All loaded from CDN at runtime.
 
