@@ -145,6 +145,8 @@ export const MMLABCTransformer: QuartzTransformerPlugin<MMLABCOptions | undefine
             contentType: "external",
           },
           {
+            // Large inline script is intentional for distribution simplicity
+            // This ensures the plugin works as a standalone npm package without additional asset management
             loadTime: "afterDOMReady",
             contentType: "inline",
             script: `
