@@ -32,20 +32,43 @@ yarn add github:cat2151/quartz-transformer-mmlabc
 
 ### Usage in Quartz configuration
 
-Add the transformer to `quartz.config.ts`:
+Add the transformer to your `quartz.config.ts`:
 
 ```typescript
+import { QuartzConfig } from "./quartz/cfg"
+import * as Plugin from "./quartz/plugins"
 import { MMLABCTransformer } from "quartz-transformer-mmlabc"
 
-export default {
+const config: QuartzConfig = {
+  configuration: {
+    // ... your site configuration
+  },
   plugins: {
     transformers: [
-      // ... other transformers
+      Plugin.FrontMatter(),
+      Plugin.CreatedModifiedDate({ priority: ["frontmatter", "filesystem"] }),
+      // Add the MMLABC transformer
       MMLABCTransformer(),
+      // ... other transformers
+    ],
+    filters: [Plugin.RemoveDrafts()],
+    emitters: [
+      Plugin.AliasRedirects(),
+      Plugin.ComponentResources(),
+      Plugin.ContentPage(),
+      // ... other emitters
     ],
   },
 }
+
+export default config
 ```
+
+**Key points:**
+- Import `QuartzConfig` and built-in plugins from Quartz's internal paths
+- Import this plugin from the npm package name
+- Add it to the `transformers` array alongside other transformers
+- The order generally doesn't matter unless plugins depend on each other
 
 ### Usage in Markdown files
 

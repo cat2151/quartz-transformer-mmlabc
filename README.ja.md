@@ -35,17 +35,40 @@ yarn add github:cat2151/quartz-transformer-mmlabc
 `quartz.config.ts`にトランスフォーマーを追加します：
 
 ```typescript
+import { QuartzConfig } from "./quartz/cfg"
+import * as Plugin from "./quartz/plugins"
 import { MMLABCTransformer } from "quartz-transformer-mmlabc"
 
-export default {
+const config: QuartzConfig = {
+  configuration: {
+    // ... サイト設定
+  },
   plugins: {
     transformers: [
-      // ... 他のトランスフォーマー
+      Plugin.FrontMatter(),
+      Plugin.CreatedModifiedDate({ priority: ["frontmatter", "filesystem"] }),
+      // MMLABCトランスフォーマーを追加
       MMLABCTransformer(),
+      // ... 他のトランスフォーマー
+    ],
+    filters: [Plugin.RemoveDrafts()],
+    emitters: [
+      Plugin.AliasRedirects(),
+      Plugin.ComponentResources(),
+      Plugin.ContentPage(),
+      // ... 他のエミッター
     ],
   },
 }
+
+export default config
 ```
+
+**重要なポイント:**
+- Quartzの内部パスから`QuartzConfig`と組み込みプラグインをインポート
+- このプラグインはnpmパッケージ名からインポート
+- `transformers`配列に他のトランスフォーマーと一緒に追加
+- プラグイン間に依存関係がない限り、順序は通常問題ありません
 
 ### Markdownファイルでの使用
 
