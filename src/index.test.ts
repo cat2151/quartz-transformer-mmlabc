@@ -1,6 +1,13 @@
 import { describe, it, expect } from 'vitest'
 import { MMLABCTransformer } from './index'
 
+// Mock BuildCtx for testing
+const mockBuildCtx = {
+  allSlugs: [],
+  cfg: {},
+  argv: {},
+}
+
 describe('MMLABCTransformer', () => {
   describe('Plugin initialization', () => {
     it('should create a plugin with default options', () => {
@@ -31,7 +38,7 @@ describe('MMLABCTransformer', () => {
   describe('AST transformation - MML blocks', () => {
     it('should transform MML code blocks to HTML', () => {
       const plugin = MMLABCTransformer()
-      const markdownPlugins = plugin.markdownPlugins!()
+      const markdownPlugins = plugin.markdownPlugins!(mockBuildCtx)
       const transformer = markdownPlugins[0]()
 
       const tree = {
@@ -56,7 +63,7 @@ describe('MMLABCTransformer', () => {
 
     it('should escape HTML special characters in MML code', () => {
       const plugin = MMLABCTransformer()
-      const markdownPlugins = plugin.markdownPlugins!()
+      const markdownPlugins = plugin.markdownPlugins!(mockBuildCtx)
       const transformer = markdownPlugins[0]()
 
       const tree = {
@@ -80,7 +87,7 @@ describe('MMLABCTransformer', () => {
 
     it('should escape newlines in MML code', () => {
       const plugin = MMLABCTransformer()
-      const markdownPlugins = plugin.markdownPlugins!()
+      const markdownPlugins = plugin.markdownPlugins!(mockBuildCtx)
       const transformer = markdownPlugins[0]()
 
       const tree = {
@@ -103,7 +110,7 @@ describe('MMLABCTransformer', () => {
 
     it('should escape tabs and carriage returns in MML code', () => {
       const plugin = MMLABCTransformer()
-      const markdownPlugins = plugin.markdownPlugins!()
+      const markdownPlugins = plugin.markdownPlugins!(mockBuildCtx)
       const transformer = markdownPlugins[0]()
 
       const tree = {
@@ -126,7 +133,7 @@ describe('MMLABCTransformer', () => {
 
     it('should escape ampersands and quotes in MML code', () => {
       const plugin = MMLABCTransformer()
-      const markdownPlugins = plugin.markdownPlugins!()
+      const markdownPlugins = plugin.markdownPlugins!(mockBuildCtx)
       const transformer = markdownPlugins[0]()
 
       const tree = {
@@ -150,7 +157,7 @@ describe('MMLABCTransformer', () => {
 
     it('should handle case-insensitive language tags', () => {
       const plugin = MMLABCTransformer()
-      const markdownPlugins = plugin.markdownPlugins!()
+      const markdownPlugins = plugin.markdownPlugins!(mockBuildCtx)
       const transformer = markdownPlugins[0]()
 
       const tree = {
@@ -172,7 +179,7 @@ describe('MMLABCTransformer', () => {
 
     it('should include ARIA attributes for accessibility', () => {
       const plugin = MMLABCTransformer()
-      const markdownPlugins = plugin.markdownPlugins!()
+      const markdownPlugins = plugin.markdownPlugins!(mockBuildCtx)
       const transformer = markdownPlugins[0]()
 
       const tree = {
@@ -196,7 +203,7 @@ describe('MMLABCTransformer', () => {
 
     it('should not transform MML blocks when enableMML is false', () => {
       const plugin = MMLABCTransformer({ enableMML: false })
-      const markdownPlugins = plugin.markdownPlugins!()
+      const markdownPlugins = plugin.markdownPlugins!(mockBuildCtx)
       const transformer = markdownPlugins[0]()
 
       const tree = {
@@ -220,7 +227,7 @@ describe('MMLABCTransformer', () => {
   describe('AST transformation - Chord blocks', () => {
     it('should transform chord blocks to HTML', () => {
       const plugin = MMLABCTransformer()
-      const markdownPlugins = plugin.markdownPlugins!()
+      const markdownPlugins = plugin.markdownPlugins!(mockBuildCtx)
       const transformer = markdownPlugins[0]()
 
       const tree = {
@@ -245,7 +252,7 @@ describe('MMLABCTransformer', () => {
 
     it('should escape HTML special characters in chord code', () => {
       const plugin = MMLABCTransformer()
-      const markdownPlugins = plugin.markdownPlugins!()
+      const markdownPlugins = plugin.markdownPlugins!(mockBuildCtx)
       const transformer = markdownPlugins[0]()
 
       const tree = {
@@ -269,7 +276,7 @@ describe('MMLABCTransformer', () => {
 
     it('should handle case-insensitive chord language tags', () => {
       const plugin = MMLABCTransformer()
-      const markdownPlugins = plugin.markdownPlugins!()
+      const markdownPlugins = plugin.markdownPlugins!(mockBuildCtx)
       const transformer = markdownPlugins[0]()
 
       const tree = {
@@ -291,7 +298,7 @@ describe('MMLABCTransformer', () => {
 
     it('should not transform chord blocks when enableChord is false', () => {
       const plugin = MMLABCTransformer({ enableChord: false })
-      const markdownPlugins = plugin.markdownPlugins!()
+      const markdownPlugins = plugin.markdownPlugins!(mockBuildCtx)
       const transformer = markdownPlugins[0]()
 
       const tree = {
@@ -314,7 +321,7 @@ describe('MMLABCTransformer', () => {
 
     it('should not process chord blocks when enableChord is false', () => {
       const plugin = MMLABCTransformer({ enableChord: false })
-      const markdownPlugins = plugin.markdownPlugins!()
+      const markdownPlugins = plugin.markdownPlugins!(mockBuildCtx)
       const transformer = markdownPlugins[0]()
 
       const tree = {
@@ -336,7 +343,7 @@ describe('MMLABCTransformer', () => {
 
     it('should handle empty chord code', () => {
       const plugin = MMLABCTransformer()
-      const markdownPlugins = plugin.markdownPlugins!()
+      const markdownPlugins = plugin.markdownPlugins!(mockBuildCtx)
       const transformer = markdownPlugins[0]()
 
       const tree = {
@@ -358,7 +365,7 @@ describe('MMLABCTransformer', () => {
 
     it('should escape newlines in chord code', () => {
       const plugin = MMLABCTransformer()
-      const markdownPlugins = plugin.markdownPlugins!()
+      const markdownPlugins = plugin.markdownPlugins!(mockBuildCtx)
       const transformer = markdownPlugins[0]()
 
       const tree = {
@@ -382,7 +389,7 @@ describe('MMLABCTransformer', () => {
   describe('AST transformation - ABC blocks', () => {
     it('should transform ABC blocks to HTML', () => {
       const plugin = MMLABCTransformer()
-      const markdownPlugins = plugin.markdownPlugins!()
+      const markdownPlugins = plugin.markdownPlugins!(mockBuildCtx)
       const transformer = markdownPlugins[0]()
 
       const tree = {
@@ -406,7 +413,7 @@ describe('MMLABCTransformer', () => {
 
     it('should escape HTML special characters in ABC code', () => {
       const plugin = MMLABCTransformer()
-      const markdownPlugins = plugin.markdownPlugins!()
+      const markdownPlugins = plugin.markdownPlugins!(mockBuildCtx)
       const transformer = markdownPlugins[0]()
 
       const tree = {
@@ -429,7 +436,7 @@ describe('MMLABCTransformer', () => {
 
     it('should escape newlines in ABC code', () => {
       const plugin = MMLABCTransformer()
-      const markdownPlugins = plugin.markdownPlugins!()
+      const markdownPlugins = plugin.markdownPlugins!(mockBuildCtx)
       const transformer = markdownPlugins[0]()
 
       const tree = {
@@ -451,7 +458,7 @@ describe('MMLABCTransformer', () => {
 
     it('should handle case-insensitive ABC language tags', () => {
       const plugin = MMLABCTransformer()
-      const markdownPlugins = plugin.markdownPlugins!()
+      const markdownPlugins = plugin.markdownPlugins!(mockBuildCtx)
       const transformer = markdownPlugins[0]()
 
       const tree = {
@@ -473,7 +480,7 @@ describe('MMLABCTransformer', () => {
 
     it('should not transform ABC blocks when enableABC is false', () => {
       const plugin = MMLABCTransformer({ enableABC: false })
-      const markdownPlugins = plugin.markdownPlugins!()
+      const markdownPlugins = plugin.markdownPlugins!(mockBuildCtx)
       const transformer = markdownPlugins[0]()
 
       const tree = {
@@ -495,7 +502,7 @@ describe('MMLABCTransformer', () => {
 
     it('should handle empty ABC code', () => {
       const plugin = MMLABCTransformer()
-      const markdownPlugins = plugin.markdownPlugins!()
+      const markdownPlugins = plugin.markdownPlugins!(mockBuildCtx)
       const transformer = markdownPlugins[0]()
 
       const tree = {
@@ -519,7 +526,7 @@ describe('MMLABCTransformer', () => {
   describe('AST transformation - Multiple blocks', () => {
     it('should transform multiple MML blocks in the same tree', () => {
       const plugin = MMLABCTransformer()
-      const markdownPlugins = plugin.markdownPlugins!()
+      const markdownPlugins = plugin.markdownPlugins!(mockBuildCtx)
       const transformer = markdownPlugins[0]()
 
       const tree = {
@@ -548,7 +555,7 @@ describe('MMLABCTransformer', () => {
 
     it('should transform multiple chord blocks in the same tree', () => {
       const plugin = MMLABCTransformer()
-      const markdownPlugins = plugin.markdownPlugins!()
+      const markdownPlugins = plugin.markdownPlugins!(mockBuildCtx)
       const transformer = markdownPlugins[0]()
 
       const tree = {
@@ -577,7 +584,7 @@ describe('MMLABCTransformer', () => {
 
     it('should transform both MML and chord blocks in the same tree', () => {
       const plugin = MMLABCTransformer()
-      const markdownPlugins = plugin.markdownPlugins!()
+      const markdownPlugins = plugin.markdownPlugins!(mockBuildCtx)
       const transformer = markdownPlugins[0]()
 
       const tree = {
@@ -606,7 +613,7 @@ describe('MMLABCTransformer', () => {
 
     it('should transform MML, chord, and ABC blocks in the same tree', () => {
       const plugin = MMLABCTransformer()
-      const markdownPlugins = plugin.markdownPlugins!()
+      const markdownPlugins = plugin.markdownPlugins!(mockBuildCtx)
       const transformer = markdownPlugins[0]()
 
       const tree = {
@@ -642,7 +649,7 @@ describe('MMLABCTransformer', () => {
 
     it('should not transform non-MML code blocks', () => {
       const plugin = MMLABCTransformer()
-      const markdownPlugins = plugin.markdownPlugins!()
+      const markdownPlugins = plugin.markdownPlugins!(mockBuildCtx)
       const transformer = markdownPlugins[0]()
 
       const tree = {
@@ -672,7 +679,7 @@ describe('MMLABCTransformer', () => {
   describe('External resources', () => {
     it('should include abcjs library from CDN', () => {
       const plugin = MMLABCTransformer()
-      const resources = plugin.externalResources!()
+      const resources = plugin.externalResources!(mockBuildCtx)
 
       expect(resources.js).toBeDefined()
       expect(resources.js!.length).toBeGreaterThan(0)
@@ -685,7 +692,7 @@ describe('MMLABCTransformer', () => {
 
     it('should include CSS for abc-notation class', () => {
       const plugin = MMLABCTransformer()
-      const resources = plugin.externalResources!()
+      const resources = plugin.externalResources!(mockBuildCtx)
 
       expect(resources.css).toBeDefined()
       expect(resources.css!.length).toBeGreaterThan(0)
@@ -695,36 +702,39 @@ describe('MMLABCTransformer', () => {
       expect(css.inline).toBe(true)
     })
 
-    it('should include afterDOMLoaded script', () => {
+    it('should include inline afterDOMReady script', () => {
       const plugin = MMLABCTransformer()
-      const resources = plugin.externalResources!()
+      const resources = plugin.externalResources!(mockBuildCtx)
 
-      expect(resources.afterDOMLoaded).toBeDefined()
-      expect(resources.afterDOMLoaded).toContain('ABCJS')
-      expect(resources.afterDOMLoaded).toContain('mml2abc')
-      expect(resources.afterDOMLoaded).toContain('chord2mml')
-      expect(resources.afterDOMLoaded).toContain('renderAbc')
+      const inlineScript = resources.js!.find(js => js.contentType === 'inline' && js.loadTime === 'afterDOMReady')
+      expect(inlineScript).toBeDefined()
+      expect(inlineScript?.script).toContain('ABCJS')
+      expect(inlineScript?.script).toContain('mml2abc')
+      expect(inlineScript?.script).toContain('chord2mml')
+      expect(inlineScript?.script).toContain('renderAbc')
     })
 
     it('should pin mml2abc to specific commit hash', () => {
       const plugin = MMLABCTransformer()
-      const resources = plugin.externalResources!()
+      const resources = plugin.externalResources!(mockBuildCtx)
 
-      expect(resources.afterDOMLoaded).toContain('c32f3f36022201547b68d76e0307a62a4c2b173b')
+      const inlineScript = resources.js!.find(js => js.contentType === 'inline')
+      expect(inlineScript?.script).toContain('c32f3f36022201547b68d76e0307a62a4c2b173b')
     })
 
     it('should pin chord2mml to specific version', () => {
       const plugin = MMLABCTransformer()
-      const resources = plugin.externalResources!()
+      const resources = plugin.externalResources!(mockBuildCtx)
 
-      expect(resources.afterDOMLoaded).toContain('v0.0.4')
+      const inlineScript = resources.js!.find(js => js.contentType === 'inline')
+      expect(inlineScript?.script).toContain('v0.0.4')
     })
   })
 
   describe('Edge cases', () => {
     it('should handle empty MML code', () => {
       const plugin = MMLABCTransformer()
-      const markdownPlugins = plugin.markdownPlugins!()
+      const markdownPlugins = plugin.markdownPlugins!(mockBuildCtx)
       const transformer = markdownPlugins[0]()
 
       const tree = {
@@ -746,7 +756,7 @@ describe('MMLABCTransformer', () => {
 
     it('should handle code blocks without lang property', () => {
       const plugin = MMLABCTransformer()
-      const markdownPlugins = plugin.markdownPlugins!()
+      const markdownPlugins = plugin.markdownPlugins!(mockBuildCtx)
       const transformer = markdownPlugins[0]()
 
       const tree = {
@@ -766,7 +776,7 @@ describe('MMLABCTransformer', () => {
 
     it('should handle complex MML with all special characters', () => {
       const plugin = MMLABCTransformer()
-      const markdownPlugins = plugin.markdownPlugins!()
+      const markdownPlugins = plugin.markdownPlugins!(mockBuildCtx)
       const transformer = markdownPlugins[0]()
 
       const complexMml = 't120 l4\ncdefg<ab>c\n& "test" \'quote\'\r\n\ttab'

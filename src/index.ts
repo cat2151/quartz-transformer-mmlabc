@@ -1,4 +1,5 @@
 import { visit } from "unist-util-visit"
+import type { Pluggable } from "unified"
 
 // Type definitions for Quartz plugin interface
 interface BuildCtx {
@@ -10,9 +11,9 @@ interface BuildCtx {
 interface QuartzTransformerPluginInstance {
   name: string
   textTransform?: (ctx: BuildCtx, src: string) => string
-  markdownPlugins?: (ctx?: BuildCtx) => any[]
-  htmlPlugins?: (ctx?: BuildCtx) => any[]
-  externalResources?: (ctx?: BuildCtx) => Partial<StaticResources>
+  markdownPlugins?: (ctx: BuildCtx) => Pluggable[]
+  htmlPlugins?: (ctx: BuildCtx) => Pluggable[]
+  externalResources?: (ctx: BuildCtx) => Partial<StaticResources>
 }
 
 interface StaticResources {
@@ -23,7 +24,6 @@ interface StaticResources {
     contentType?: "external" | "inline"
     script?: string
   }>
-  afterDOMLoaded?: string
 }
 
 type QuartzTransformerPlugin<T = undefined> = (
@@ -36,9 +36,15 @@ interface Root {
   children: any[]
 }
 
+/**
+ * Options for MMLABCTransformer plugin
+ */
 interface MMLABCOptions {
+  /** Enable transformation of MML code blocks (default: true) */
   enableMML?: boolean
+  /** Enable transformation of chord code blocks (default: true) */
   enableChord?: boolean
+  /** Enable transformation of ABC code blocks (default: true) */
   enableABC?: boolean
 }
 
@@ -49,8 +55,32 @@ const defaultOptions: MMLABCOptions = {
 }
 
 /**
- * Quartz transformer plugin for converting MML and chord notation to ABC notation
- * and rendering with abcjs
+ * Quartz transformer plugin for converting MML (Music Macro Language), chord progression,
+ * and ABC notation code blocks into interactive sheet music using abcjs.
+ * 
+ * This plugin operates in two stages:
+ * 1. Build-time: Transforms markdown code blocks into HTML divs with data attributes
+ * 2. Browser runtime: Loads CDN libraries, converts notation, and renders interactive SVG
+ * 
+ * @param userOpts - Configuration options for enabling/disabling specific notation types
+ * @returns A Quartz transformer plugin instance
+ * 
+ * @example
+ * ```typescript
+ * import { MMLABCTransformer } from "quartz-transformer-mmlabc"
+ * 
+ * export default {
+ *   plugins: {
+ *     transformers: [
+ *       MMLABCTransformer({
+ *         enableMML: true,
+ *         enableChord: true,
+ *         enableABC: true,
+ *       }),
+ *     ],
+ *   },
+ * }
+ * ```
  */
 export const MMLABCTransformer: QuartzTransformerPlugin<MMLABCOptions | undefined> = (
   userOpts?: MMLABCOptions,
@@ -59,7 +89,7 @@ export const MMLABCTransformer: QuartzTransformerPlugin<MMLABCOptions | undefine
 
   return {
     name: "MMLABCTransformer",
-    markdownPlugins() {
+    markdownPlugins(_ctx: BuildCtx) {
       return [
         () => {
           return (tree: Root, _file: any) => {
@@ -106,7 +136,7 @@ export const MMLABCTransformer: QuartzTransformerPlugin<MMLABCOptions | undefine
         },
       ]
     },
-    externalResources() {
+    externalResources(_ctx: BuildCtx) {
       return {
         js: [
           {
@@ -114,51 +144,10 @@ export const MMLABCTransformer: QuartzTransformerPlugin<MMLABCOptions | undefine
             loadTime: "afterDOMReady",
             contentType: "external",
           },
-        ],
-        css: [
           {
-            content: `
-.abc-notation {
-  margin: 1em 0;
-  padding: 1em;
-  background-color: #f5f5f5;
-  border-radius: 4px;
-  overflow-x: auto;
-  cursor: pointer;
-  position: relative;
-}
-
-.abc-notation svg {
-  max-width: 100%;
-  height: auto;
-}
-
-.abc-notation.playing {
-  background-color: #e8f5e9;
-}
-
-.abc-notation::before {
-  content: "▶ Click to play";
-  position: absolute;
-  top: 0.5em;
-  right: 0.5em;
-  font-size: 0.8em;
-  color: #666;
-  background-color: rgba(255, 255, 255, 0.9);
-  padding: 0.3em 0.6em;
-  border-radius: 3px;
-  pointer-events: none;
-}
-
-.abc-notation.playing::before {
-  content: "🔊 Playing...";
-  color: #2e7d32;
-}
-            `.trim(),
-            inline: true,
-          },
-        ],
-        afterDOMLoaded: `
+            loadTime: "afterDOMReady",
+            contentType: "inline",
+            script: `
 // Initialize abcjs rendering for all ABC notation blocks
 (async function() {
   // Wait for ABCJS to be available
@@ -384,7 +373,52 @@ export const MMLABCTransformer: QuartzTransformerPlugin<MMLABCOptions | undefine
     }
   }
 })();
-        `.trim(),
+            `.trim(),
+          },
+        ],
+        css: [
+          {
+            content: `
+.abc-notation {
+  margin: 1em 0;
+  padding: 1em;
+  background-color: #f5f5f5;
+  border-radius: 4px;
+  overflow-x: auto;
+  cursor: pointer;
+  position: relative;
+}
+
+.abc-notation svg {
+  max-width: 100%;
+  height: auto;
+}
+
+.abc-notation.playing {
+  background-color: #e8f5e9;
+}
+
+.abc-notation::before {
+  content: "▶ Click to play";
+  position: absolute;
+  top: 0.5em;
+  right: 0.5em;
+  font-size: 0.8em;
+  color: #666;
+  background-color: rgba(255, 255, 255, 0.9);
+  padding: 0.3em 0.6em;
+  border-radius: 3px;
+  pointer-events: none;
+}
+
+.abc-notation.playing::before {
+  content: "🔊 Playing...";
+  color: #2e7d32;
+}
+            `.trim(),
+            inline: true,
+          },
+        ],
       }
     },
   }
@@ -392,6 +426,7 @@ export const MMLABCTransformer: QuartzTransformerPlugin<MMLABCOptions | undefine
 
 /**
  * Escape HTML special characters including newlines and whitespace
+ * to prevent XSS vulnerabilities and ensure proper data attribute encoding
  */
 function escapeHtml(text: string): string {
   const map: { [key: string]: string } = {
