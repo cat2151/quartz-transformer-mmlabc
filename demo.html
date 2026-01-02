@@ -170,8 +170,8 @@
                     } else if (type === 'chord') {
                         const chordData = element.getAttribute('data-chord');
                         if (chordData) {
-                            // Dynamically import chord2mml ES module from CDN (pinned to version v0.0.4)
-                            const chord2mmlModule = await import('https://cdn.jsdelivr.net/gh/cat2151/chord2mml@v0.0.4/dist/chord2mml.mjs');
+                            // Dynamically import chord2mml ES module from CDN (pinned to main branch)
+                            const chord2mmlModule = await import('https://cdn.jsdelivr.net/gh/cat2151/chord2mml@main/dist/chord2mml.js');
                             const mmlData = chord2mmlModule.parse(chordData);
                             // Then convert MML to ABC (reuse cached module)
                             if (!mml2abcModule) {

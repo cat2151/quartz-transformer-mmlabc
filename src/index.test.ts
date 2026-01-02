@@ -727,7 +727,7 @@ describe('MMLABCTransformer', () => {
       const resources = plugin.externalResources!(mockBuildCtx)
 
       const inlineScript = resources.js!.find(js => js.contentType === 'inline')
-      expect(inlineScript?.script).toContain('v0.0.4')
+      expect(inlineScript?.script).toContain('chord2mml@main')
     })
   })
 
