@@ -94,3 +94,7 @@ npm install github:cat2151/quartz-transformer-mmlabc
 import { MMLABCTransformer } from "quartz-transformer-mmlabc"
 transformers: [MMLABCTransformer()]
 ```
+
+# プルリクエストとレビュー
+- プルリクエストは日本語で記述してください
+- レビューは日本語で記述してください
