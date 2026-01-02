@@ -1,6 +1,8 @@
 # quartz-transformer-mmlabc
 
-MML（Music Macro Language）とコード進行記法のコードブロックを、abcjsを使用してインタラクティブな楽譜に変換するQuartzトランスフォーマープラグインです。
+MML（Music Macro Language）とコード進行記法のコードブロックを、abcjsを使用してインタラクティブな楽譜に変換するQuartzトランスフォーマープラグイン
+
+※このドキュメントは仮で、取り急ぎLLMで生成されました。今後修正していきます
 
 ## 機能
 
@@ -188,10 +190,6 @@ quartz-transformer-mmlabc/
 ## ライセンス
 
 MIT
-
-## コントリビューション
-
-コントリビューションを歓迎します！お気軽にPull Requestをお送りください。
 
 ## 関連プロジェクト
 
