@@ -446,6 +446,10 @@ export const MMLABCTransformer: QuartzTransformerPlugin<MMLABCOptions | undefine
 }
 
 /* Dark mode support */
+/* Note: CSS variable definitions are intentionally duplicated to support both:
+   1. System-level dark mode via media query (prefers-color-scheme)
+   2. Quartz-specific dark mode implementations (data-theme, .dark class)
+   This ensures compatibility with different Quartz configurations */
 @media (prefers-color-scheme: dark) {
   .abc-notation {
     --abc-bg: #2d2d2d;
