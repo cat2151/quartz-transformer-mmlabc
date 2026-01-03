@@ -10,6 +10,9 @@
             --body-color: #333;
             --section-border: #ddd;
             --heading-color: #333;
+            --theme-toggle-bg: #4CAF50;
+            --theme-toggle-hover-bg: #45a049;
+            --theme-toggle-color: #ffffff;
         }
 
         [data-theme="dark"] {
@@ -17,6 +20,9 @@
             --body-color: #e0e0e0;
             --section-border: #444;
             --heading-color: #e0e0e0;
+            --theme-toggle-bg: #388E3C;
+            --theme-toggle-hover-bg: #2E7D32;
+            --theme-toggle-color: #ffffff;
         }
 
         body {
@@ -39,16 +45,17 @@
             top: 20px;
             right: 20px;
             padding: 0.5em 1em;
-            background-color: #4CAF50;
-            color: white;
+            background-color: var(--theme-toggle-bg);
+            color: var(--theme-toggle-color);
             border: none;
             border-radius: 4px;
             cursor: pointer;
             font-size: 1em;
             z-index: 1000;
+            transition: background-color 0.3s;
         }
         .theme-toggle:hover {
-            background-color: #45a049;
+            background-color: var(--theme-toggle-hover-bg);
         }
 
         /* ABC notation styles with dark mode support */
