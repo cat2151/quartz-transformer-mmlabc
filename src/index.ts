@@ -405,7 +405,7 @@ export const MMLABCTransformer: QuartzTransformerPlugin<MMLABCOptions | undefine
 .abc-notation {
   margin: 1em 0;
   padding: 1em;
-  background-color: #f5f5f5;
+  background-color: var(--abc-bg, #f5f5f5);
   border-radius: 4px;
   overflow-x: auto;
   cursor: pointer;
@@ -417,8 +417,14 @@ export const MMLABCTransformer: QuartzTransformerPlugin<MMLABCOptions | undefine
   height: auto;
 }
 
+/* Override abcjs default colors for dark mode compatibility */
+.abc-notation svg path,
+.abc-notation svg text {
+  fill: var(--abc-svg-color, #000);
+}
+
 .abc-notation.playing {
-  background-color: #e8f5e9;
+  background-color: var(--abc-playing-bg, #e8f5e9);
 }
 
 .abc-notation::before {
@@ -427,8 +433,8 @@ export const MMLABCTransformer: QuartzTransformerPlugin<MMLABCOptions | undefine
   top: 0.5em;
   right: 0.5em;
   font-size: 0.8em;
-  color: #666;
-  background-color: rgba(255, 255, 255, 0.9);
+  color: var(--abc-label-color, #666);
+  background-color: var(--abc-label-bg, rgba(255, 255, 255, 0.9));
   padding: 0.3em 0.6em;
   border-radius: 3px;
   pointer-events: none;
@@ -436,7 +442,35 @@ export const MMLABCTransformer: QuartzTransformerPlugin<MMLABCOptions | undefine
 
 .abc-notation.playing::before {
   content: "🔊 Playing...";
-  color: #2e7d32;
+  color: var(--abc-playing-label-color, #2e7d32);
+}
+
+/* Dark mode support */
+/* Note: CSS variable definitions are intentionally duplicated to support both:
+   1. System-level dark mode via media query (prefers-color-scheme)
+   2. Quartz-specific dark mode implementations (data-theme, .dark class)
+   This ensures compatibility with different Quartz configurations */
+@media (prefers-color-scheme: dark) {
+  .abc-notation {
+    --abc-bg: #2d2d2d;
+    --abc-playing-bg: #1a3a1a;
+    --abc-label-color: #aaa;
+    --abc-label-bg: rgba(50, 50, 50, 0.9);
+    --abc-playing-label-color: #4caf50;
+    --abc-svg-color: #e0e0e0;
+  }
+}
+
+/* Quartz-specific dark mode support (if Quartz uses data-theme or class) */
+:root[data-theme="dark"] .abc-notation,
+.dark .abc-notation,
+html.dark .abc-notation {
+  --abc-bg: #2d2d2d;
+  --abc-playing-bg: #1a3a1a;
+  --abc-label-color: #aaa;
+  --abc-label-bg: rgba(50, 50, 50, 0.9);
+  --abc-playing-label-color: #4caf50;
+  --abc-svg-color: #e0e0e0;
 }
             `.trim(),
             inline: true,

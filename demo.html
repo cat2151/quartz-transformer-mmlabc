@@ -5,20 +5,64 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>MML ABC Transformer Demo - MML, Chord, and ABC Notation</title>
     <style>
+        :root {
+            --body-bg: #ffffff;
+            --body-color: #333;
+            --section-border: #ddd;
+            --heading-color: #333;
+            --theme-toggle-bg: #4CAF50;
+            --theme-toggle-hover-bg: #45a049;
+            --theme-toggle-color: #ffffff;
+        }
+
+        [data-theme="dark"] {
+            --body-bg: #1a1a1a;
+            --body-color: #e0e0e0;
+            --section-border: #444;
+            --heading-color: #e0e0e0;
+            --theme-toggle-bg: #388E3C;
+            --theme-toggle-hover-bg: #2E7D32;
+            --theme-toggle-color: #ffffff;
+        }
+
         body {
             font-family: Arial, sans-serif;
             max-width: 800px;
             margin: 0 auto;
             padding: 20px;
             line-height: 1.6;
+            background-color: var(--body-bg);
+            color: var(--body-color);
+            transition: background-color 0.3s, color 0.3s;
         }
-        h1 {
-            color: #333;
+        h1, h2 {
+            color: var(--heading-color);
         }
+        
+        /* Theme toggle button */
+        .theme-toggle {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 0.5em 1em;
+            background-color: var(--theme-toggle-bg);
+            color: var(--theme-toggle-color);
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 1em;
+            z-index: 1000;
+            transition: background-color 0.3s;
+        }
+        .theme-toggle:hover {
+            background-color: var(--theme-toggle-hover-bg);
+        }
+
+        /* ABC notation styles with dark mode support */
         .abc-notation {
             margin: 1em 0;
             padding: 1em;
-            background-color: #f5f5f5;
+            background-color: var(--abc-bg, #f5f5f5);
             border-radius: 4px;
             overflow-x: auto;
             cursor: pointer;
@@ -28,8 +72,12 @@
             max-width: 100%;
             height: auto;
         }
+        .abc-notation svg path,
+        .abc-notation svg text {
+            fill: var(--abc-svg-color, #000);
+        }
         .abc-notation.playing {
-            background-color: #e8f5e9;
+            background-color: var(--abc-playing-bg, #e8f5e9);
         }
         .abc-notation::before {
             content: "▶ Click to play";
@@ -37,16 +85,27 @@
             top: 0.5em;
             right: 0.5em;
             font-size: 0.8em;
-            color: #666;
-            background-color: rgba(255, 255, 255, 0.9);
+            color: var(--abc-label-color, #666);
+            background-color: var(--abc-label-bg, rgba(255, 255, 255, 0.9));
             padding: 0.3em 0.6em;
             border-radius: 3px;
             pointer-events: none;
         }
         .abc-notation.playing::before {
             content: "🔊 Playing...";
-            color: #2e7d32;
+            color: var(--abc-playing-label-color, #2e7d32);
         }
+
+        /* Dark mode overrides */
+        [data-theme="dark"] .abc-notation {
+            --abc-bg: #2d2d2d;
+            --abc-playing-bg: #1a3a1a;
+            --abc-label-color: #aaa;
+            --abc-label-bg: rgba(50, 50, 50, 0.9);
+            --abc-playing-label-color: #4caf50;
+            --abc-svg-color: #e0e0e0;
+        }
+
         .source-code {
             background-color: #2d2d2d;
             color: #f8f8f2;
@@ -58,15 +117,18 @@
         .section {
             margin: 2em 0;
             padding: 1em;
-            border: 1px solid #ddd;
+            border: 1px solid var(--section-border);
             border-radius: 4px;
         }
     </style>
 </head>
 <body>
+    <button class="theme-toggle" onclick="toggleTheme()">🌓 Toggle Dark Mode</button>
+    
     <h1>MML ABC Transformer Demo</h1>
     
     <p>This page demonstrates the MML, Chord, and ABC notation transformation to ABC notation and rendering with abcjs.</p>
+    <p><strong>Try toggling dark mode using the button in the top right corner!</strong></p>
     
     <div class="section">
         <h2>Example 1: Simple Melody</h2>
@@ -356,6 +418,28 @@
                 }
             }
         })();
+    </script>
+
+    <!-- Theme toggle script -->
+    <script>
+        // Initialize theme from localStorage or system preference
+        function initTheme() {
+            const savedTheme = localStorage.getItem('theme');
+            const systemPrefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+            const theme = savedTheme || (systemPrefersDark ? 'dark' : 'light');
+            document.documentElement.setAttribute('data-theme', theme);
+        }
+
+        // Toggle theme
+        function toggleTheme() {
+            const currentTheme = document.documentElement.getAttribute('data-theme');
+            const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+            document.documentElement.setAttribute('data-theme', newTheme);
+            localStorage.setItem('theme', newTheme);
+        }
+
+        // Initialize theme on page load
+        initTheme();
     </script>
 </body>
 </html>
