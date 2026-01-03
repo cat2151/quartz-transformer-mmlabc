@@ -158,7 +158,7 @@ export const MMLABCTransformer: QuartzTransformerPlugin<MMLABCOptions | undefine
       return {
         js: [
           {
-            src: "https://cdn.jsdelivr.net/npm/abcjs@6.4.0/dist/abcjs-basic-min.js",
+            src: "https://cdn.jsdelivr.net/npm/abcjs@6/dist/abcjs-basic-min.min.js",
             loadTime: "afterDOMReady",
             contentType: "external",
           },
@@ -201,21 +201,23 @@ export const MMLABCTransformer: QuartzTransformerPlugin<MMLABCOptions | undefine
       if (type === 'mml') {
         const mmlData = element.getAttribute('data-mml');
         if (mmlData) {
-          // Dynamically import mml2abc ES module from CDN (pinned to specific commit)
+          // Dynamically import mml2abc ES module from CDN
+          // Version specified by @cat2151 based on verified compatibility in easychord2mml
           if (!mml2abcModule) {
-            mml2abcModule = await import('https://cdn.jsdelivr.net/gh/cat2151/mml2abc@c32f3f36022201547b68d76e0307a62a4c2b173b/dist/mml2abc.mjs');
+            mml2abcModule = await import('https://cdn.jsdelivr.net/gh/cat2151/mml2abc/dist/mml2abc.mjs');
           }
           abcNotation = mml2abcModule.parse(mmlData);
         }
       } else if (type === 'chord') {
         const chordData = element.getAttribute('data-chord');
         if (chordData) {
-          // Dynamically import chord2mml ES module from CDN (pinned to version v0.0.4)
-          const chord2mmlModule = await import('https://cdn.jsdelivr.net/gh/cat2151/chord2mml@v0.0.4/dist/chord2mml.mjs');
+          // Dynamically import chord2mml ES module from CDN
+          // Version specified by @cat2151 based on verified compatibility in easychord2mml
+          const chord2mmlModule = await import('https://cdn.jsdelivr.net/gh/cat2151/chord2mml/dist/chord2mml.js');
           const mmlData = chord2mmlModule.parse(chordData);
           // Then convert MML to ABC (reuse cached module)
           if (!mml2abcModule) {
-            mml2abcModule = await import('https://cdn.jsdelivr.net/gh/cat2151/mml2abc@c32f3f36022201547b68d76e0307a62a4c2b173b/dist/mml2abc.mjs');
+            mml2abcModule = await import('https://cdn.jsdelivr.net/gh/cat2151/mml2abc/dist/mml2abc.mjs');
           }
           abcNotation = mml2abcModule.parse(mmlData);
         }

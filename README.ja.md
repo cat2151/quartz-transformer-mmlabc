@@ -151,7 +151,7 @@ MMLABCTransformer({
 - ✅ コード進行ブロックの検出と変換
 - ✅ ABCブロックの検出と直接レンダリング（トラブルシューティングに便利）
 - ✅ abcjsを使用したABC記法のレンダリング（五線譜の表示）
-- ✅ CDN依存関係を特定のコミットハッシュに固定
+- ✅ CDN依存関係は@cat2151により動作確認済みのバージョンを使用
 - ✅ インタラクティブな音声再生機能（楽譜をクリックして楽曲を先頭から演奏）
   - abcjs synth APIとWeb Audio APIを使用
   - 再生中の視覚的フィードバック（背景色の変更とステータス表示）
@@ -162,8 +162,10 @@ MMLABCTransformer({
 
 - HTMLへの変換はQuartzのビルドプロセス中に行われます
 - 実際の楽譜の変換とレンダリングはブラウザ内で行われます
-- MMLからABCへの変換は、CDNから読み込まれるmml2abcを使用します（コミット`c32f3f3`に固定）
-- レンダリングにはCDNから読み込まれるabcjsを使用します
+- CDNライブラリのバージョンは、@cat2151 によりeasychord2mmlでの動作確認に基づいて指定されています
+- MMLからABCへの変換は、CDNから読み込まれるmml2abcを使用します
+- コード進行からMMLへの変換は、CDNから読み込まれるchord2mmlを使用します
+- レンダリングにはCDNから読み込まれるabcjs（バージョン6系の最新）を使用します
 - バンドルの問題を避けるため、ライブラリは動的に読み込まれます
 
 ## テスト
@@ -199,8 +201,15 @@ npm run test:ui
 ## 依存関係
 
 ### ランタイム（CDN経由で読み込み）
+
+**重要**: 以下のライブラリバージョンは、@cat2151 により[easychord2mml](https://github.com/cat2151/easychord2mml/blob/main/index.html)での動作確認に基づいて強く指定されています。これらのURLを変更しないでください。
+
 - [abcjs](https://github.com/paulrosen/abcjs) - ABC音楽記法をレンダリングするJavaScriptライブラリ
+  - CDN: `https://cdn.jsdelivr.net/npm/abcjs@6/dist/abcjs-basic-min.min.js`
 - [mml2abc](https://github.com/cat2151/mml2abc) - Music Macro LanguageをABC記法に変換
+  - CDN: `https://cdn.jsdelivr.net/gh/cat2151/mml2abc/dist/mml2abc.mjs`
+- [chord2mml](https://github.com/cat2151/chord2mml) - コード進行記法をMMLに変換
+  - CDN: `https://cdn.jsdelivr.net/gh/cat2151/chord2mml/dist/chord2mml.js`
 
 ### ビルド時
 - [unified](https://github.com/unifiedjs/unified) - コンテンツの解析と変換のためのインターフェース
