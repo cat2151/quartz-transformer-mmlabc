@@ -487,7 +487,7 @@ export const MMLABCTransformer: QuartzTransformerPlugin<MMLABCOptions | undefine
   overflow-x: auto;
   cursor: pointer;
   position: relative;
-  max-width: 100%;
+  max-width: 95%;
 }
 
 /* Let SVG use full container width */
