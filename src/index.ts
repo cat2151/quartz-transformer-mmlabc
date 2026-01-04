@@ -230,10 +230,18 @@ export const MMLABCTransformer: QuartzTransformerPlugin<MMLABCOptions | undefine
       }
       
       if (abcNotation) {
+        // コンテナのサイズに基づいて五線譜の幅をレスポンシブに計算
+        const containerWidth = element.offsetWidth || element.clientWidth || 600;
+        // .abc-notation の padding: 1em は左右で合計2em（約32px）
+        // フォントサイズが16pxと仮定すると、2em ≈ 32px + 安全マージン約8px = 40px
+        const availableWidth = containerWidth - 40;
+        // 最小300px、最大800pxの範囲に制限
+        const staffWidth = Math.min(Math.max(availableWidth, 300), 800);
+        
         // Render the ABC notation with abcjs
         const visualObj = ABCJS.renderAbc(element, abcNotation, {
           responsive: 'resize',
-          staffwidth: 600,
+          staffwidth: staffWidth,
           scale: 1.0
         });
         
