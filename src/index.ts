@@ -436,6 +436,7 @@ export const MMLABCTransformer: QuartzTransformerPlugin<MMLABCOptions | undefine
   position: relative;
 }
 
+/* Limit SVG width to 80% to prevent overflow beyond container with padding */
 .abc-notation svg {
   max-width: 80%;
   height: auto;
