@@ -240,7 +240,7 @@
                                     const script = document.createElement('script');
                                     script.src = 'https://cdn.jsdelivr.net/gh/cat2151/chord2mml/dist/chord2mml.js';
                                     script.onload = resolve;
-                                    script.onerror = reject;
+                                    script.onerror = (error) => reject(new Error('Failed to load chord2mml: ' + (error instanceof ErrorEvent ? error.message : 'Unknown error')));
                                     document.head.appendChild(script);
                                 });
                             }
