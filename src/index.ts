@@ -179,6 +179,9 @@ export const MMLABCTransformer: QuartzTransformerPlugin<MMLABCOptions | undefine
   // Cache the mml2abc module to avoid duplicate imports
   let mml2abcModule = null;
   
+  // Cache the chord2mml loading promise to avoid race conditions
+  let chord2mmlLoadPromise = null;
+  
   // Global synth instance for audio playback
   let currentSynth = null;
   let currentPlayingElement = null;
@@ -214,13 +217,18 @@ export const MMLABCTransformer: QuartzTransformerPlugin<MMLABCOptions | undefine
           // Load chord2mml as a script (UMD bundle, not ES module)
           // Version specified by @cat2151 based on verified compatibility in easychord2mml
           if (typeof window.chord2mml === 'undefined') {
-            await new Promise((resolve, reject) => {
-              const script = document.createElement('script');
-              script.src = 'https://cdn.jsdelivr.net/gh/cat2151/chord2mml/dist/chord2mml.js';
-              script.onload = resolve;
-              script.onerror = (error) => reject(new Error(\`Failed to load chord2mml: \${error instanceof ErrorEvent ? error.message : 'Unknown error'}\`));
-              document.head.appendChild(script);
-            });
+            if (!chord2mmlLoadPromise) {
+              chord2mmlLoadPromise = new Promise((resolve, reject) => {
+                const script = document.createElement('script');
+                script.src = 'https://cdn.jsdelivr.net/gh/cat2151/chord2mml/dist/chord2mml.js';
+                script.integrity = 'sha384-s0MWjnJMkG/kT19h1SE4UrQ7YZ0eSnBKYgzstrrpAsrHer1g6ZqgCJJbmj0zTIcz';
+                script.crossOrigin = 'anonymous';
+                script.onload = resolve;
+                script.onerror = () => reject(new Error('Failed to load chord2mml script'));
+                document.head.appendChild(script);
+              });
+            }
+            await chord2mmlLoadPromise;
           }
           const mmlData = window.chord2mml.parse(chordData);
           // Then convert MML to ABC (reuse cached module)
