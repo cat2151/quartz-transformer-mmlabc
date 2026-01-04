@@ -238,16 +238,12 @@ export const MMLABCTransformer: QuartzTransformerPlugin<MMLABCOptions | undefine
   updateNotationTheme(initialIsDark);
 
   // 2) Listen for Quartz theme changes
-  // Use a flag to prevent duplicate event listeners
-  if (!window.__mmlabcThemeListenerAdded) {
-    window.__mmlabcThemeListenerAdded = true;
-    document.addEventListener('themechange', (e) => {
-      const theme = e.detail?.theme;
-      if (theme === 'dark' || theme === 'light') {
-        updateNotationTheme(theme === 'dark');
-      }
-    });
-  }
+  document.addEventListener('themechange', (e) => {
+    const theme = e.detail?.theme;
+    if (theme === 'dark' || theme === 'light') {
+      updateNotationTheme(theme === 'dark');
+    }
+  });
 
   // Process all abc-notation blocks
   const blocks = document.querySelectorAll('.abc-notation');
