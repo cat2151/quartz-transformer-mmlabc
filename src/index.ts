@@ -238,12 +238,16 @@ export const MMLABCTransformer: QuartzTransformerPlugin<MMLABCOptions | undefine
   updateNotationTheme(initialIsDark);
 
   // 2) Listen for Quartz theme changes
-  document.addEventListener('themechange', (e) => {
-    const theme = e.detail?.theme;
-    if (theme === 'dark' || theme === 'light') {
-      updateNotationTheme(theme === 'dark');
-    }
-  });
+  // Use a flag to prevent duplicate event listeners
+  if (!window.__mmlabcThemeListenerAdded) {
+    window.__mmlabcThemeListenerAdded = true;
+    document.addEventListener('themechange', (e) => {
+      const theme = e.detail?.theme;
+      if (theme === 'dark' || theme === 'light') {
+        updateNotationTheme(theme === 'dark');
+      }
+    });
+  }
 
   // Process all abc-notation blocks
   const blocks = document.querySelectorAll('.abc-notation');
@@ -528,7 +532,12 @@ export const MMLABCTransformer: QuartzTransformerPlugin<MMLABCOptions | undefine
    1. System-level dark mode via media query (prefers-color-scheme)
    2. Quartz-specific dark mode implementations (data-theme, .dark class)
    3. Dynamic class-based theme switching via JavaScript
-   This ensures compatibility with different Quartz configurations */
+   This ensures compatibility with different Quartz configurations.
+   
+   The duplication is intentional rather than using root-level custom properties because:
+   - Higher specificity ensures theme styles override defaults reliably
+   - Each method (media query, data-theme, class-based) may be used independently
+   - Simpler to maintain as a self-contained plugin without affecting global styles */
 @media (prefers-color-scheme: dark) {
   .abc-notation {
     --abc-bg: #2d2d2d;
