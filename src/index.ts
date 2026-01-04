@@ -436,8 +436,9 @@ export const MMLABCTransformer: QuartzTransformerPlugin<MMLABCOptions | undefine
   position: relative;
 }
 
+/* Limit SVG width to account for container padding (1em left + 1em right = 2em total) */
 .abc-notation svg {
-  max-width: 100%;
+  max-width: calc(100% - 2em);
   height: auto;
 }
 
