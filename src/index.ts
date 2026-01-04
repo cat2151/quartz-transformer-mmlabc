@@ -231,10 +231,10 @@ export const MMLABCTransformer: QuartzTransformerPlugin<MMLABCOptions | undefine
       
       if (abcNotation) {
         // Calculate responsive staff width based on container
-        // Get the container width and subtract padding (2em = ~32px)
+        // Get the container width and subtract padding
         const containerWidth = element.offsetWidth || element.clientWidth || 600;
-        // Subtract padding (1em on each side, typically 16px each = 32px total)
-        // Also leave some margin for safety
+        // Subtract padding (1em on each side) plus safety margin
+        // Assuming typical font-size: 1em ≈ 16px, so 2em + margin ≈ 40px
         const availableWidth = containerWidth - 40;
         // Set reasonable min/max bounds
         const staffWidth = Math.min(Math.max(availableWidth, 300), 800);
