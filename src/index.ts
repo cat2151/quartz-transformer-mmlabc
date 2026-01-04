@@ -211,10 +211,18 @@ export const MMLABCTransformer: QuartzTransformerPlugin<MMLABCOptions | undefine
       } else if (type === 'chord') {
         const chordData = element.getAttribute('data-chord');
         if (chordData) {
-          // Dynamically import chord2mml ES module from CDN
+          // Load chord2mml as a script (UMD bundle, not ES module)
           // Version specified by @cat2151 based on verified compatibility in easychord2mml
-          const chord2mmlModule = await import('https://cdn.jsdelivr.net/gh/cat2151/chord2mml/dist/chord2mml.js');
-          const mmlData = chord2mmlModule.parse(chordData);
+          if (typeof window.chord2mml === 'undefined') {
+            await new Promise((resolve, reject) => {
+              const script = document.createElement('script');
+              script.src = 'https://cdn.jsdelivr.net/gh/cat2151/chord2mml/dist/chord2mml.js';
+              script.onload = resolve;
+              script.onerror = reject;
+              document.head.appendChild(script);
+            });
+          }
+          const mmlData = window.chord2mml.parse(chordData);
           // Then convert MML to ABC (reuse cached module)
           if (!mml2abcModule) {
             mml2abcModule = await import('https://cdn.jsdelivr.net/gh/cat2151/mml2abc/dist/mml2abc.mjs');
