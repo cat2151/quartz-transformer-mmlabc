@@ -731,6 +731,28 @@ describe('MMLABCTransformer', () => {
       expect(inlineScript?.script).toContain('cat2151/chord2mml/dist/chord2mml.js')
       expect(inlineScript?.script).not.toContain('chord2mml@')
     })
+
+    it('should include theme detection and switching code', () => {
+      const plugin = MMLABCTransformer()
+      const resources = plugin.externalResources!(mockBuildCtx)
+
+      const inlineScript = resources.js!.find(js => js.contentType === 'inline')
+      expect(inlineScript?.script).toContain('updateNotationTheme')
+      expect(inlineScript?.script).toContain('getQuartzTheme')
+      expect(inlineScript?.script).toContain('themechange')
+      expect(inlineScript?.script).toContain('theme-dark')
+      expect(inlineScript?.script).toContain('theme-light')
+    })
+
+    it('should include dynamic theme classes in CSS', () => {
+      const plugin = MMLABCTransformer()
+      const resources = plugin.externalResources!(mockBuildCtx)
+
+      const css = resources.css![0]
+      expect(css.content).toContain('.abc-notation.theme-dark')
+      expect(css.content).toContain('.abc-notation.theme-light')
+      expect(css.content).toContain('Dynamic theme classes')
+    })
   })
 
   describe('Edge cases', () => {
