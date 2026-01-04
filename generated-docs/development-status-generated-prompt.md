@@ -1,4 +1,4 @@
-Last updated: 2026-01-04
+Last updated: 2026-01-05
 
 # 開発状況生成プロンプト（開発者向け）
 
@@ -212,6 +212,12 @@ Last updated: 2026-01-04
 - issue-notes/24.md
 - issue-notes/25.md
 - issue-notes/26.md
+- issue-notes/31.md
+- issue-notes/32.md
+- issue-notes/33.md
+- issue-notes/34.md
+- issue-notes/38.md
+- issue-notes/40.md
 - package-lock.json
 - package.json
 - playwright.config.ts
@@ -224,16 +230,16 @@ Last updated: 2026-01-04
 - vitest.config.ts
 
 ## 現在のオープンIssues
-## [Issue #25](../issue-notes/25.md): 五線譜表示の横幅が大きすぎて少しはみ出す。横幅を調整する方法を検討する
-[issue-notes/25.md](https://github.com/cat2151/quartz-transformer-mmlabc/blob/main/issue-notes/25.md)
+## [Issue #31](../issue-notes/31.md): ドッグフーディングする
+[issue-notes/31.md](https://github.com/cat2151/quartz-transformer-mmlabc/blob/main/issue-notes/31.md)
 
 ...
 ラベル: 
---- issue-notes/25.md の内容 ---
+--- issue-notes/31.md の内容 ---
 
 ```markdown
-# issue 五線譜表示の横幅が大きすぎて少しはみ出す。横幅を調整する方法を検討する #25
-[issues #25](https://github.com/cat2151/quartz-transformer-mmlabc/issues/25)
+# issue ドッグフーディングする #31
+[issues #31](https://github.com/cat2151/quartz-transformer-mmlabc/issues/31)
 
 
 
@@ -424,39 +430,11 @@ jobs:
 {% endraw %}
 ```
 
-### .github/actions-tmp/issue-notes/25.md
+### issue-notes/31.md
 ```md
 {% raw %}
-# issue project summaryを他projectからcallしたところ、issue-notes参照ディレクトリ誤りが発覚した #25
-[issues #25](https://github.com/cat2151/github-actions/issues/25)
-
-# 事象
-- `Issueノートが存在しません: /home/runner/work/tonejs-mml-to-json/tonejs-mml-to-json/.github/actions-tmp/issue-notes/6.md`
-
-# どうする？
-- 当該処理のディレクトリ部分を確認する
-- 日次バッチでGeminiに確認させてみる
-- 結果
-    - Geminiに確認させてpromptを生成させ、agentに投げた
-    - 結果、projectRootの扱いの誤り、と判明
-        - 共通workflow側のdirを引数でわたしてしまっていた
-        - target repository側のdirを引数でわたすべき
-- 修正したつもり
-- 次の日次バッチで動作確認させるつもり
-
-# 結果
-- test green
-
-# closeとする
-
-{% endraw %}
-```
-
-### issue-notes/25.md
-```md
-{% raw %}
-# issue 五線譜表示の横幅が大きすぎて少しはみ出す。横幅を調整する方法を検討する #25
-[issues #25](https://github.com/cat2151/quartz-transformer-mmlabc/issues/25)
+# issue ドッグフーディングする #31
+[issues #31](https://github.com/cat2151/quartz-transformer-mmlabc/issues/31)
 
 
 
@@ -465,36 +443,29 @@ jobs:
 
 ## 最近の変更（過去7日間）
 ### コミット履歴:
-b139b1a Merge pull request #29 from cat2151/copilot/fix-dark-mode-display-issue
-d2ed815 Make theme toggle button colors adaptive to dark mode using CSS variables
-2c2c398 Add comment explaining intentional CSS duplication for dark mode compatibility
-4c4907f Implement dark mode support with CSS variables and media queries
-2668387 Initial plan
-cd25e1d Auto-translate README.ja.md to README.md [auto]
-84a78f2 Merge pull request #28 from cat2151/copilot/fix-chord2mml-404-error
-82e35e4 Revert to verified .min.min.js version as specified by @cat2151
-d586189 Fix abcjs URL to use standard single .min extension
-6a0c989 Update project summaries (overview & development status) [auto]
+fce90c7 Auto-translate README.ja.md to README.md [auto]
+f9b227f Update README.ja.md with project status
+6235881 Auto-translate README.ja.md to README.md [auto]
+3542071 Merge branch 'main' of github.com:cat2151/quartz-transformer-mmlabc into main
+92b4f2a インストール手順追加、応急対策
+59dcd2d Merge pull request #41 from cat2151/copilot/fix-container-width-issue
+1fd5ab1 Fix container width overflow by reducing max-width from 100% to 95%
+ad7fe53 Initial plan
+a1e974d Add issue note for #40 [auto]
+f1394d5 Merge pull request #39 from cat2151/copilot/fix-staff-size-issue
 
 ### 変更されたファイル:
-.gitignore
 README.ja.md
 README.md
 demo.html
-generated-docs/development-status-generated-prompt.md
-generated-docs/development-status.md
-generated-docs/project-overview-generated-prompt.md
-generated-docs/project-overview.md
-package-lock.json
-package.json
-playwright.config.ts
+issue-notes/32.md
+issue-notes/33.md
+issue-notes/34.md
+issue-notes/38.md
+issue-notes/40.md
 src/index.test.ts
 src/index.ts
-test/README.md
-test/integration-test.html
-test/integration.test.ts
-vitest.config.ts
 
 
 ---
-Generated at: 2026-01-04 07:01:46 JST
+Generated at: 2026-01-05 07:01:29 JST

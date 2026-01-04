@@ -1,4 +1,4 @@
-Last updated: 2026-01-04
+Last updated: 2026-01-05
 
 
 # プロジェクト概要生成プロンプト（来訪者向け）
@@ -67,6 +67,11 @@ MML（Music Macro Language）とコード進行記法のコードブロックを
 
 ※このドキュメントは仮で、取り急ぎLLMで生成されました。今後修正していきます
 
+## 状況
+- 一通り実装しました
+- ドッグフーディング中です
+- 破壊的変更をする可能性があります
+
 ## 機能
 
 - 🎵 `mml`コードブロックをABC記法に変換し、abcjsでレンダリング
@@ -79,33 +84,25 @@ MML（Music Macro Language）とコード進行記法のコードブロックを
 
 ## インストール
 
-このパッケージはnpmに公開されていないため、GitHubから直接インストールしてください：
+Quartzをインストールしたディレクトリにて以下を実行してください
 
-```bash
-npm install github:cat2151/quartz-transformer-mmlabc
-```
-
-またはyarnを使用する場合：
-
-```bash
-yarn add github:cat2151/quartz-transformer-mmlabc
-```
-
-## ビルド
-
-**⚠️ 重要:** インストール後、`dist`ディレクトリを生成するためにプラグインをビルドする必要があります：
-
-```bash
-cd node_modules/quartz-transformer-mmlabc
-npm run build
+```powershell
+npm install github:cat2151/quartz-transformer-mmlabc; pushd node_modules/quartz-transformer-mmlabc; npm run build; popd
 ```
 
 この手順が必要な理由：
 - プラグインはGitHubから直接インストールされます（npmからではありません）
 - コンパイルされたJavaScriptを含む`dist`ディレクトリはリポジトリに含まれていません
-- ビルドプロセスがTypeScriptソースファイルを必要なJavaScriptファイルにコンパイルします
+- この手順をスキップすると、プラグインのエントリーポイント（`dist/index.js`）が存在しないため、Quartzの実行時にエラーが発生します。
 
-この手順をスキップすると、プラグインのエントリーポイント（`dist/index.js`）が存在しないため、Quartzの実行時にエラーが発生します。
+さらに、`.github\workflows\deploy.yml` の `Build Quartz`の前に、以下を追加してください
+```yml
+      - name: Build quartz-transformer-mmlabc
+        run: npm run build
+        working-directory: node_modules/quartz-transformer-mmlabc
+```
+この手順が必要な理由：
+- GitHub Actionsでのdeploy時に、これがないと、プラグインのエントリーポイント（`dist/index.js`）が存在しないため、`Build Quartz`時にエラーが発生します。
 
 ## 使い方
 
@@ -345,6 +342,12 @@ MIT
   📖 24.md
   📖 25.md
   📖 26.md
+  📖 31.md
+  📖 32.md
+  📖 33.md
+  📖 34.md
+  📖 38.md
+  📖 40.md
 📊 package-lock.json
 📊 package.json
 📘 playwright.config.ts
@@ -359,7 +362,7 @@ MIT
 📘 vitest.config.ts
 
 ## ファイル詳細分析
-**demo.html** (446行, 21133バイト)
+**demo.html** (486行, 23364バイト)
   - 関数: なし
   - インポート: なし
 
@@ -367,12 +370,12 @@ MIT
   - 関数: なし
   - インポート: @playwright/test
 
-**src/index.test.ts** (810行, 23200バイト)
+**src/index.test.ts** (832行, 24175バイト)
   - 関数: なし
   - インポート: vitest, ./index
 
-**src/index.ts** (502行, 17037バイト)
-  - 関数: escapeHtml, handlePlayback, cleanup, checkPlaybackStatus, markdownPlugins, if, externalResources, blocks, for, function, catch, addEventListener, media
+**src/index.ts** (606行, 20900バイト)
+  - 関数: escapeHtml, updateNotationTheme, getQuartzTheme, handlePlayback, cleanup, checkPlaybackStatus, markdownPlugins, if, externalResources, blocks, function, forEach, for, catch, addEventListener, media
   - インポート: unist-util-visit, unified, ./quartz/cfg
 
 **test/integration-test.html** (159行, 6453バイト)
@@ -390,11 +393,14 @@ MIT
 ## 関数呼び出し階層
 - checkPlaybackStatus (src/index.ts)
   - escapeHtml (src/index.ts)
-    - handlePlayback ()
+    - updateNotationTheme ()
+      - getQuartzTheme ()
+      - handlePlayback ()
       - cleanup ()
       - markdownPlugins ()
       - externalResources ()
       - function ()
+      - forEach ()
       - addEventListener ()
 - if (src/index.ts)
 - blocks (src/index.ts)
@@ -414,6 +420,12 @@ issue-notes/22.md
 issue-notes/24.md
 issue-notes/25.md
 issue-notes/26.md
+issue-notes/31.md
+issue-notes/32.md
+issue-notes/33.md
+issue-notes/34.md
+issue-notes/38.md
+issue-notes/40.md
 package-lock.json
 package.json
 playwright.config.ts
@@ -435,4 +447,4 @@ vitest.config.ts
 
 
 ---
-Generated at: 2026-01-04 07:01:46 JST
+Generated at: 2026-01-05 07:01:29 JST
