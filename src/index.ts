@@ -230,10 +230,19 @@ export const MMLABCTransformer: QuartzTransformerPlugin<MMLABCOptions | undefine
       }
       
       if (abcNotation) {
+        // Calculate responsive staff width based on container
+        // Get the container width and subtract padding (2em = ~32px)
+        const containerWidth = element.offsetWidth || element.clientWidth || 600;
+        // Subtract padding (1em on each side, typically 16px each = 32px total)
+        // Also leave some margin for safety
+        const availableWidth = containerWidth - 40;
+        // Set reasonable min/max bounds
+        const staffWidth = Math.min(Math.max(availableWidth, 300), 800);
+        
         // Render the ABC notation with abcjs
         const visualObj = ABCJS.renderAbc(element, abcNotation, {
           responsive: 'resize',
-          staffwidth: 600,
+          staffwidth: staffWidth,
           scale: 1.0
         });
         
