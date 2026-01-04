@@ -27,6 +27,15 @@ npm install github:cat2151/quartz-transformer-mmlabc; pushd node_modules/quartz-
 - コンパイルされたJavaScriptを含む`dist`ディレクトリはリポジトリに含まれていません
 - この手順をスキップすると、プラグインのエントリーポイント（`dist/index.js`）が存在しないため、Quartzの実行時にエラーが発生します。
 
+さらに、`.github\workflows\deploy.yml` の `Build Quartz`の前に、以下を追加してください
+```yml
+      - name: Build quartz-transformer-mmlabc
+        run: npm run build
+        working-directory: node_modules/quartz-transformer-mmlabc
+```
+この手順が必要な理由：
+- GitHub Actionsでのdeploy時に、これがないと、プラグインのエントリーポイント（`dist/index.js`）が存在しないため、`Build Quartz`時にエラーが発生します。
+
 ## 使い方
 
 ### Quartz設定での使用
