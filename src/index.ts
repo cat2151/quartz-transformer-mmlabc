@@ -179,6 +179,9 @@ export const MMLABCTransformer: QuartzTransformerPlugin<MMLABCOptions | undefine
   // Cache the mml2abc module to avoid duplicate imports
   let mml2abcModule = null;
   
+  // Cache the chord2mml loading promise to avoid race conditions
+  let chord2mmlLoadPromise = null;
+  
   // Global synth instance for audio playback
   let currentSynth = null;
   let currentPlayingElement = null;
@@ -188,6 +191,59 @@ export const MMLABCTransformer: QuartzTransformerPlugin<MMLABCOptions | undefine
   
   // WeakMap to store visual objects for each element
   const visualObjMap = new WeakMap();
+
+  // Theme detection and switching for Quartz dark mode integration
+  const updateNotationTheme = function(isDark) {
+    const blocks = document.querySelectorAll('.abc-notation');
+    blocks.forEach(block => {
+      if (isDark) {
+        block.classList.add('theme-dark');
+        block.classList.remove('theme-light');
+      } else {
+        block.classList.add('theme-light');
+        block.classList.remove('theme-dark');
+      }
+    });
+  };
+
+  // 1) Initial theme detection
+  // First try to detect Quartz's theme from document attributes or classes
+  const getQuartzTheme = function() {
+    // Check for Quartz-specific theme indicators
+    const htmlElement = document.documentElement;
+    const bodyElement = document.body;
+    
+    // Check data-theme attribute (common in Quartz)
+    const dataTheme = htmlElement.getAttribute('data-theme') || bodyElement.getAttribute('data-theme');
+    if (dataTheme === 'dark') return 'dark';
+    if (dataTheme === 'light') return 'light';
+    
+    // Check for dark class on html or body
+    if (htmlElement.classList.contains('dark') || bodyElement.classList.contains('dark')) {
+      return 'dark';
+    }
+    
+    // Fallback to system preference
+    if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+      return 'dark';
+    }
+    
+    return 'light';
+  };
+
+  const initialTheme = getQuartzTheme();
+  const initialIsDark = initialTheme === 'dark';
+  
+  // Apply initial theme
+  updateNotationTheme(initialIsDark);
+
+  // 2) Listen for Quartz theme changes
+  document.addEventListener('themechange', (e) => {
+    const theme = e.detail?.theme;
+    if (theme === 'dark' || theme === 'light') {
+      updateNotationTheme(theme === 'dark');
+    }
+  });
 
   // Process all abc-notation blocks
   const blocks = document.querySelectorAll('.abc-notation');
@@ -211,10 +267,23 @@ export const MMLABCTransformer: QuartzTransformerPlugin<MMLABCOptions | undefine
       } else if (type === 'chord') {
         const chordData = element.getAttribute('data-chord');
         if (chordData) {
-          // Dynamically import chord2mml ES module from CDN
+          // Load chord2mml as a script (UMD bundle, not ES module)
           // Version specified by @cat2151 based on verified compatibility in easychord2mml
-          const chord2mmlModule = await import('https://cdn.jsdelivr.net/gh/cat2151/chord2mml/dist/chord2mml.js');
-          const mmlData = chord2mmlModule.parse(chordData);
+          if (typeof window.chord2mml === 'undefined') {
+            if (!chord2mmlLoadPromise) {
+              chord2mmlLoadPromise = new Promise((resolve, reject) => {
+                const script = document.createElement('script');
+                script.src = 'https://cdn.jsdelivr.net/gh/cat2151/chord2mml/dist/chord2mml.js';
+                script.integrity = 'sha384-s0MWjnJMkG/kT19h1SE4UrQ7YZ0eSnBKYgzstrrpAsrHer1g6ZqgCJJbmj0zTIcz';
+                script.crossOrigin = 'anonymous';
+                script.onload = resolve;
+                script.onerror = () => reject(new Error('Failed to load chord2mml script'));
+                document.head.appendChild(script);
+              });
+            }
+            await chord2mmlLoadPromise;
+          }
+          const mmlData = window.chord2mml.parse(chordData);
           // Then convert MML to ABC (reuse cached module)
           if (!mml2abcModule) {
             mml2abcModule = await import('https://cdn.jsdelivr.net/gh/cat2151/mml2abc/dist/mml2abc.mjs');
@@ -418,8 +487,10 @@ export const MMLABCTransformer: QuartzTransformerPlugin<MMLABCOptions | undefine
   overflow-x: auto;
   cursor: pointer;
   position: relative;
+  max-width: 95%;
 }
 
+/* Let SVG use full container width */
 .abc-notation svg {
   max-width: 100%;
   height: auto;
@@ -457,7 +528,13 @@ export const MMLABCTransformer: QuartzTransformerPlugin<MMLABCOptions | undefine
 /* Note: CSS variable definitions are intentionally duplicated to support both:
    1. System-level dark mode via media query (prefers-color-scheme)
    2. Quartz-specific dark mode implementations (data-theme, .dark class)
-   This ensures compatibility with different Quartz configurations */
+   3. Dynamic class-based theme switching via JavaScript
+   This ensures compatibility with different Quartz configurations.
+   
+   The duplication is intentional rather than using root-level custom properties because:
+   - Higher specificity ensures theme styles override defaults reliably
+   - Each method (media query, data-theme, class-based) may be used independently
+   - Simpler to maintain as a self-contained plugin without affecting global styles */
 @media (prefers-color-scheme: dark) {
   .abc-notation {
     --abc-bg: #2d2d2d;
@@ -479,6 +556,25 @@ html.dark .abc-notation {
   --abc-label-bg: rgba(50, 50, 50, 0.9);
   --abc-playing-label-color: #4caf50;
   --abc-svg-color: #e0e0e0;
+}
+
+/* Dynamic theme classes (applied by JavaScript for Quartz theme integration) */
+.abc-notation.theme-dark {
+  --abc-bg: #2d2d2d;
+  --abc-playing-bg: #1a3a1a;
+  --abc-label-color: #aaa;
+  --abc-label-bg: rgba(50, 50, 50, 0.9);
+  --abc-playing-label-color: #4caf50;
+  --abc-svg-color: #e0e0e0;
+}
+
+.abc-notation.theme-light {
+  --abc-bg: #f5f5f5;
+  --abc-playing-bg: #e8f5e9;
+  --abc-label-color: #666;
+  --abc-label-bg: rgba(255, 255, 255, 0.9);
+  --abc-playing-label-color: #2e7d32;
+  --abc-svg-color: #000;
 }
             `.trim(),
             inline: true,
