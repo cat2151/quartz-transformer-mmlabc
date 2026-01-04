@@ -453,6 +453,12 @@
             const systemPrefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
             const theme = savedTheme || (systemPrefersDark ? 'dark' : 'light');
             document.documentElement.setAttribute('data-theme', theme);
+            
+            // Emit themechange event (Quartz-like behavior)
+            const event = new CustomEvent('themechange', {
+                detail: { theme: theme }
+            });
+            document.dispatchEvent(event);
         }
 
         // Toggle theme
@@ -461,6 +467,14 @@
             const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
             document.documentElement.setAttribute('data-theme', newTheme);
             localStorage.setItem('theme', newTheme);
+            
+            // Emit themechange event (Quartz-like behavior)
+            const event = new CustomEvent('themechange', {
+                detail: { theme: newTheme }
+            });
+            document.dispatchEvent(event);
+            
+            console.log('Theme changed to', newTheme);
         }
 
         // Initialize theme on page load
