@@ -437,7 +437,7 @@ export const MMLABCTransformer: QuartzTransformerPlugin<MMLABCOptions | undefine
 }
 
 .abc-notation svg {
-  max-width: 100%;
+  max-width: 80%;
   height: auto;
 }
 
