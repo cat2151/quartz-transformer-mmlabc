@@ -172,12 +172,12 @@ export const MMLABCTransformer: QuartzTransformerPlugin<MMLABCOptions | undefine
 (async function() {
   // Wait for ABCJS to be available with retry logic
   const waitForABCJS = function(maxAttempts = 50, delay = 100) {
-    return new Promise((resolve, reject) => {
+    return new Promise<void>((resolve, reject) => {
       let attempts = 0;
       const checkABCJS = function() {
         attempts++;
         if (typeof ABCJS !== 'undefined') {
-          resolve();
+          resolve(undefined);
         } else if (attempts >= maxAttempts) {
           reject(new Error('ABCJS library failed to load after ' + maxAttempts + ' attempts'));
         } else {
