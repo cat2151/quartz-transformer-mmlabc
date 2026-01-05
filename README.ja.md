@@ -21,8 +21,8 @@
 - 破壊的変更をする可能性があります
 
 ## 2行で説明
-- Obsidianで、コード進行を書いて鳴らすことができます : https://github.com/cat2151/obsidian-plugin-mmlabc
-- それをQuartz4でも実現しました
+- Obsidianで、コード進行をコードブロックに書くと、五線譜を表示して鳴らすことができます : https://github.com/cat2151/obsidian-plugin-mmlabc
+- Quartz4でもそれを実現するため、新たにトランスフォーマープラグインを作りました
 
 ## 機能
 
