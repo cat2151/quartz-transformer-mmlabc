@@ -1,6 +1,6 @@
 # quartz-transformer-mmlabc
 
-**A Quartz transformer plugin that allows you to display sheet music and play it with a click, simply by writing chord progressions and MML (Music Macro Language) in code blocks.**
+**A Quartz transformer plugin that allows you to display sheet music and play it by clicking, simply by writing chord progressions and MML (Music Macro Language) in code blocks.**
 
 <p align="left">
   <a href="README.ja.md"><img src="https://img.shields.io/badge/🇯🇵-Japanese-red.svg" alt="Japanese"></a>
@@ -8,7 +8,7 @@
   <a href="https://deepwiki.com/cat2151/quartz-transformer-mmlabc"><img src="https://deepwiki.com/badge.svg" alt="Ask DeepWiki"></a>
 </p>
 
-*This document is largely AI-generated. It was produced by submitting issues to an agent.*
+※ This document is largely AI-generated. Issues were submitted to an agent for generation.
 
 ## Quick Links
 | Item | Link |
@@ -16,35 +16,35 @@
 | 📊 Development Status | [generated-docs/development-status](generated-docs/development-status.md) |
 
 ## Status
-- Implemented most features.
+- Implementation is largely complete.
 - Currently dogfooding.
-- Breaking changes may occur.
+- May introduce breaking changes.
 
-## Two-Line Explanation
-- In Obsidian, you can write and play chord progressions: https://github.com/cat2151/obsidian-plugin-mmlabc
-- This has now been implemented in Quartz 4.
+## Two-Line Summary
+- In Obsidian, you can display and play sheet music by writing chord progressions in code blocks: https://github.com/cat2151/obsidian-plugin-mmlabc
+- To achieve the same functionality in Quartz, a new transformer plugin has been created.
 
 ## Features
 
-- 🎵 Converts `mml` code blocks to ABC notation and renders them with abcjs.
-- 🎸 Converts `chord` code blocks to MML, then to ABC notation, and renders them with abcjs.
-- 🎼 Supports `abc` notation code blocks for troubleshooting.
-- 🎨 Displays sheet music as SVG.
-- 🎧 Click to Play Music - You can play music by clicking on the rendered score.
-- ⌨️ Keyboard accessibility support (Play with Enter or Space key).
+- 🎵 Converts `mml` code blocks to ABC notation and renders them with abcjs
+- 🎸 Converts `chord` code blocks to MML, then to ABC notation, and renders them with abcjs
+- 🎼 Supports `abc` notation code blocks for troubleshooting
+- 🎨 Displays sheet music as SVG
+- 🎧 Click to play music - You can play music by clicking on the rendered sheet music
+- ⌨️ Keyboard accessibility (Play with Enter or Space key)
 
 ## Installation
 
-Run the following in your Quartz installation directory:
+Execute the following in your Quartz installation directory:
 
 ```powershell
 npm install github:cat2151/quartz-transformer-mmlabc; pushd node_modules/quartz-transformer-mmlabc; npm run build; popd
 ```
 
 Why this step is necessary:
-- The plugin is installed directly from GitHub (not from npm).
-- The `dist` directory containing compiled JavaScript is not included in the repository.
-- Skipping this step will result in an error when running Quartz because the plugin's entry point (`dist/index.js`) will not exist.
+- The plugin is installed directly from GitHub (not from npm)
+- The `dist` directory containing compiled JavaScript is not included in the repository
+- Skipping this step will cause an error when running Quartz because the plugin's entry point (`dist/index.js`) will not exist.
 
 Additionally, before `Build Quartz` in `.github\workflows\deploy.yml`, add the following:
 ```yml
@@ -53,11 +53,11 @@ Additionally, before `Build Quartz` in `.github\workflows\deploy.yml`, add the f
         working-directory: node_modules/quartz-transformer-mmlabc
 ```
 Why this step is necessary:
-- During deployment with GitHub Actions, without this step, the plugin's entry point (`dist/index.js`) will not exist, causing an error during `Build Quartz`.
+- When deploying with GitHub Actions, without this, the plugin's entry point (`dist/index.js`) will not exist, causing an error during `Build Quartz`.
 
 ## Usage
 
-### Usage in Quartz Configuration
+### Using with Quartz Configuration
 
 Add the transformer to `quartz.config.ts`:
 
@@ -68,22 +68,22 @@ import { MMLABCTransformer } from "quartz-transformer-mmlabc"
 
 const config: QuartzConfig = {
   configuration: {
-    // ... Site configuration
+    // ... site settings
   },
   plugins: {
     transformers: [
       Plugin.FrontMatter(),
       Plugin.CreatedModifiedDate({ priority: ["frontmatter", "filesystem"] }),
-      // Add the MMLABC transformer
+      // Add MMLABC Transformer
       MMLABCTransformer(),
-      // ... Other transformers
+      // ... other transformers
     ],
     filters: [Plugin.RemoveDrafts()],
     emitters: [
       Plugin.AliasRedirects(),
       Plugin.ComponentResources(),
       Plugin.ContentPage(),
-      // ... Other emitters
+      // ... other emitters
     ],
   },
 }
@@ -91,13 +91,13 @@ const config: QuartzConfig = {
 export default config
 ```
 
-**Important Points:**
-- Import `QuartzConfig` and built-in plugins from Quartz's internal paths.
-- This plugin is imported by its npm package name.
-- Add it to the `transformers` array along with other transformers.
-- The order usually doesn't matter unless there are dependencies between plugins.
+**Key Points:**
+- Import `QuartzConfig` and built-in plugins from Quartz's internal paths
+- Import this plugin by its npm package name
+- Add to the `transformers` array along with other transformers
+- Order is usually not an issue unless there are dependencies between plugins
 
-### Usage in Markdown Files
+### Using in Markdown Files
 
 #### MML Notation
 
@@ -144,42 +144,42 @@ MMLABCTransformer({
 
 ## How it Works
 
-1. The plugin detects code blocks with `mml`, `chord`, or `abc` language tags during Quartz's build process.
-2. It replaces these code blocks with HTML `div` elements containing the source notation as a data attribute.
+1. The plugin detects code blocks with `mml`, `chord`, or `abc` language tags during the Quartz build process
+2. These code blocks are replaced with HTML div elements containing the source notation as data attributes
 3. In the browser:
-   - abcjs and mml2abc are loaded from CDNs.
-   - For MML blocks: mml2abc is used to convert MML to ABC notation.
-   - For chord progression blocks: chord2mml is used to convert chord progressions to MML, then to ABC notation.
-   - For ABC blocks: The notation is used directly without conversion.
-   - abcjs is used to render the ABC notation as an interactive SVG.
-   - An audio synthesizer is initialized to support music playback.
-   - Click event handlers are added to allow playing music by clicking the score.
+   - Loads abcjs and mml2abc from CDN
+   - For MML blocks: Converts MML to ABC notation using mml2abc
+   - For chord progression blocks: Converts chord progressions to MML using chord2mml, then to ABC notation
+   - For ABC blocks: Uses the notation directly without conversion
+   - Renders ABC notation as interactive SVG using abcjs
+   - Initializes an audio synthesizer to support music playback
+   - Adds a click event handler to allow playing music by clicking on the sheet music
 
-## Current Status
+## Current State
 
 ### Implemented Features
-- ✅ MML block detection and conversion.
-- ✅ Chord progression block detection and conversion.
-- ✅ ABC block detection and direct rendering (useful for troubleshooting).
-- ✅ ABC notation rendering using abcjs (displaying sheet music).
-- ✅ CDN dependencies use versions verified by @cat2151.
-- ✅ Quartz dark mode support (automatic theme detection and theme switching).
-- ✅ Accessibility support (ARIA attributes, keyboard navigation).
-- ✅ Interactive audio playback feature (play music from the beginning by clicking the score).
-  - Uses abcjs synth API and Web Audio API.
-  - Visual feedback during playback (background color change and status display).
-  - Automatically stops when playback is complete.
-  - Clicking again stops playback.
+- ✅ Detection and conversion of MML blocks
+- ✅ Detection and conversion of chord progression blocks
+- ✅ Detection and direct rendering of ABC blocks (useful for troubleshooting)
+- ✅ Rendering of ABC notation using abcjs (displaying sheet music)
+- ✅ Uses CDN dependencies with versions confirmed to be working by @cat2151
+- ✅ Quartz dark mode support (automatic theme detection and theme switching)
+- ✅ Accessibility support (ARIA attributes, keyboard operation support)
+- ✅ Interactive audio playback function (click sheet music to play the piece from the beginning)
+  - Uses abcjs synth API and Web Audio API
+  - Visual feedback during playback (background color change and status display)
+  - Automatically stops when playback is complete
+  - Click again to stop playback
 
-## Notes
+## Important Considerations
 
-- Conversion to HTML happens during Quartz's build process.
-- Actual sheet music conversion and rendering occurs in the browser.
-- CDN library versions are specified based on verification by @cat2151 in [easychord2mml](https://github.com/cat2151/easychord2mml/blob/main/index.html).
-- MML to ABC conversion uses mml2abc loaded from CDN.
-- Chord progression to MML conversion uses chord2mml loaded from CDN.
-- Rendering uses abcjs (the latest version 6.x.x) loaded from CDN.
-- Libraries are loaded dynamically to avoid bundling issues.
+- Conversion to HTML occurs during the Quartz build process
+- Actual sheet music conversion and rendering occur in the browser
+- CDN library versions are specified based on operational verification by @cat2151 with easychord2mml
+- Conversion from MML to ABC uses mml2abc loaded from CDN
+- Conversion from chord progression to MML uses chord2mml loaded from CDN
+- Rendering uses abcjs (latest version 6.x) loaded from CDN
+- Libraries are loaded dynamically to avoid bundling issues
 
 ## Testing
 
@@ -207,39 +207,39 @@ npm run test:ui
 ### Test Coverage
 
 The test suite includes:
-- Unit tests for AST transformation logic (Vitest).
-- HTML escaping tests (newlines, tabs, special characters).
-- Plugin options and configuration tests.
-- Edge case handling.
-- External resource validation.
-- Integration tests for browser rendering and interactive features (Playwright).
+- Unit tests for AST transformation logic (Vitest)
+- HTML escaping tests (newlines, tabs, special characters)
+- Plugin options and configuration tests
+- Edge case handling
+- External resource validation
+- Integration tests for browser rendering and interactive features (Playwright)
 
 For manual testing, use the included `demo.html` file.
 
-**Note**: When a Coding Agent runs tests on a Linux Runner, CDN access may be blocked, preventing sheet music display. To verify sheet music display, please test on a physical machine (local environment).
+**Note**: When the Coding Agent performs tests on a Linux Runner, the CDN is blocked, so sheet music will not be displayed. If you want to verify the display of sheet music, please test on a physical machine (local environment).
 
 ## Dependencies
 
-### Runtime (loaded via CDN)
+### Runtime (Loaded via CDN)
 
-**Important**: The following library versions are specified based on verification by @cat2151 in [easychord2mml](https://github.com/cat2151/easychord2mml/blob/main/index.html). Do not change these URLs.
+**Important**: The following library versions are specified based on operational verification by @cat2151 with [easychord2mml](https://github.com/cat2151/easychord2mml/blob/main/index.html). Do not change these URLs.
 
-- [abcjs](https://github.com/paulrosen/abcjs) - JavaScript library for rendering ABC music notation.
+- [abcjs](https://github.com/paulrosen/abcjs) - JavaScript library for rendering ABC music notation
   - CDN: `https://cdn.jsdelivr.net/npm/abcjs@6/dist/abcjs-basic-min.min.js`
-  - Specifying `@6` ensures that the latest version 6.x.x is always retrieved.
-- [mml2abc](https://github.com/cat2151/mml2abc) - Converts Music Macro Language to ABC notation.
+  - Specifying `@6` always fetches the latest version of the 6.x series (6.x.x)
+- [mml2abc](https://github.com/cat2151/mml2abc) - Converts Music Macro Language to ABC notation
   - CDN: `https://cdn.jsdelivr.net/gh/cat2151/mml2abc/dist/mml2abc.mjs`
-  - Loaded via dynamic ES module import.
-- [chord2mml](https://github.com/cat2151/chord2mml) - Converts chord progression notation to MML.
+  - Loaded via dynamic ES module import
+- [chord2mml](https://github.com/cat2151/chord2mml) - Converts chord progression notation to MML
   - CDN: `https://cdn.jsdelivr.net/gh/cat2151/chord2mml/dist/chord2mml.js`
-  - Loaded as a UMD bundle.
-  - Ensures security using SRI (Subresource Integrity) checksums.
+  - Loaded in UMD bundle format
+  - Ensures security using SRI (Subresource Integrity) checksum
   - Checksum: `sha384-s0MWjnJMkG/kT19h1SE4UrQ7YZ0eSnBKYgzstrrpAsrHer1g6ZqgCJJbmj0zTIcz`
-  - *Checksum re-verification is required when updating the library.*
+  - ※ Re-verification of the checksum is required when the library is updated
 
 ### Build-time
-- [unified](https://github.com/unifiedjs/unified) - An interface for parsing and transforming content.
-- [unist-util-visit](https://github.com/syntax-tree/unist-util-visit) - Utility for traversing syntax trees.
+- [unified](https://github.com/unifiedjs/unified) - Interface for parsing and transforming content
+- [unist-util-visit](https://github.com/syntax-tree/unist-util-visit) - Utility for traversing syntax trees
 
 ## Development
 
@@ -271,13 +271,13 @@ quartz-transformer-mmlabc/
 
 ## License
 
-MIT License - See the LICENSE file for details.
+MIT License - See the LICENSE file for details
 
-*The English `README.md` is automatically generated by GitHub Actions using Gemini's translation of `README.ja.md`.*
+※ The English README.md is automatically generated by GitHub Actions using Gemini's translation based on README.ja.md
 
 ## Related Projects
 
-- [Quartz](https://quartz.jzhao.xyz/) - A fast, battery-included static site generator.
-- [abcjs](https://www.abcjs.net/) - JavaScript for rendering ABC music notation.
-- [mml2abc](https://cat2151.github.io/mml2abc/) - MML to ABC converter.
-- [chord2mml](https://cat2151.github.io/chord2mml/) - Chord progression notation to MML converter.
+- [Quartz](https://quartz.jzhao.xyz/) - Fast, battery-included static site generator
+- [abcjs](https://www.abcjs.net/) - JavaScript for rendering ABC music notation
+- [mml2abc](https://cat2151.github.io/mml2abc/) - MML to ABC converter
+- [chord2mml](https://cat2151.github.io/chord2mml/) - Chord progression notation to MML converter
