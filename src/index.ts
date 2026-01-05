@@ -171,6 +171,8 @@ export const MMLABCTransformer: QuartzTransformerPlugin<MMLABCOptions | undefine
 // Initialize abcjs rendering for all ABC notation blocks
 (async function() {
   // Wait for ABCJS to be available with retry logic
+  // Note: This runtime behavior is best tested through integration/E2E tests
+  // rather than unit tests, as it depends on browser environment and timing
   const waitForABCJS = function(maxAttempts = 50, delay = 100) {
     return new Promise<void>((resolve, reject) => {
       let attempts = 0;

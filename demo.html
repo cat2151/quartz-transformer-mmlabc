@@ -201,7 +201,7 @@
                     const checkABCJS = function() {
                         attempts++;
                         if (typeof ABCJS !== 'undefined') {
-                            resolve();
+                            resolve(undefined);
                         } else if (attempts >= maxAttempts) {
                             reject(new Error('ABCJS library failed to load after ' + maxAttempts + ' attempts'));
                         } else {
