@@ -225,14 +225,16 @@ npm run test:ui
 
 - [abcjs](https://github.com/paulrosen/abcjs) - ABC音楽記法をレンダリングするJavaScriptライブラリ
   - CDN: `https://cdn.jsdelivr.net/npm/abcjs@6/dist/abcjs-basic-min.min.js`
-  - バージョン6系の最新版を使用
+  - `@6`を指定することで、バージョン6系の最新版（6.x.x）を常に取得
 - [mml2abc](https://github.com/cat2151/mml2abc) - Music Macro LanguageをABC記法に変換
   - CDN: `https://cdn.jsdelivr.net/gh/cat2151/mml2abc/dist/mml2abc.mjs`
   - 動的ESモジュールインポートで読み込み
 - [chord2mml](https://github.com/cat2151/chord2mml) - コード進行記法をMMLに変換
   - CDN: `https://cdn.jsdelivr.net/gh/cat2151/chord2mml/dist/chord2mml.js`
   - UMDバンドル形式で読み込み
-  - SRI (Subresource Integrity) チェックサムを使用してセキュリティを確保: `sha384-s0MWjnJMkG/kT19h1SE4UrQ7YZ0eSnBKYgzstrrpAsrHer1g6ZqgCJJbmj0zTIcz`
+  - SRI (Subresource Integrity) チェックサムを使用してセキュリティを確保
+  - チェックサム: `sha384-s0MWjnJMkG/kT19h1SE4UrQ7YZ0eSnBKYgzstrrpAsrHer1g6ZqgCJJbmj0zTIcz`
+  - ※ライブラリ更新時にはチェックサムの再検証が必要です
 
 ### ビルド時
 - [unified](https://github.com/unifiedjs/unified) - コンテンツの解析と変換のためのインターフェース
