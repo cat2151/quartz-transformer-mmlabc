@@ -1,6 +1,6 @@
 # quartz-transformer-mmlabc
 
-**MML（Music Macro Language）とコード進行記法のコードブロックを、abcjsを使用してインタラクティブな楽譜に変換するQuartzトランスフォーマープラグイン**
+**コード進行とMML（Music Macro Language）をコードブロックに書くだけで、五線譜を表示してクリック演奏も可能にするQuartzトランスフォーマープラグイン**
 
 <p align="left">
   <a href="README.ja.md"><img src="https://img.shields.io/badge/🇯🇵-Japanese-red.svg" alt="Japanese"></a>
@@ -20,17 +20,18 @@
 - ドッグフーディング中です
 - 破壊的変更をする可能性があります
 
+## 2行で説明
+- Obsidianで、コード進行を書いて鳴らすことができます : https://github.com/cat2151/obsidian-plugin-mmlabc
+- それをQuartz4でも実現しました
+
 ## 機能
 
 - 🎵 `mml`コードブロックをABC記法に変換し、abcjsでレンダリング
 - 🎸 `chord`コードブロックをMMLに変換してからABC記法に変換し、abcjsでレンダリング
-- 🎼 トラブルシューティングや直接使用のための`abc`記法コードブロックをサポート
-- 🎨 楽譜をSVGとして自動レンダリング（五線譜を表示）
+- 🎼 トラブルシューティングのための`abc`記法コードブロックをサポート
+- 🎨 SVGで五線譜を表示
 - 🎧 クリックで楽曲を再生 - レンダリングされた楽譜をクリックすると音楽を再生できます
 - ⌨️ キーボードアクセシビリティ対応（EnterキーまたはSpaceキーで再生）
-- 🌙 Quartzのダークモード自動対応
-- ⚡ 軽量でスタンドアロンなnpmモジュール
-- 🔧 TypeScriptサポート
 
 ## インストール
 
