@@ -104,7 +104,7 @@ export default config
 
 ````markdown
 ```mml
-t120 l4 cdefgab>c
+t120 l4 cdefgab<c
 ```
 ````
 
