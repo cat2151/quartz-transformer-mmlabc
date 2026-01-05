@@ -1,6 +1,6 @@
 # quartz-transformer-mmlabc
 
-**コード進行とMML（Music Macro Language）をコードブロックに書くだけで、五線譜を表示してクリック演奏も可能にするQuartzトランスフォーマープラグイン**
+**コード進行をコードブロックに書くだけで、五線譜を表示してクリック演奏も可能にするQuartzトランスフォーマープラグイン。MML（Music Macro Language）とABC Notationも利用可**
 
 <p align="left">
   <a href="README.ja.md"><img src="https://img.shields.io/badge/🇯🇵-Japanese-red.svg" alt="Japanese"></a>
@@ -8,7 +8,7 @@
   <a href="https://deepwiki.com/cat2151/quartz-transformer-mmlabc"><img src="https://deepwiki.com/badge.svg" alt="Ask DeepWiki"></a>
 </p>
 
-※このドキュメントは大部分がAI生成です。issueをagentに投げて生成させました。
+※このドキュメントの一部はAI生成です
 
 ## Quick Links
 | 項目 | リンク |
@@ -20,9 +20,10 @@
 - ドッグフーディング中です
 - 破壊的変更をする可能性があります
 
-## 2行で説明
+## 3行で説明
 - Obsidianで、コード進行をコードブロックに書くと、五線譜を表示して鳴らすことができます : https://github.com/cat2151/obsidian-plugin-mmlabc
 - Quartz4でもそれを実現するため、新たにトランスフォーマープラグインを作りました
+- Obsidian版と同じく、MML（Music Macro Language）とABC Notationも利用できます
 
 ## 機能
 
@@ -54,24 +55,6 @@ npm install github:cat2151/quartz-transformer-mmlabc; pushd node_modules/quartz-
 ```
 この手順が必要な理由：
 - GitHub Actionsでのdeploy時に、これがないと、プラグインのエントリーポイント（`dist/index.js`）が存在しないため、`Build Quartz`時にエラーが発生します。
-
-### 外部パッケージ方式を採用した理由
-
-このプラグインは、Quartz本体に組み込む方式ではなく、外部npmパッケージとして配布する方式を採用しています。この設計判断には以下の理由があります：
-
-1. **再利用性**
-   - 複数のQuartzプロジェクトで同じプラグインを使用できます
-   - 各プロジェクトでコードをコピーする必要がありません
-
-2. **独立性**
-   - プラグイン独自のリリースサイクルとバージョン管理が可能です
-   - Quartz本体の更新に影響されずに開発・更新できます
-
-3. **共有性**
-   - GitHubを通じてコミュニティと簡単に共有できます
-   - オープンソースプロジェクトとして多くのユーザーに使ってもらいやすくなります
-
-この方式により、プラグインの価値を最大化し、より広いユーザーベースに対応できるようになっています。
 
 ## 使い方
 
@@ -173,22 +156,6 @@ MMLABCTransformer({
    - オーディオシンセサイザーを初期化して楽曲の再生に対応
    - 楽譜をクリックして音楽を再生できるようにクリックイベントハンドラーを追加
 
-## 現在の状態
-
-### 実装済み機能
-- ✅ MMLブロックの検出と変換
-- ✅ コード進行ブロックの検出と変換
-- ✅ ABCブロックの検出と直接レンダリング（トラブルシューティングに便利）
-- ✅ abcjsを使用したABC記法のレンダリング（五線譜の表示）
-- ✅ CDN依存関係は@cat2151により動作確認済みのバージョンを使用
-- ✅ Quartzのダークモード対応（自動テーマ検出とテーマ切り替えに対応）
-- ✅ アクセシビリティ対応（ARIA属性、キーボード操作サポート）
-- ✅ インタラクティブな音声再生機能（楽譜をクリックして楽曲を先頭から演奏）
-  - abcjs synth APIとWeb Audio APIを使用
-  - 再生中の視覚的フィードバック（背景色の変更とステータス表示）
-  - 再生完了時に自動停止
-  - もう一度クリックすると再生を停止
-
 ## 注意事項
 
 - HTMLへの変換はQuartzのビルドプロセス中に行われます
@@ -287,11 +254,27 @@ quartz-transformer-mmlabc/
 └── README.md
 ```
 
+## 外部パッケージ方式を採用した理由
+
+このプラグインは、Quartz本体に組み込む方式ではなく、外部npmパッケージとして配布する方式を採用しています。この設計判断には以下の理由があります：
+
+1. **再利用性**
+   - 複数のQuartzプロジェクトで同じプラグインを使用できます
+   - 各プロジェクトでコードをコピーする必要がありません
+
+2. **独立性**
+   - プラグイン独自のリリースサイクルとバージョン管理が可能です
+   - Quartz本体の更新に影響されずに開発・更新できます
+
+3. **共有性**
+   - GitHubを通じてコミュニティと簡単に共有できます
+   - オープンソースプロジェクトとして多くのユーザーに使ってもらいやすくなります
+
+この方式により、プラグインの価値を最大化し、より広いユーザーベースに対応できるようになっています。
+
 ## ライセンス
 
 MIT License - 詳細はLICENSEファイルを参照してください
-
-※英語版README.mdは、README.ja.mdを元にGeminiの翻訳でGitHub Actionsにより自動生成しています
 
 ## 関連プロジェクト
 
@@ -299,3 +282,5 @@ MIT License - 詳細はLICENSEファイルを参照してください
 - [abcjs](https://www.abcjs.net/) - ABC音楽記法をレンダリングするJavaScript
 - [mml2abc](https://cat2151.github.io/mml2abc/) - MMLからABCへのコンバーター
 - [chord2mml](https://cat2151.github.io/chord2mml/) - コード進行記法からMMLへのコンバーター
+
+※英語版README.mdは、README.ja.mdを元にGeminiの翻訳でGitHub Actionsにより自動生成しています
