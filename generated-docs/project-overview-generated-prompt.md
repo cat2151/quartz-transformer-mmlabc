@@ -1,4 +1,4 @@
-Last updated: 2026-01-06
+Last updated: 2026-01-07
 
 
 # プロジェクト概要生成プロンプト（来訪者向け）
@@ -63,7 +63,7 @@ Last updated: 2026-01-06
 名前: quartz-transformer-mmlabc
 説明: # quartz-transformer-mmlabc
 
-**コード進行とMML（Music Macro Language）をコードブロックに書くだけで、五線譜を表示してクリック演奏も可能にするQuartzトランスフォーマープラグイン**
+**コード進行をコードブロックに書くだけで、五線譜を表示してクリック演奏も可能にするQuartzトランスフォーマープラグイン。MML（Music Macro Language）とABC Notationも利用可**
 
 <p align="left">
   <a href="README.ja.md"><img src="https://img.shields.io/badge/🇯🇵-Japanese-red.svg" alt="Japanese"></a>
@@ -71,7 +71,7 @@ Last updated: 2026-01-06
   <a href="https://deepwiki.com/cat2151/quartz-transformer-mmlabc"><img src="https://deepwiki.com/badge.svg" alt="Ask DeepWiki"></a>
 </p>
 
-※このドキュメントは大部分がAI生成です。issueをagentに投げて生成させました。
+※このドキュメントの一部はAI生成です
 
 ## Quick Links
 | 項目 | リンク |
@@ -83,9 +83,10 @@ Last updated: 2026-01-06
 - ドッグフーディング中です
 - 破壊的変更をする可能性があります
 
-## 2行で説明
+## 3行で説明
 - Obsidianで、コード進行をコードブロックに書くと、五線譜を表示して鳴らすことができます : https://github.com/cat2151/obsidian-plugin-mmlabc
 - Quartz4でもそれを実現するため、新たにトランスフォーマープラグインを作りました
+- Obsidian版と同じく、MML（Music Macro Language）とABC Notationも利用できます
 
 ## 機能
 
@@ -166,7 +167,7 @@ export default config
 
 ````markdown
 ```mml
-t120 l4 cdefgab>c
+t120 l4 cdefgab<c
 ```
 ````
 
@@ -217,22 +218,6 @@ MMLABCTransformer({
    - abcjsを使用してABC記法をインタラクティブなSVGとしてレンダリング
    - オーディオシンセサイザーを初期化して楽曲の再生に対応
    - 楽譜をクリックして音楽を再生できるようにクリックイベントハンドラーを追加
-
-## 現在の状態
-
-### 実装済み機能
-- ✅ MMLブロックの検出と変換
-- ✅ コード進行ブロックの検出と変換
-- ✅ ABCブロックの検出と直接レンダリング（トラブルシューティングに便利）
-- ✅ abcjsを使用したABC記法のレンダリング（五線譜の表示）
-- ✅ CDN依存関係は@cat2151により動作確認済みのバージョンを使用
-- ✅ Quartzのダークモード対応（自動テーマ検出とテーマ切り替えに対応）
-- ✅ アクセシビリティ対応（ARIA属性、キーボード操作サポート）
-- ✅ インタラクティブな音声再生機能（楽譜をクリックして楽曲を先頭から演奏）
-  - abcjs synth APIとWeb Audio APIを使用
-  - 再生中の視覚的フィードバック（背景色の変更とステータス表示）
-  - 再生完了時に自動停止
-  - もう一度クリックすると再生を停止
 
 ## 注意事項
 
@@ -332,11 +317,27 @@ quartz-transformer-mmlabc/
 └── README.md
 ```
 
+## 外部パッケージ方式を採用した理由
+
+このプラグインは、Quartz本体に組み込む方式ではなく、外部npmパッケージとして配布する方式を採用しています。この設計判断には以下の理由があります：
+
+1. **再利用性**
+   - 複数のQuartzプロジェクトで同じプラグインを使用できます
+   - 各プロジェクトでコードをコピーする必要がありません
+
+2. **独立性**
+   - プラグイン独自のリリースサイクルとバージョン管理が可能です
+   - Quartz本体の更新に影響されずに開発・更新できます
+
+3. **共有性**
+   - GitHubを通じてコミュニティと簡単に共有できます
+   - オープンソースプロジェクトとして多くのユーザーに使ってもらいやすくなります
+
+この方式により、プラグインの価値を最大化し、より広いユーザーベースに対応できるようになっています。
+
 ## ライセンス
 
 MIT License - 詳細はLICENSEファイルを参照してください
-
-※英語版README.mdは、README.ja.mdを元にGeminiの翻訳でGitHub Actionsにより自動生成しています
 
 ## 関連プロジェクト
 
@@ -344,6 +345,8 @@ MIT License - 詳細はLICENSEファイルを参照してください
 - [abcjs](https://www.abcjs.net/) - ABC音楽記法をレンダリングするJavaScript
 - [mml2abc](https://cat2151.github.io/mml2abc/) - MMLからABCへのコンバーター
 - [chord2mml](https://cat2151.github.io/chord2mml/) - コード進行記法からMMLへのコンバーター
+
+※英語版README.mdは、README.ja.mdを元にGeminiの翻訳でGitHub Actionsにより自動生成しています
 
 
 依存関係:
@@ -388,8 +391,10 @@ MIT License - 詳細はLICENSEファイルを参照してください
   📖 42.md
   📖 44-investigation.md
   📖 44.md
+  📖 46-solution.md
   📖 46.md
   📖 47.md
+  📖 50.md
 📊 package-lock.json
 📊 package.json
 📘 playwright.config.ts
@@ -404,7 +409,7 @@ MIT License - 詳細はLICENSEファイルを参照してください
 📘 vitest.config.ts
 
 ## ファイル詳細分析
-**demo.html** (486行, 23364バイト)
+**demo.html** (516行, 24833バイト)
   - 関数: なし
   - インポート: なし
 
@@ -416,8 +421,8 @@ MIT License - 詳細はLICENSEファイルを参照してください
   - 関数: なし
   - インポート: vitest, ./index
 
-**src/index.ts** (606行, 20900バイト)
-  - 関数: escapeHtml, updateNotationTheme, getQuartzTheme, handlePlayback, cleanup, checkPlaybackStatus, markdownPlugins, if, externalResources, blocks, function, forEach, for, catch, addEventListener, media
+**src/index.ts** (638行, 22094バイト)
+  - 関数: escapeHtml, waitForABCJS, checkABCJS, updateNotationTheme, getQuartzTheme, handlePlayback, cleanup, checkPlaybackStatus, markdownPlugins, if, externalResources, blocks, function, catch, forEach, for, addEventListener, media
   - インポート: unist-util-visit, unified, ./quartz/cfg
 
 **test/integration-test.html** (159行, 6453バイト)
@@ -435,7 +440,9 @@ MIT License - 詳細はLICENSEファイルを参照してください
 ## 関数呼び出し階層
 - checkPlaybackStatus (src/index.ts)
   - escapeHtml (src/index.ts)
-    - updateNotationTheme ()
+    - waitForABCJS ()
+      - checkABCJS ()
+      - updateNotationTheme ()
       - getQuartzTheme ()
       - handlePlayback ()
       - cleanup ()
@@ -446,8 +453,8 @@ MIT License - 詳細はLICENSEファイルを参照してください
       - addEventListener ()
 - if (src/index.ts)
 - blocks (src/index.ts)
-- for (src/index.ts)
 - catch (src/index.ts)
+- for (src/index.ts)
 - media (src/index.ts)
 
 
@@ -471,8 +478,10 @@ issue-notes/40.md
 issue-notes/42.md
 issue-notes/44-investigation.md
 issue-notes/44.md
+issue-notes/46-solution.md
 issue-notes/46.md
 issue-notes/47.md
+issue-notes/50.md
 package-lock.json
 package.json
 playwright.config.ts
@@ -480,7 +489,6 @@ src/index.test.ts
 src/index.ts
 test/README.md
 test/integration-test.html
-test/integration.test.ts
 tsconfig.json
 
 上記の情報を基に、プロンプトで指定された形式でプロジェクト概要を生成してください。
@@ -493,4 +501,4 @@ tsconfig.json
 
 
 ---
-Generated at: 2026-01-06 07:01:48 JST
+Generated at: 2026-01-07 07:01:53 JST
