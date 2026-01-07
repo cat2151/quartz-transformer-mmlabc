@@ -170,7 +170,7 @@ export const MMLABCTransformer: QuartzTransformerPlugin<MMLABCOptions | undefine
             script: `//<![CDATA[
 // Initialize abcjs rendering for all ABC notation blocks
 (async function() {
-  // Wait for ABCJS to be available
+  // Check if ABCJS is available
   if (typeof ABCJS === 'undefined') {
     console.error('ABCJS library not loaded');
     return;
