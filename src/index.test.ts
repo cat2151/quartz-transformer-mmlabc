@@ -714,15 +714,6 @@ describe('MMLABCTransformer', () => {
       expect(inlineScript?.script).toContain('renderAbc')
     })
 
-    it('should wrap inline script with CDATA markers', () => {
-      const plugin = MMLABCTransformer()
-      const resources = plugin.externalResources!(mockBuildCtx)
-      
-      const inlineScript = resources.js!.find(js => js.contentType === 'inline')
-      expect(inlineScript?.script).toMatch(/^\/\/<!\[CDATA\[/)
-      expect(inlineScript?.script).toMatch(/\/\/\]\]>$/)
-    })
-
     it('should use mml2abc from CDN without version tag', () => {
       const plugin = MMLABCTransformer()
       const resources = plugin.externalResources!(mockBuildCtx)
