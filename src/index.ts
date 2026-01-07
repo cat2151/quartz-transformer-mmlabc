@@ -167,7 +167,7 @@ export const MMLABCTransformer: QuartzTransformerPlugin<MMLABCOptions | undefine
             // This ensures the plugin works as a standalone npm package without additional asset management
             loadTime: "afterDOMReady",
             contentType: "inline",
-            script: `
+            script: `//<![CDATA[
 // Initialize abcjs rendering for all ABC notation blocks
 (async function() {
   // Wait for ABCJS to be available with retry logic
@@ -505,7 +505,7 @@ export const MMLABCTransformer: QuartzTransformerPlugin<MMLABCOptions | undefine
     }
   }
 })();
-            `.trim(),
+//]]>`.trim(),
           },
         ],
         css: [
