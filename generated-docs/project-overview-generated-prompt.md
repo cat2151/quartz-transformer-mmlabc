@@ -1,4 +1,4 @@
-Last updated: 2026-01-07
+Last updated: 2026-01-08
 
 
 # プロジェクト概要生成プロンプト（来訪者向け）
@@ -395,6 +395,8 @@ MIT License - 詳細はLICENSEファイルを参照してください
   📖 46.md
   📖 47.md
   📖 50.md
+  📖 51-solution.md
+  📖 51.md
 📊 package-lock.json
 📊 package.json
 📘 playwright.config.ts
@@ -417,11 +419,11 @@ MIT License - 詳細はLICENSEファイルを参照してください
   - 関数: なし
   - インポート: @playwright/test
 
-**src/index.test.ts** (832行, 24175バイト)
+**src/index.test.ts** (841行, 24559バイト)
   - 関数: なし
   - インポート: vitest, ./index
 
-**src/index.ts** (638行, 22094バイト)
+**src/index.ts** (638行, 22098バイト)
   - 関数: escapeHtml, waitForABCJS, checkABCJS, updateNotationTheme, getQuartzTheme, handlePlayback, cleanup, checkPlaybackStatus, markdownPlugins, if, externalResources, blocks, function, catch, forEach, for, addEventListener, media
   - インポート: unist-util-visit, unified, ./quartz/cfg
 
@@ -482,13 +484,14 @@ issue-notes/46-solution.md
 issue-notes/46.md
 issue-notes/47.md
 issue-notes/50.md
+issue-notes/51-solution.md
+issue-notes/51.md
 package-lock.json
 package.json
 playwright.config.ts
 src/index.test.ts
 src/index.ts
 test/README.md
-test/integration-test.html
 tsconfig.json
 
 上記の情報を基に、プロンプトで指定された形式でプロジェクト概要を生成してください。
@@ -501,4 +504,4 @@ tsconfig.json
 
 
 ---
-Generated at: 2026-01-07 07:01:53 JST
+Generated at: 2026-01-08 07:01:35 JST

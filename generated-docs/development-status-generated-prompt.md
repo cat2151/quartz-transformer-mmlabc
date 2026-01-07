@@ -1,4 +1,4 @@
-Last updated: 2026-01-07
+Last updated: 2026-01-08
 
 # 開発状況生成プロンプト（開発者向け）
 
@@ -225,6 +225,8 @@ Last updated: 2026-01-07
 - issue-notes/46.md
 - issue-notes/47.md
 - issue-notes/50.md
+- issue-notes/51-solution.md
+- issue-notes/51.md
 - package-lock.json
 - package.json
 - playwright.config.ts
@@ -292,25 +294,30 @@ Last updated: 2026-01-07
 
 ## 最近の変更（過去7日間）
 ### コミット履歴:
+1e890fc Merge pull request #52 from cat2151/copilot/fix-score-display-error
+2863afa Add test to verify CDATA markers wrap inline script
+374a17b Add comprehensive documentation for issue #51 fix
+f560dfb Wrap inline JavaScript in CDATA to prevent HTML entity escaping
+129bd09 Initial plan
+7a686bd Add issue note for #51 [auto]
+83a7370 Update project summaries (overview & development status) [auto]
 ccae36f Add issue note for #50 [auto]
 1349033 Fix MML notation example in README.ja.md
 2978ab8 Auto-translate README.ja.md to README.md [auto]
-d4c1996 Revise README.ja.md for clarity and updates
-06ce500 Auto-translate README.ja.md to README.md [auto]
-5648cc3 Merge pull request #49 from cat2151/copilot/update-readme-ja-for-external-package
-14c6dcc Add rationale for external package approach to README.ja.md
-742d58a Initial plan
-2e06286 Merge pull request #48 from cat2151/copilot/fix-abcjs-container-issues
-9457d66 Update project summaries (overview & development status) [auto]
 
 ### 変更されたファイル:
 README.ja.md
 README.md
-demo.html
-issue-notes/46-solution.md
+generated-docs/development-status-generated-prompt.md
+generated-docs/development-status.md
+generated-docs/project-overview-generated-prompt.md
+generated-docs/project-overview.md
 issue-notes/50.md
+issue-notes/51-solution.md
+issue-notes/51.md
+src/index.test.ts
 src/index.ts
 
 
 ---
-Generated at: 2026-01-07 07:01:53 JST
+Generated at: 2026-01-08 07:01:35 JST
