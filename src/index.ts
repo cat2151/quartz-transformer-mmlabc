@@ -167,33 +167,12 @@ export const MMLABCTransformer: QuartzTransformerPlugin<MMLABCOptions | undefine
             // This ensures the plugin works as a standalone npm package without additional asset management
             loadTime: "afterDOMReady",
             contentType: "inline",
-            script: `//<![CDATA[
+            script: `
 // Initialize abcjs rendering for all ABC notation blocks
 (async function() {
-  // Wait for ABCJS to be available with retry logic
-  // Note: This runtime behavior is best tested through integration/E2E tests
-  // rather than unit tests, as it depends on browser environment and timing
-  const waitForABCJS = function(maxAttempts = 50, delay = 100) {
-    return new Promise<void>((resolve, reject) => {
-      let attempts = 0;
-      const checkABCJS = function() {
-        attempts++;
-        if (typeof ABCJS !== 'undefined') {
-          resolve(undefined);
-        } else if (attempts >= maxAttempts) {
-          reject(new Error('ABCJS library failed to load after ' + maxAttempts + ' attempts'));
-        } else {
-          setTimeout(checkABCJS, delay);
-        }
-      };
-      checkABCJS();
-    });
-  };
-
-  try {
-    await waitForABCJS();
-  } catch (error) {
-    console.error('ABCJS library not loaded:', error);
+  // Check if ABCJS is available
+  if (typeof ABCJS === 'undefined') {
+    console.error('ABCJS library not loaded');
     return;
   }
 
@@ -320,19 +299,8 @@ export const MMLABCTransformer: QuartzTransformerPlugin<MMLABCOptions | undefine
       }
       
       if (abcNotation) {
-        // Wait for layout to complete and element to have valid dimensions
-        // This ensures offsetWidth returns a proper value
-        await new Promise(resolve => setTimeout(resolve, 0));
-        
         // コンテナのサイズに基づいて五線譜の幅をレスポンシブに計算
-        let containerWidth = element.offsetWidth || element.clientWidth;
-        
-        // If still 0, wait a bit more and retry
-        if (!containerWidth || containerWidth === 0) {
-          await new Promise(resolve => setTimeout(resolve, 50));
-          containerWidth = element.offsetWidth || element.clientWidth || 600;
-        }
-        
+        const containerWidth = element.offsetWidth || element.clientWidth || 600;
         // .abc-notation の padding: 1em は左右で合計2em（約32px）
         // フォントサイズが16pxと仮定すると、2em ≈ 32px + 安全マージン約8px = 40px
         const availableWidth = containerWidth - 40;
@@ -505,7 +473,7 @@ export const MMLABCTransformer: QuartzTransformerPlugin<MMLABCOptions | undefine
     }
   }
 })();
-//]]>`.trim(),
+            `.trim(),
           },
         ],
         css: [
