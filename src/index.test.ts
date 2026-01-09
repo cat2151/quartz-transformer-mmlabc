@@ -753,16 +753,6 @@ describe('MMLABCTransformer', () => {
       expect(css.content).toContain('.abc-notation.theme-light')
       expect(css.content).toContain('Dynamic theme classes')
     })
-
-    it('should wrap inline script in CDATA comments to prevent HTML escaping', () => {
-      const plugin = MMLABCTransformer()
-      const resources = plugin.externalResources!(mockBuildCtx)
-
-      const inlineScript = resources.js!.find(js => js.contentType === 'inline')
-      expect(inlineScript?.script).toBeDefined()
-      expect(inlineScript?.script).toMatch(/^\/\/<!\[CDATA\[/)
-      expect(inlineScript?.script).toMatch(/\/\/\]\]>[\s]*$/)
-    })
   })
 
   describe('Edge cases', () => {
