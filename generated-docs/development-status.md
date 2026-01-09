@@ -1,51 +1,51 @@
-Last updated: 2026-01-09
+Last updated: 2026-01-10
 
 # Development Status
 
 ## 現在のIssues
-- [Issue #58](../issue-notes/58.md), [Issue #55](../issue-notes/55.md), [Issue #50](../issue-notes/50.md) は、Issue #46 で発生したリロード時に解消されないエラー（特にオクターブ記号のエスケープに関連する可能性）の再現と原因特定に向けた人力調査や監視が進行中です。
-- [Issue #58](../issue-notes/58.md) ではPR 57の資料を参考に具体的な調査を進めることが指示されており、[Issue #55](../issue-notes/55.md) では再発時の調査項目としてオクターブ記号のエスケープが挙げられています。
-- 並行して、[Issue #31](../issue-notes/31.md) にて主要な機能のドッグフーディングが継続的に求められています。
+- [Issue #58](../issue-notes/58.md) と [Issue #50](../issue-notes/50.md) は、以前発生した [Issue #46](../issue-notes/46.md) のエラー再発監視と、PR 57資料を基にした人力調査を継続しています。
+- [Issue #55](../issue-notes/55.md) では、リロードで解決できないエラーがオクターブ記号のエスケープに関連する可能性があり、再発時は人力調査が必要です。
+- また、[Issue #31](../issue-notes/31.md) にて、プロジェクト全体の「ドッグフーディング」による実運用テストと潜在的な問題の洗い出しが計画されています。
 
 ## 次の一手候補
-1. [Issue #58](../issue-notes/58.md) PR 57 の資料を参考にissue 46 の問題を人力調査する
-   - 最初の小さな一歩: `issue-notes/56-solution.md` の内容を読み込み、Issue #46 で発生した問題の「現実の測定方法」と「測定結果」を理解する。
+1. [Issue #58](../issue-notes/58.md) に基づく [Issue #46](../issue-notes/46.md) 関連コードの特定
+   - 最初の小さな一歩: [Issue #46](../issue-notes/46.md) の内容と、直近のHTMLエスケープ修正（コミット`4026728`）に関連するコード変更を分析し、問題が起こりうるHTML生成やスクリプト挿入に関連するファイルをリストアップする。
    - Agent実行プロンプト:
      ```
-     対象ファイル: issue-notes/56-solution.md, issue-notes/58.md, src/index.ts, demo.html
+     対象ファイル: `src/index.ts`, `test/integration.test.ts`, `.github/actions-tmp/.github_automation/callgraph/scripts/generateHTML.cjs`
 
-     実行内容: `issue-notes/56-solution.md` の内容を読み込み、[Issue #58](../issue-notes/58.md) で指示されている「PR 57 の資料を参考に人力調査する」ための具体的な調査計画を立案してください。特に Issue #46 の再現手順、検証方法、潜在的な問題箇所を特定することに焦点を当ててください。関連するソースコード (`src/index.ts` や `demo.html`) の変更点も考慮に入れてください。
+     実行内容: コミット `4026728` (`Fix HTML escaping issue by wrapping inline script in CDATA comments`) と関連するコード変更を分析し、特にHTMLの`<script>`タグ内にMML（オクターブ記号など）が埋め込まれる箇所を特定してください。また、`src/index.ts`がどのようにHTMLコンテンツを生成・変更しているか、特に`<script>`タグの扱いとエスケープ処理の有無を調査してください。
 
-     確認事項: `issue-notes/56-solution.md` が提供する解決策や検証方法が、現在のプロジェクトの状態に適合しているかを確認してください。
+     確認事項: `src/index.ts` と `generateHTML.cjs` が、最終的なHTML出力にどのように寄与しているか、およびCDATAAセクションが意図通りに機能しているかを確認してください。
 
-     期待する出力: Markdown形式で、Issue #46の問題を人力で調査するための詳細な手順書。再現手順、確認すべきコード領域、特定のテストケース、および考えられる原因のリストを含めてください。
+     期待する出力: 関連するコードスニペットと、コミット `4026728` の変更が [Issue #46](../issue-notes/46.md) で言及された問題にどのように影響するかについての分析をmarkdown形式で出力してください。
      ```
 
-2. [Issue #55](../issue-notes/55.md) オクターブ記号のエスケープに関連するエラーの再発時調査準備
-   - 最初の小さな一歩: `src/index.ts` および `src/index.test.ts` 内でMMLのオクターブ記号（`'`）のエスケープ処理に関連するコード箇所を特定し、その機能と周辺ロジックを理解する。
+2. [Issue #31](../issue-notes/31.md) ドッグフーディングのためのテストカバレッジ分析
+   - 最初の小さな一歩: 現在のプロジェクトのテストカバレッジを測定し、カバレッジが特に低い、または全くテストされていないファイルを特定する。
    - Agent実行プロンプト:
      ```
-     対象ファイル: src/index.ts, src/index.test.ts
+     対象ファイル: `package.json`, `src/index.ts`, `src/index.test.ts`, `test/integration.test.ts`, `vitest.config.ts`
 
-     実行内容: `src/index.ts` 内でオクターブ記号（`'`）のエスケープ処理に関連する関数やロジックを特定し、その実装を分析してください。この処理がどのような入力に対してどのような出力を生成し、どのようなエッジケースで問題が発生する可能性があるかを詳細に記述してください。関連するテスト (`src/index.test.ts` など) があれば、そのテストコードも分析対象とします。
+     実行内容: `vitest` を用いてプロジェクトのテストカバレッジレポートを生成し、その結果を分析してください。特にカバレッジ率が低い、またはカバレッジが0%のファイルを特定し、そのパスとカバレッジ率をリストアップしてください。
 
-     確認事項: 現在の実装がMMLのオクターブ記号の仕様を正しく扱っているか、エスケープされていない場合に予期せぬHTML/JSエラーを引き起こす可能性があるかを確認してください。
+     確認事項: `package.json` に`vitest`の実行スクリプトが存在するか、`vitest.config.ts`が適切に設定されているかを確認してください。
 
-     期待する出力: Markdown形式で、オクターブ記号のエスケープ処理に関する詳細な分析結果。具体的なコードスニペット、考えられるバグパターン、そしてそれらを検証するための簡単なテストケース案を含めてください。
+     期待する出力: Markdown形式で、カバレッジの概要（全体、ファイル別）と、改善が必要なファイルパスとカバレッジ率のリスト。
      ```
 
-3. [Issue #31](../issue-notes/31.md) `development-status-prompt.md` の改善による開発状況生成プロンプトの洗練
-   - 最初の小さな一歩: `.github/actions-tmp/.github_automation/project_summary/prompts/development-status-prompt.md` の内容と、現在の開発状況生成結果（このMarkdown自体）を比較し、より具体的で有用な情報を引き出すための改善点を洗い出す。
+3. [Issue #55](../issue-notes/55.md) オクターブ記号のエスケープ処理ロジックの分析
+   - 最初の小さな一歩: `src/index.ts` 内でオクターブ記号（例: `<` や `>`、またはMMLで使われる`o`の後の数字など）がどのように扱われているかを検索し、関連する関数やコードブロックを特定する。
    - Agent実行プロンプト:
      ```
-     対象ファイル: .github/actions-tmp/.github_automation/project_summary/prompts/development-status-prompt.md, generated-docs/development-status.md
+     対象ファイル: `src/index.ts`, `src/index.test.ts`
 
-     実行内容: `.github/actions-tmp/.github_automation/project_summary/prompts/development-status-prompt.md` の内容と、現在の生成物である `generated-docs/development-status.md` を比較分析し、より高品質で具体的に開発状況を要約するためのプロンプト改善案をMarkdown形式で提案してください。特に、不要なハルシネーションを避けつつ、開発者にとって有用な情報を提供する観点から分析を行ってください。
+     実行内容: `src/index.ts` 内で、MMLのオクターブ記号 (`<`, `>`, `o+数字`など) やその他の特殊文字のHTMLエスケープ、またはMMLパーシングに関連する処理を検索し、そのロジックを詳細に分析してください。特に、CDATAセクション内での扱いも考慮に入れてください。
 
-     確認事項: 提案されるプロンプトの変更が、既に定義されている「生成しないもの」のガイドラインに違反しないことを確認してください。また、必須要素を網羅し、より具体的で実行可能な「次の一手」を導き出すための改善点に焦点を当ててください。
+     確認事項: 関連するテストケース (`src/index.test.ts`) が存在するか、そのテストがエスケープ処理を適切に検証しているかを確認してください。
 
-     期待する出力: Markdown形式で、`development-status-prompt.md` の改善案。変更の理由、具体的な変更内容（差分形式で示しても良い）、およびそれによって期待される出力の変化について詳細に記述してください。
+     期待する出力: Markdown形式で、オクターブ記号のエスケープまたは処理に関連する主要なコードブロック、その説明、および改善の可能性についての考察。
      ```
 
 ---
-Generated at: 2026-01-09 07:02:14 JST
+Generated at: 2026-01-10 07:02:09 JST
