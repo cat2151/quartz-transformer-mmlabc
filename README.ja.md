@@ -56,6 +56,54 @@ npm install github:cat2151/quartz-transformer-mmlabc; pushd node_modules/quartz-
 この手順が必要な理由：
 - GitHub Actionsでのdeploy時に、これがないと、プラグインのエントリーポイント（`dist/index.js`）が存在しないため、`Build Quartz`時にエラーが発生します。
 
+### プラグインの更新方法（2つの選択肢）
+
+**重要**: このプラグインは現在 Work In Progress であり、頻繁に破壊的変更が行われる可能性があります（nonstable）。プラグインの更新方法として、以下の2つの選択肢があります：
+
+#### 選択肢1: デプロイ時に常に最新版を使用する（推奨：開発中）
+
+デプロイのたびに最新版のプラグインを使用したい場合は、`.github/workflows/deploy.yml` に以下のステップを追加してください：
+
+```yml
+      - name: Install Dependencies
+        run: npm ci
+      - name: Update quartz-transformer-mmlabc to latest
+        run: npm update quartz-transformer-mmlabc
+      - name: Build quartz-transformer-mmlabc
+        run: npm run build
+        working-directory: node_modules/quartz-transformer-mmlabc
+```
+
+**メリット**:
+- 常に最新の機能とバグ修正が適用される
+- 重大なバグが修正された場合、即座に反映される
+
+**デメリット**:
+- 破壊的変更が即座に反映される可能性がある
+- ビルド時間がわずかに長くなる
+
+#### 選択肢2: Dependabotによる週次更新に任せる
+
+Dependabotを設定している場合、週次で自動的にプラグインの更新PRが作成されます。この方法では、更新内容を確認してからマージできます。
+
+`.github/dependabot.yml` の例：
+```yml
+version: 2
+updates:
+  - package-ecosystem: "npm"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+```
+
+**メリット**:
+- 更新内容を確認してからマージできる
+- 安定したバージョンで運用できる
+
+**デメリット**:
+- プラグインの更新が最大1週間遅れる
+- 重大なバグ修正も最大1週間待つ必要がある
+
 ## 使い方
 
 ### Quartz設定での使用
