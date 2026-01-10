@@ -1,173 +1,165 @@
-import { visit } from "unist-util-visit"
-import type { Pluggable } from "unified"
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SPA Navigation Test - MML ABC Transformer</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            line-height: 1.6;
+        }
+        
+        .nav-buttons {
+            margin-bottom: 20px;
+            padding: 15px;
+            background-color: #f0f0f0;
+            border-radius: 4px;
+        }
+        
+        .nav-buttons button {
+            margin: 5px;
+            padding: 10px 20px;
+            font-size: 16px;
+            cursor: pointer;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 4px;
+        }
+        
+        .nav-buttons button:hover {
+            background-color: #45a049;
+        }
+        
+        .page {
+            display: none;
+            padding: 20px;
+            border: 2px solid #ddd;
+            border-radius: 4px;
+            min-height: 300px;
+        }
+        
+        .page.active {
+            display: block;
+        }
+        
+        .test-info {
+            background-color: #e8f5e9;
+            padding: 15px;
+            border-radius: 4px;
+            margin-bottom: 20px;
+        }
+        
+        .test-info h3 {
+            margin-top: 0;
+            color: #2e7d32;
+        }
+        
+        /* Include the ABC notation styles from the plugin */
+        .abc-notation {
+            margin: 1em 0;
+            padding: 1em;
+            background-color: #f5f5f5;
+            border-radius: 4px;
+            overflow-x: auto;
+            cursor: pointer;
+            position: relative;
+            max-width: 95%;
+        }
+        
+        .abc-notation svg {
+            max-width: 100%;
+            height: auto;
+        }
+        
+        .abc-notation svg path,
+        .abc-notation svg text {
+            fill: #000;
+        }
+        
+        .abc-notation.playing {
+            background-color: #e8f5e9;
+        }
+        
+        .abc-notation::before {
+            content: "▶ Click to play";
+            position: absolute;
+            top: 0.5em;
+            right: 0.5em;
+            font-size: 0.8em;
+            color: #666;
+            background-color: rgba(255, 255, 255, 0.9);
+            padding: 0.3em 0.6em;
+            border-radius: 3px;
+            pointer-events: none;
+        }
+        
+        .abc-notation.playing::before {
+            content: "🔊 Playing...";
+            color: #2e7d32;
+        }
+    </style>
+</head>
+<body>
+    <h1>SPA Navigation Test</h1>
+    
+    <div class="test-info">
+        <h3>Test Instructions:</h3>
+        <ol>
+            <li>Click "Page 2 (Music)" - music notation should render</li>
+            <li>Click "Page 1 (No Music)" - page changes to a simple page</li>
+            <li>Click "Page 2 (Music)" again - <strong>THIS IS THE TEST:</strong> music notation should render even after navigation</li>
+            <li>Click "Page 3 (More Music)" - another music page should render correctly</li>
+        </ol>
+        <p><strong>Expected behavior:</strong> Music notation should render on every navigation, not just the first time you visit a music page.</p>
+    </div>
+    
+    <div class="nav-buttons">
+        <button onclick="navigateTo('page1')">Page 1 (No Music)</button>
+        <button onclick="navigateTo('page2')">Page 2 (Music)</button>
+        <button onclick="navigateTo('page3')">Page 3 (More Music)</button>
+    </div>
+    
+    <div id="page1" class="page active">
+        <h2>Page 1 - Simple Content</h2>
+        <p>This page has no music notation. It's just a regular page with text.</p>
+        <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. This simulates navigating to a page without music notation.</p>
+    </div>
+    
+    <div id="page2" class="page">
+        <h2>Page 2 - Music Notation Examples</h2>
+        <p>This page contains music notation that should render after navigation.</p>
+        
+        <h3>Example 1: Simple Scale (MML)</h3>
+        <div class="abc-notation mml-block" data-mml="t120 l4 cdefgab>c" data-type="mml" role="button" tabindex="0" aria-label="Play music notation"></div>
+        
+        <h3>Example 2: Chord Progression</h3>
+        <div class="abc-notation chord-block" data-chord="C Am F G" data-type="chord" role="button" tabindex="0" aria-label="Play music notation"></div>
+    </div>
+    
+    <div id="page3" class="page">
+        <h2>Page 3 - More Music</h2>
+        <p>Another page with different music notation.</p>
+        
+        <h3>Complex Melody</h3>
+        <div class="abc-notation mml-block" data-mml="t140 l8 o4 c d e f g4 g4 a g f e d4 d4 c2" data-type="mml" role="button" tabindex="0" aria-label="Play music notation"></div>
+        
+        <h3>Jazz Chords</h3>
+        <div class="abc-notation chord-block" data-chord="Cmaj7 Am7 Dm7 G7" data-type="chord" role="button" tabindex="0" aria-label="Play music notation"></div>
+    </div>
 
-// Type definitions for Quartz plugin interface
-interface BuildCtx {
-  allSlugs: string[]
-  cfg: Record<string, any> // Quartz configuration object
-  argv: Record<string, any> // Command-line arguments
-}
-
-interface QuartzTransformerPluginInstance {
-  name: string
-  textTransform?: (ctx: BuildCtx, src: string) => string
-  markdownPlugins?: (ctx: BuildCtx) => Pluggable[]
-  htmlPlugins?: (ctx: BuildCtx) => Pluggable[]
-  externalResources?: (ctx: BuildCtx) => Partial<StaticResources>
-}
-
-interface StaticResources {
-  css: Array<{ content?: string; src?: string; inline?: boolean }>
-  js: Array<{
-    src?: string
-    loadTime?: "beforeDOMReady" | "afterDOMReady"
-    contentType?: "external" | "inline"
-    script?: string
-  }>
-}
-
-type QuartzTransformerPlugin<T = undefined> = (
-  opts?: T,
-) => QuartzTransformerPluginInstance
-
-// Type definitions for AST nodes
-interface Root {
-  type: "root"
-  children: any[]
-}
-
-/**
- * Options for MMLABCTransformer plugin
- */
-interface MMLABCOptions {
-  /** Enable transformation of MML code blocks (default: true) */
-  enableMML?: boolean
-  /** Enable transformation of chord code blocks (default: true) */
-  enableChord?: boolean
-  /** Enable transformation of ABC code blocks (default: true) */
-  enableABC?: boolean
-}
-
-const defaultOptions: MMLABCOptions = {
-  enableMML: true,
-  enableChord: true,
-  enableABC: true,
-}
-
-/**
- * Quartz transformer plugin for converting MML (Music Macro Language), chord progression,
- * and ABC notation code blocks into interactive sheet music using abcjs.
- * 
- * This plugin operates in two stages:
- * 1. Build-time: Transforms markdown code blocks into HTML divs with data attributes
- * 2. Browser runtime: Loads CDN libraries, converts notation, and renders interactive SVG
- * 
- * @param userOpts - Configuration options for enabling/disabling specific notation types
- * @returns A Quartz transformer plugin instance
- * 
- * @example
- * ```typescript
- * // quartz.config.ts
- * import { QuartzConfig } from "./quartz/cfg"
- * import * as Plugin from "./quartz/plugins"
- * import { MMLABCTransformer } from "quartz-transformer-mmlabc"
- * 
- * const config: QuartzConfig = {
- *   configuration: {
- *     // ... your Quartz configuration (siteTitle, theme, etc.)
- *   },
- *   plugins: {
- *     transformers: [
- *       // Built-in Quartz transformers
- *       Plugin.FrontMatter(),
- *       Plugin.TableOfContents(),
- *       // Add the MML/Chord/ABC transformer
- *       MMLABCTransformer({
- *         enableMML: true,
- *         enableChord: true,
- *         enableABC: true,
- *       }),
- *     ],
- *     filters: [
- *       // ... your filters
- *     ],
- *     emitters: [
- *       // ... your emitters
- *     ],
- *   },
- * }
- * 
- * export default config
- * ```
- */
-export const MMLABCTransformer: QuartzTransformerPlugin<MMLABCOptions | undefined> = (
-  userOpts?: MMLABCOptions,
-) => {
-  const opts = { ...defaultOptions, ...userOpts }
-
-  return {
-    name: "MMLABCTransformer",
-    markdownPlugins(_ctx: BuildCtx) {
-      return [
-        () => {
-          return (tree: Root, _file: any) => {
-            visit(tree, "code", (node: any) => {
-              const lang = node.lang?.toLowerCase()
-
-              // Handle MML blocks - replace with HTML that will be processed in browser
-              if (opts.enableMML && lang === "mml") {
-                const mmlCode = node.value as string
-
-                // Replace the code block with an HTML block containing the MML data
-                node.type = "html"
-                node.value = `<div class="abc-notation mml-block" data-mml="${escapeHtml(
-                  mmlCode,
-                )}" data-type="mml" role="button" tabindex="0" aria-label="Play music notation"></div>`
-                delete node.lang
-              }
-
-              // Handle chord blocks - replace with HTML that will be processed in browser
-              if (opts.enableChord && lang === "chord") {
-                const chordCode = node.value as string
-
-                // Replace the code block with an HTML block containing the chord data
-                node.type = "html"
-                node.value = `<div class="abc-notation chord-block" data-chord="${escapeHtml(
-                  chordCode,
-                )}" data-type="chord" role="button" tabindex="0" aria-label="Play music notation"></div>`
-                delete node.lang
-              }
-
-              // Handle ABC blocks - replace with HTML that will be processed in browser
-              if (opts.enableABC && lang === "abc") {
-                const abcCode = node.value as string
-
-                // Replace the code block with an HTML block containing the ABC data
-                node.type = "html"
-                node.value = `<div class="abc-notation abc-block" data-abc="${escapeHtml(
-                  abcCode,
-                )}" data-type="abc" role="button" tabindex="0" aria-label="Play music notation"></div>`
-                delete node.lang
-              }
-            })
-          }
-        },
-      ]
-    },
-    externalResources(_ctx: BuildCtx) {
-      return {
-        js: [
-          {
-            src: "https://cdn.jsdelivr.net/npm/abcjs@6/dist/abcjs-basic-min.min.js",
-            loadTime: "afterDOMReady",
-            contentType: "external",
-          },
-          {
-            // Large inline script is intentional for distribution simplicity
-            // This ensures the plugin works as a standalone npm package without additional asset management
-            loadTime: "afterDOMReady",
-            contentType: "inline",
-            script: `
+    <!-- Load abcjs from CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/abcjs@6/dist/abcjs-basic-min.min.js"></script>
+    
+    <!-- Use the plugin's script from dist (inline it for testing) -->
+    <script type="module" src="../dist/index.js"></script>
+    
+    <!-- Inline the plugin's afterDOMReady script for testing -->
+    <script type="module">
 // Initialize abcjs rendering for all ABC notation blocks
 // Supports Quartz v4 SPA navigation by listening for "nav" events
 (function() {
@@ -236,16 +228,20 @@ export const MMLABCTransformer: QuartzTransformerPlugin<MMLABCOptions | undefine
   
   // Main initialization function - called on initial load and SPA navigation
   const initializeMusicNotation = async function() {
+    console.log('initializeMusicNotation called');
+    
     // Apply current theme
     const currentTheme = getQuartzTheme();
     updateNotationTheme(currentTheme === 'dark');
 
     // Process all abc-notation blocks
     const blocks = document.querySelectorAll('.abc-notation');
+    console.log('Found', blocks.length, 'notation blocks to process');
     
     for (const element of blocks) {
       // Skip if this element was already processed (idempotent initialization)
       if (processedElements.has(element)) {
+        console.log('Skipping already processed element');
         continue;
       }
       
@@ -253,6 +249,7 @@ export const MMLABCTransformer: QuartzTransformerPlugin<MMLABCOptions | undefine
       processedElements.add(element);
       
       const type = element.getAttribute('data-type');
+      console.log('Processing element of type:', type);
     
     try {
       let abcNotation = '';
@@ -261,7 +258,6 @@ export const MMLABCTransformer: QuartzTransformerPlugin<MMLABCOptions | undefine
         const mmlData = element.getAttribute('data-mml');
         if (mmlData) {
           // Dynamically import mml2abc ES module from CDN
-          // Version specified by @cat2151 based on verified compatibility in easychord2mml
           if (!mml2abcModule) {
             mml2abcModule = await import('https://cdn.jsdelivr.net/gh/cat2151/mml2abc/dist/mml2abc.mjs');
           }
@@ -271,7 +267,6 @@ export const MMLABCTransformer: QuartzTransformerPlugin<MMLABCOptions | undefine
         const chordData = element.getAttribute('data-chord');
         if (chordData) {
           // Load chord2mml as a script (UMD bundle, not ES module)
-          // Version specified by @cat2151 based on verified compatibility in easychord2mml
           if (typeof window.chord2mml === 'undefined') {
             if (!chord2mmlLoadPromise) {
               chord2mmlLoadPromise = new Promise((resolve, reject) => {
@@ -302,12 +297,9 @@ export const MMLABCTransformer: QuartzTransformerPlugin<MMLABCOptions | undefine
       }
       
       if (abcNotation) {
-        // コンテナのサイズに基づいて五線譜の幅をレスポンシブに計算
+        // Calculate responsive staff width
         const containerWidth = element.offsetWidth || element.clientWidth || 600;
-        // .abc-notation の padding: 1em は左右で合計2em（約32px）
-        // フォントサイズが16pxと仮定すると、2em ≈ 32px + 安全マージン約8px = 40px
         const availableWidth = containerWidth - 40;
-        // 最小300px、最大800pxの範囲に制限
         const staffWidth = Math.min(Math.max(availableWidth, 300), 800);
         
         // Render the ABC notation with abcjs
@@ -316,6 +308,8 @@ export const MMLABCTransformer: QuartzTransformerPlugin<MMLABCOptions | undefine
           staffwidth: staffWidth,
           scale: 1.0
         });
+        
+        console.log('Rendered notation successfully');
         
         // Store the visual object using WeakMap
         visualObjMap.set(element, visualObj);
@@ -351,7 +345,7 @@ export const MMLABCTransformer: QuartzTransformerPlugin<MMLABCOptions | undefine
               }
             }
             
-            // Ensure audio context is running (some browsers start it in a suspended state)
+            // Ensure audio context is running
             if (sharedAudioContext && sharedAudioContext.state === 'suspended') {
               await sharedAudioContext.resume();
             }
@@ -394,32 +388,19 @@ export const MMLABCTransformer: QuartzTransformerPlugin<MMLABCOptions | undefine
               };
               
               // Start playback
-              // abcjs CreateSynth's start() may return a promise that resolves when complete
               const playbackPromise = currentSynth.start();
               
               // If start() returns a promise, use it to detect completion
               if (playbackPromise && typeof playbackPromise.then === 'function') {
                 playbackPromise.then(function() {
-                  // Playback completed successfully
                   cleanup();
                 }).catch(function(error) {
-                  // Playback error or stopped
                   console.error('Playback ended or error:', error);
                   cleanup();
                 });
-              } else {
-                // If start() doesn't return a promise, we have no way to detect completion
-                // This is actually fine - the user can stop playback by clicking again
-                // The cleanup will happen when they click to play something else or stop
-                console.debug('Playback started (no completion detection available)');
               }
             } else {
               console.error('ABCJS synth API not available');
-              const errorParagraph = document.createElement('p');
-              errorParagraph.style.color = 'orange';
-              errorParagraph.style.fontSize = '0.9em';
-              errorParagraph.textContent = 'Audio playback is not available in this version of abcjs.';
-              element.appendChild(errorParagraph);
             }
           } catch (error) {
             console.error('Error playing music:', error);
@@ -432,7 +413,7 @@ export const MMLABCTransformer: QuartzTransformerPlugin<MMLABCOptions | undefine
         // Add click handler for audio playback
         element.addEventListener('click', handlePlayback);
         
-        // Add keyboard handler for accessibility (Enter and Space keys)
+        // Add keyboard handler for accessibility
         element.addEventListener('keydown', async function(e) {
           if (e.key === 'Enter' || e.key === ' ') {
             e.preventDefault();
@@ -470,6 +451,7 @@ export const MMLABCTransformer: QuartzTransformerPlugin<MMLABCOptions | undefine
   // Listen for Quartz SPA navigation events
   // This ensures notation renders on every page navigation
   window.addEventListener('nav', () => {
+    console.log('SPA navigation detected - re-initializing music notation');
     initializeMusicNotation();
   });
 
@@ -486,141 +468,46 @@ export const MMLABCTransformer: QuartzTransformerPlugin<MMLABCOptions | undefine
       }
       currentSynth = null;
       currentPlayingElement = null;
-      // Note: We keep sharedAudioContext, mml2abcModule, and chord2mmlLoadPromise
-      // cached across navigations for performance
     });
   }
 
   // Initial render on page load
+  console.log('Initial load - initializing music notation');
   initializeMusicNotation();
 })();
-            `.trim(),
-          },
-        ],
-        css: [
-          {
-            content: `
-.abc-notation {
-  margin: 1em 0;
-  padding: 1em;
-  background-color: var(--abc-bg, #f5f5f5);
-  border-radius: 4px;
-  overflow-x: auto;
-  cursor: pointer;
-  position: relative;
-  max-width: 95%;
-}
-
-/* Let SVG use full container width */
-.abc-notation svg {
-  max-width: 100%;
-  height: auto;
-}
-
-/* Override abcjs default colors for dark mode compatibility */
-.abc-notation svg path,
-.abc-notation svg text {
-  fill: var(--abc-svg-color, #000);
-}
-
-.abc-notation.playing {
-  background-color: var(--abc-playing-bg, #e8f5e9);
-}
-
-.abc-notation::before {
-  content: "▶ Click to play";
-  position: absolute;
-  top: 0.5em;
-  right: 0.5em;
-  font-size: 0.8em;
-  color: var(--abc-label-color, #666);
-  background-color: var(--abc-label-bg, rgba(255, 255, 255, 0.9));
-  padding: 0.3em 0.6em;
-  border-radius: 3px;
-  pointer-events: none;
-}
-
-.abc-notation.playing::before {
-  content: "🔊 Playing...";
-  color: var(--abc-playing-label-color, #2e7d32);
-}
-
-/* Dark mode support */
-/* Note: CSS variable definitions are intentionally duplicated to support both:
-   1. System-level dark mode via media query (prefers-color-scheme)
-   2. Quartz-specific dark mode implementations (data-theme, .dark class)
-   3. Dynamic class-based theme switching via JavaScript
-   This ensures compatibility with different Quartz configurations.
-   
-   The duplication is intentional rather than using root-level custom properties because:
-   - Higher specificity ensures theme styles override defaults reliably
-   - Each method (media query, data-theme, class-based) may be used independently
-   - Simpler to maintain as a self-contained plugin without affecting global styles */
-@media (prefers-color-scheme: dark) {
-  .abc-notation {
-    --abc-bg: #2d2d2d;
-    --abc-playing-bg: #1a3a1a;
-    --abc-label-color: #aaa;
-    --abc-label-bg: rgba(50, 50, 50, 0.9);
-    --abc-playing-label-color: #4caf50;
-    --abc-svg-color: #e0e0e0;
-  }
-}
-
-/* Quartz-specific dark mode support (if Quartz uses data-theme or class) */
-:root[data-theme="dark"] .abc-notation,
-.dark .abc-notation,
-html.dark .abc-notation {
-  --abc-bg: #2d2d2d;
-  --abc-playing-bg: #1a3a1a;
-  --abc-label-color: #aaa;
-  --abc-label-bg: rgba(50, 50, 50, 0.9);
-  --abc-playing-label-color: #4caf50;
-  --abc-svg-color: #e0e0e0;
-}
-
-/* Dynamic theme classes (applied by JavaScript for Quartz theme integration) */
-.abc-notation.theme-dark {
-  --abc-bg: #2d2d2d;
-  --abc-playing-bg: #1a3a1a;
-  --abc-label-color: #aaa;
-  --abc-label-bg: rgba(50, 50, 50, 0.9);
-  --abc-playing-label-color: #4caf50;
-  --abc-svg-color: #e0e0e0;
-}
-
-.abc-notation.theme-light {
-  --abc-bg: #f5f5f5;
-  --abc-playing-bg: #e8f5e9;
-  --abc-label-color: #666;
-  --abc-label-bg: rgba(255, 255, 255, 0.9);
-  --abc-playing-label-color: #2e7d32;
-  --abc-svg-color: #000;
-}
-            `.trim(),
-            inline: true,
-          },
-        ],
-      }
-    },
-  }
-}
-
-/**
- * Escape HTML special characters including newlines and whitespace
- * to prevent XSS vulnerabilities and ensure proper data attribute encoding
- */
-function escapeHtml(text: string): string {
-  const map: { [key: string]: string } = {
-    "&": "&amp;",
-    "<": "&lt;",
-    ">": "&gt;",
-    '"': "&quot;",
-    "'": "&#039;",
-    "\n": "&#10;",
-    "\r": "&#13;",
-    "\t": "&#9;",
-  }
-  return text.replace(/[&<>"'\n\r\t]/g, (m) => map[m])
-}
-
+    </script>
+    
+    <!-- SPA Navigation Simulation -->
+    <script>
+        // Simulate Quartz's SPA navigation
+        function navigateTo(pageId) {
+            // Hide all pages
+            document.querySelectorAll('.page').forEach(page => {
+                page.classList.remove('active');
+            });
+            
+            // Show target page
+            const targetPage = document.getElementById(pageId);
+            if (targetPage) {
+                targetPage.classList.add('active');
+                
+                // Dispatch the 'nav' event that Quartz uses for SPA navigation
+                const navEvent = new CustomEvent('nav', {
+                    detail: { url: '#' + pageId }
+                });
+                window.dispatchEvent(navEvent);
+                
+                console.log('Navigated to', pageId);
+            }
+        }
+        
+        // Mock addCleanup function (Quartz provides this)
+        if (!window.addCleanup) {
+            window.addCleanup = function(fn) {
+                console.log('Cleanup function registered');
+                // In a real Quartz environment, this would be called on navigation
+            };
+        }
+    </script>
+</body>
+</html>
