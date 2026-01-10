@@ -2,7 +2,7 @@ import { defineConfig, devices } from '@playwright/test';
 
 export default defineConfig({
   testDir: './test',
-  testMatch: 'integration.test.ts',
+  testMatch: ['integration.test.ts', 'playback-fix.test.ts', '*.spec.js'],
   testIgnore: '**/lib/**',
   fullyParallel: false,
   forbidOnly: !!process.env.CI,
