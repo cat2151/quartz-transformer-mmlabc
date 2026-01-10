@@ -470,7 +470,10 @@ export const MMLABCTransformer: QuartzTransformerPlugin<MMLABCOptions | undefine
   // Listen for Quartz SPA navigation events
   // This ensures notation renders on every page navigation
   window.addEventListener('nav', () => {
-    initializeMusicNotation();
+    // Call async initialization and handle any errors
+    initializeMusicNotation().catch(err => {
+      console.error('Error initializing music notation after navigation:', err);
+    });
   });
 
   // Register cleanup function for SPA navigation
@@ -492,7 +495,9 @@ export const MMLABCTransformer: QuartzTransformerPlugin<MMLABCOptions | undefine
   }
 
   // Initial render on page load
-  initializeMusicNotation();
+  initializeMusicNotation().catch(err => {
+    console.error('Error initializing music notation on page load:', err);
+  });
 })();
             `.trim(),
           },
