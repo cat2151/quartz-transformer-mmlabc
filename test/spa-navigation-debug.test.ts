@@ -23,10 +23,9 @@ test.describe('SPA Navigation Debug Logging Test', () => {
     // Navigate to the SPA test page
     await page.goto(TEST_PAGE_PATH);
 
-    // Wait for rendering to complete by checking for the completion log
+    // Wait for rendering to complete by checking for the rendered SVG
     await page.waitForFunction(() => {
-      return window.console.toString().includes('五線譜表示処理が完了しました') ||
-             document.querySelectorAll('.abc-notation svg').length > 0;
+      return document.querySelectorAll('.abc-notation svg').length > 0;
     }, { timeout: RENDERING_TIMEOUT_MS });
     
     // Small delay to ensure all logs are captured
@@ -109,10 +108,8 @@ test.describe('SPA Navigation Debug Logging Test', () => {
     // Navigate back to Page 1 (with music) - this should trigger SPA navigation
     await page.click('button:has-text("Page 1")');
     
-    // Wait for the navigation event to be processed
+    // Wait for the navigation event to be processed and music notation to reappear
     await page.waitForFunction(() => {
-      // Check if SPA navigation was detected in console
-      const logs = Array.from(document.querySelectorAll('body')).map(el => el.textContent);
       return document.querySelectorAll('.abc-notation').length > 0;
     }, { timeout: RENDERING_TIMEOUT_MS });
     
@@ -148,12 +145,18 @@ test.describe('SPA Navigation Debug Logging Test', () => {
   });
 
   test('should skip already processed elements on navigation', async ({ page }) => {
-    const consoleMessages: string[] = [];
+    const allMessages: string[] = [];
+    const reNavigationMessages: string[] = [];
+    let captureReNavigation = false;
     
     // Capture all console log messages
     page.on('console', msg => {
       if (msg.type() === 'log' || msg.type() === 'error') {
-        consoleMessages.push(msg.text());
+        const text = msg.text();
+        allMessages.push(text);
+        if (captureReNavigation) {
+          reNavigationMessages.push(text);
+        }
       }
     });
 
@@ -171,8 +174,8 @@ test.describe('SPA Navigation Debug Logging Test', () => {
       return document.querySelectorAll('.abc-notation').length > 0;
     }, { timeout: RENDERING_TIMEOUT_MS });
 
-    // Clear messages to focus on re-navigation
-    consoleMessages.length = 0;
+    // Start capturing re-navigation messages
+    captureReNavigation = true;
 
     // Navigate to Page 2 (no music) and back to Page 3
     await page.click('button:has-text("Page 2")');
@@ -187,16 +190,16 @@ test.describe('SPA Navigation Debug Logging Test', () => {
 
     // On the second visit to Page 3, elements might be processed or skipped depending on DOM lifecycle
     // Just verify that navigation was detected and processing occurred
-    const navDetectionLogs = consoleMessages.filter(msg => 
+    const navDetectionLogs = reNavigationMessages.filter(msg => 
       msg.includes('[MML-ABC-Transformer]') && msg.includes('SPA page 遷移を検知しました')
     );
     expect(navDetectionLogs.length).toBeGreaterThanOrEqual(1);
 
     // Check if there are any skip logs or new processing logs
-    const skipLogs = consoleMessages.filter(msg => 
+    const skipLogs = reNavigationMessages.filter(msg => 
       msg.includes('[MML-ABC-Transformer]') && msg.includes('スキップ: 既に処理済みの要素')
     );
-    const newProcessLogs = consoleMessages.filter(msg => 
+    const newProcessLogs = reNavigationMessages.filter(msg => 
       msg.includes('[MML-ABC-Transformer]') && msg.includes('新しい楽譜要素を処理します')
     );
 
