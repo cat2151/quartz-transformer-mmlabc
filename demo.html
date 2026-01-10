@@ -372,14 +372,14 @@
                                             cleanup();
                                         }).catch(function(error) {
                                             // Playback error or stopped
-                                            console.log('Playback ended or error:', error);
+                                            console.error('Playback ended or error:', error);
                                             cleanup();
                                         });
                                     } else {
                                         // If start() doesn't return a promise, we have no way to detect completion
                                         // This is actually fine - the user can stop playback by clicking again
                                         // The cleanup will happen when they click to play something else or stop
-                                        console.log('Playback started (no completion detection available)');
+                                        console.debug('Playback started (no completion detection available)');
                                     }
                                 } else {
                                     console.error('ABCJS synth API not available');
