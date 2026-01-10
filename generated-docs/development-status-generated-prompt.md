@@ -1,4 +1,4 @@
-Last updated: 2026-01-10
+Last updated: 2026-01-11
 
 # 開発状況生成プロンプト（開発者向け）
 
@@ -199,9 +199,11 @@ Last updated: 2026-01-10
 - .github/workflows/call-issue-note.yml
 - .github/workflows/call-translate-readme.yml
 - .gitignore
+- DEBUG-LOGGING-SUMMARY.md
 - LICENSE
 - README.ja.md
 - README.md
+- SPA-FIX-SUMMARY.md
 - _config.yml
 - demo.html
 - example.md
@@ -233,6 +235,9 @@ Last updated: 2026-01-10
 - issue-notes/56.md
 - issue-notes/58.md
 - issue-notes/59.md
+- issue-notes/61.md
+- issue-notes/63.md
+- issue-notes/65.md
 - package-lock.json
 - package.json
 - playwright.config.ts
@@ -241,40 +246,15 @@ Last updated: 2026-01-10
 - test/README.md
 - test/integration-test.html
 - test/integration.test.ts
+- test/playback-fix.test.ts
+- test/playback-simple.spec.js
+- test/spa-navigation-debug.test.ts
+- test/spa-navigation-test-README.md
+- test/spa-navigation-test.html
 - tsconfig.json
 - vitest.config.ts
 
 ## 現在のオープンIssues
-## [Issue #58](../issue-notes/58.md): issue 46 の問題を、PR 57 の資料を参考に人力調査する
-[issue-notes/58.md](https://github.com/cat2151/quartz-transformer-mmlabc/blob/main/issue-notes/58.md)
-
-...
-ラベル: 
---- issue-notes/58.md の内容 ---
-
-```markdown
-# issue issue 46 の問題を、PR 57 の資料を参考に人力調査する #58
-[issues #58](https://github.com/cat2151/quartz-transformer-mmlabc/issues/58)
-
-
-
-```
-
-## [Issue #55](../issue-notes/55.md): リロードしてなおらないエラーは、オクターブ記号のエスケープが関連している可能性があるので、再発した場合はそこを人力調査する
-[issue-notes/55.md](https://github.com/cat2151/quartz-transformer-mmlabc/blob/main/issue-notes/55.md)
-
-...
-ラベル: 
---- issue-notes/55.md の内容 ---
-
-```markdown
-# issue リロードしてなおらないエラーは、オクターブ記号のエスケープが関連している可能性があるので、再発した場合はそこを人力調査する #55
-[issues #55](https://github.com/cat2151/quartz-transformer-mmlabc/issues/55)
-
-
-
-```
-
 ## [Issue #50](../issue-notes/50.md): issue 46 の現象がまだ発生する可能性があるので様子見する。また、スーパーリロードでなくリロードで解決できている可能性もある
 [issue-notes/50.md](https://github.com/cat2151/quartz-transformer-mmlabc/blob/main/issue-notes/50.md)
 
@@ -306,85 +286,6 @@ Last updated: 2026-01-10
 ```
 
 ## ドキュメントで言及されているファイルの内容
-### .github/actions-tmp/issue-notes/8.md
-```md
-{% raw %}
-# issue 関数コールグラフhtmlビジュアライズ生成の対象ソースファイルを、呼び出し元ymlで指定できるようにする #8
-[issues #8](https://github.com/cat2151/github-actions/issues/8)
-
-# これまでの課題
-- 以下が決め打ちになっていた
-```
-  const allowedFiles = [
-    'src/main.js',
-    'src/mml2json.js',
-    'src/play.js'
-  ];
-```
-
-# 対策
-- 呼び出し元ymlで指定できるようにする
-
-# agent
-- agentにやらせることができれば楽なので、初手agentを試した
-- 失敗
-    - ハルシネーションしてscriptを大量破壊した
-- 分析
-    - 修正対象scriptはagentが生成したもの
-    - 低品質な生成結果でありソースが巨大
-    - ハルシネーションで破壊されやすいソース
-    - AIの生成したソースは、必ずしもAIフレンドリーではない
-
-# 人力リファクタリング
-- 低品質コードを、最低限agentが扱えて、ハルシネーションによる大量破壊を防止できる内容、にする
-- 手短にやる
-    - そもそもビジュアライズは、agentに雑に指示してやらせたもので、
-    - 今後別のビジュアライザを選ぶ可能性も高い
-    - 今ここで手間をかけすぎてコンコルド効果（サンクコストバイアス）を増やすのは、project群をトータルで俯瞰して見たとき、損
-- 対象
-    - allowedFiles のあるソース
-        - callgraph-utils.cjs
-            - たかだか300行未満のソースである
-            - この程度でハルシネーションされるのは予想外
-            - やむなし、リファクタリングでソース分割を進める
-
-# agentに修正させる
-## prompt
-```
-allowedFilesを引数で受け取るようにしたいです。
-ないならエラー。
-最終的に呼び出し元すべてに波及して修正したいです。
-
-呼び出し元をたどってエントリポイントも見つけて、
-エントリポイントにおいては、
-引数で受け取ったjsonファイル名 allowedFiles.js から
-jsonファイル allowedFiles.jsonの内容をreadして
-変数 allowedFilesに格納、
-後続処理に引き渡す、としたいです。
-
-まずplanしてください。
-planにおいては、修正対象のソースファイル名と関数名を、呼び出し元を遡ってすべて特定し、listしてください。
-```
-
-# 修正が順調にできた
-- コマンドライン引数から受け取る作りになっていなかったので、そこだけ指示して修正させた
-- yml側は人力で修正した
-
-# 他のリポジトリから呼び出した場合にバグらないよう修正する
-- 気付いた
-    - 共通ワークフローとして他のリポジトリから使った場合はバグるはず。
-        - ymlから、共通ワークフロー側リポジトリのcheckoutが漏れているので。
-- 他のyml同様に修正する
-- あわせて全体にymlをリファクタリングし、修正しやすくし、今後のyml読み書きの学びにしやすくする
-
-# local WSL + act : test green
-
-# closeとする
-- もし生成されたhtmlがNGの場合は、別issueとするつもり
-
-{% endraw %}
-```
-
 ### issue-notes/31.md
 ```md
 {% raw %}
@@ -407,53 +308,38 @@ planにおいては、修正対象のソースファイル名と関数名を、�
 {% endraw %}
 ```
 
-### issue-notes/55.md
-```md
-{% raw %}
-# issue リロードしてなおらないエラーは、オクターブ記号のエスケープが関連している可能性があるので、再発した場合はそこを人力調査する #55
-[issues #55](https://github.com/cat2151/quartz-transformer-mmlabc/issues/55)
-
-
-
-{% endraw %}
-```
-
-### issue-notes/58.md
-```md
-{% raw %}
-# issue issue 46 の問題を、PR 57 の資料を参考に人力調査する #58
-[issues #58](https://github.com/cat2151/quartz-transformer-mmlabc/issues/58)
-
-
-
-{% endraw %}
-```
-
 ## 最近の変更（過去7日間）
 ### コミット履歴:
-da4c770 Auto-translate README.ja.md to README.md [auto]
-d032297 Merge pull request #60 from cat2151/copilot/fix-typescript-transpile-issue
-5f6d770 Add plugin update instructions with two options to README.ja.md
-845b008 Investigate Issue #59: Revert CDATA approach and confirm main branch has correct JavaScript
-1fba6f5 Add test to verify CDATA wrapper presence in inline script
-4026728 Fix HTML escaping issue by wrapping inline script in CDATA comments
-bbd1d6f Initial plan
-ebf3bef Add issue note for #59 [auto]
-02d614f Update project summaries (overview & development status) [auto]
-799426a Add issue note for #58 [auto]
+0d67caf Merge pull request #66 from cat2151/copilot/add-console-debug-logs
+9929ab0 Address PR review comments: remove redundant logs, fix test conditions, improve message capture
+b8b13a6 Add comprehensive documentation for debug logging implementation
+eb48b4c Improve test reliability by replacing fixed timeouts with condition-based waits
+d8264b9 Add comprehensive debug logging and automated tests
+45a7f5a Initial plan
+c2b294b Add issue note for #65 [auto]
+1d7839c Auto-translate README.ja.md to README.md [auto]
+5088ad0 Merge pull request #64 from cat2151/copilot/fix-abcjs-notation-display
+292b193 Fix code indentation issues from code review
 
 ### 変更されたファイル:
+DEBUG-LOGGING-SUMMARY.md
 README.ja.md
 README.md
-generated-docs/development-status-generated-prompt.md
-generated-docs/development-status.md
-generated-docs/project-overview-generated-prompt.md
-generated-docs/project-overview.md
-issue-notes/56-solution.md
-issue-notes/56.md
-issue-notes/58.md
-issue-notes/59.md
+SPA-FIX-SUMMARY.md
+demo.html
+issue-notes/61.md
+issue-notes/63.md
+issue-notes/65.md
+package.json
+playwright.config.ts
+src/index.ts
+test/integration.test.ts
+test/playback-fix.test.ts
+test/playback-simple.spec.js
+test/spa-navigation-debug.test.ts
+test/spa-navigation-test-README.md
+test/spa-navigation-test.html
 
 
 ---
-Generated at: 2026-01-10 07:01:43 JST
+Generated at: 2026-01-11 07:01:41 JST

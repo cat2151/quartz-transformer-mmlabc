@@ -1,4 +1,4 @@
-Last updated: 2026-01-10
+Last updated: 2026-01-11
 
 
 # プロジェクト概要生成プロンプト（来訪者向け）
@@ -267,6 +267,17 @@ MMLABCTransformer({
    - オーディオシンセサイザーを初期化して楽曲の再生に対応
    - 楽譜をクリックして音楽を再生できるようにクリックイベントハンドラーを追加
 
+### Quartz v4 SPAナビゲーション対応
+
+このプラグインはQuartz v4のSPA（Single Page Application）ナビゲーションに完全対応しています：
+
+- **自動再初期化**: Quartzの`nav`イベントをリスニングし、ページ遷移時に自動的に楽譜をレンダリング
+- **メモリリーク防止**: `window.addCleanup()`を使用してナビゲーション時に適切にクリーンアップ
+- **べき等性**: 同じ要素を複数回処理しないよう`WeakSet`で追跡
+- **パフォーマンス最適化**: CDNモジュール（mml2abc、chord2mml）とAudioContextをナビゲーション間でキャッシュ
+
+これにより、初回アクセス時だけでなく、他のページから楽譜を含むページに遷移した際も確実にレンダリングされます（Issue #63の修正）。
+
 ## 注意事項
 
 - HTMLへの変換はQuartzのビルドプロセス中に行われます
@@ -416,9 +427,11 @@ MIT License - 詳細はLICENSEファイルを参照してください
 
 ## ファイル階層ツリー
 📄 .gitignore
+📖 DEBUG-LOGGING-SUMMARY.md
 📄 LICENSE
 📖 README.ja.md
 📖 README.md
+📖 SPA-FIX-SUMMARY.md
 📄 _config.yml
 🌐 demo.html
 📖 example.md
@@ -451,6 +464,9 @@ MIT License - 詳細はLICENSEファイルを参照してください
   📖 56.md
   📖 58.md
   📖 59.md
+  📖 61.md
+  📖 63.md
+  📖 65.md
 📊 package-lock.json
 📊 package.json
 📘 playwright.config.ts
@@ -461,15 +477,20 @@ MIT License - 詳細はLICENSEファイルを参照してください
   📖 README.md
   🌐 integration-test.html
   📘 integration.test.ts
+  📘 playback-fix.test.ts
+  📜 playback-simple.spec.js
+  📘 spa-navigation-debug.test.ts
+  📖 spa-navigation-test-README.md
+  🌐 spa-navigation-test.html
 📊 tsconfig.json
 📘 vitest.config.ts
 
 ## ファイル詳細分析
-**demo.html** (486行, 23361バイト)
+**demo.html** (468行, 22429バイト)
   - 関数: なし
   - インポート: なし
 
-**playwright.config.ts** (25行, 545バイト)
+**playwright.config.ts** (25行, 616バイト)
   - 関数: なし
   - インポート: @playwright/test
 
@@ -477,44 +498,63 @@ MIT License - 詳細はLICENSEファイルを参照してください
   - 関数: なし
   - インポート: vitest, ./index
 
-**src/index.ts** (606行, 20897バイト)
-  - 関数: escapeHtml, updateNotationTheme, getQuartzTheme, handlePlayback, cleanup, checkPlaybackStatus, markdownPlugins, if, externalResources, blocks, function, forEach, for, catch, addEventListener, media
+**src/index.ts** (654行, 23706バイト)
+  - 関数: wrapper, escapeHtml, updateNotationTheme, getQuartzTheme, initializeMusicNotation, handlePlayback, cleanup, markdownPlugins, if, externalResources, function, forEach, for, then, catch, addEventListener, media
   - インポート: unist-util-visit, unified, ./quartz/cfg
 
 **test/integration-test.html** (159行, 6453バイト)
   - 関数: なし
   - インポート: なし
 
-**test/integration.test.ts** (67行, 2362バイト)
+**test/integration.test.ts** (67行, 2365バイト)
   - 関数: if
-  - インポート: @playwright/test, url, path
+  - インポート: @playwright/test, node:url, node:path
+
+**test/playback-fix.test.ts** (167行, 5264バイト)
+  - 関数: if
+  - インポート: @playwright/test, node:url, node:path
+
+**test/playback-simple.spec.js** (102行, 3407バイト)
+  - 関数: if
+  - インポート: @playwright/test, node:url, node:path
+
+**test/spa-navigation-debug.test.ts** (286行, 10487バイト)
+  - 関数: if
+  - インポート: @playwright/test, node:url, node:path
+
+**test/spa-navigation-test.html** (528行, 19096バイト)
+  - 関数: なし
+  - インポート: なし
 
 **vitest.config.ts** (16行, 416バイト)
   - 関数: なし
   - インポート: vitest/config
 
 ## 関数呼び出し階層
-- checkPlaybackStatus (src/index.ts)
-  - escapeHtml (src/index.ts)
+- wrapper (src/index.ts)
+  - escapeHtml ()
     - updateNotationTheme ()
       - getQuartzTheme ()
+      - initializeMusicNotation ()
       - handlePlayback ()
       - cleanup ()
       - markdownPlugins ()
       - externalResources ()
       - function ()
       - forEach ()
+      - then ()
+      - catch ()
       - addEventListener ()
 - if (src/index.ts)
-- blocks (src/index.ts)
 - for (src/index.ts)
-- catch (src/index.ts)
 - media (src/index.ts)
 
 
 ## プロジェクト構造（ファイル一覧）
+DEBUG-LOGGING-SUMMARY.md
 README.ja.md
 README.md
+SPA-FIX-SUMMARY.md
 demo.html
 example.md
 issue-notes/19.md
@@ -541,8 +581,6 @@ issue-notes/51.md
 issue-notes/53.md
 issue-notes/55.md
 issue-notes/56-solution.md
-issue-notes/56.md
-issue-notes/58.md
 package-lock.json
 
 上記の情報を基に、プロンプトで指定された形式でプロジェクト概要を生成してください。
@@ -555,4 +593,4 @@ package-lock.json
 
 
 ---
-Generated at: 2026-01-10 07:01:42 JST
+Generated at: 2026-01-11 07:01:41 JST
