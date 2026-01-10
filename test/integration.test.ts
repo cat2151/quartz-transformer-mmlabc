@@ -1,14 +1,14 @@
 import { test, expect } from '@playwright/test';
-import { fileURLToPath } from 'url';
-import path from 'path';
+import { fileURLToPath } from 'node:url';
+import { dirname, join } from 'node:path';
 
 const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
+const __dirname = dirname(__filename);
 
 test.describe('Integration Test for Issue #22 Fix', () => {
   test('should verify synth.init() includes options parameter', async ({ page }) => {
     // Navigate to the test page using a relative path
-    await page.goto('file://' + path.join(__dirname, 'integration-test.html'));
+    await page.goto('file://' + join(__dirname, 'integration-test.html'));
 
     // Wait for test to complete (look for pass or fail class)
     await page.waitForSelector('#test-results.pass, #test-results.fail', { timeout: 10000 });
@@ -21,7 +21,7 @@ test.describe('Integration Test for Issue #22 Fix', () => {
     const resultText = await page.locator('#test-results').textContent();
 
     // Take a screenshot for debugging
-    await page.screenshot({ path: path.join(__dirname, 'test-result.png') });
+    await page.screenshot({ path: join(__dirname, 'test-result.png') });
 
     // Assert that the test passed
     expect(isPassed).toBe(true);
@@ -47,7 +47,7 @@ test.describe('Integration Test for Issue #22 Fix', () => {
     });
 
     // Navigate to the test page
-    await page.goto('file://' + path.join(__dirname, 'integration-test.html'));
+    await page.goto('file://' + join(__dirname, 'integration-test.html'));
 
     // Wait for test to complete
     await page.waitForSelector('#test-results.pass, #test-results.fail', { timeout: 10000 });
