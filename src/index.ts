@@ -170,6 +170,8 @@ export const MMLABCTransformer: QuartzTransformerPlugin<MMLABCOptions | undefine
             script: `
 // Initialize abcjs rendering for all ABC notation blocks
 // Supports Quartz v4 SPA navigation by listening for "nav" events
+// Note: Uses regular function wrapper (not async IIFE) to avoid blocking page load.
+// The async initializeMusicNotation() function is called with error handling.
 (function() {
   // Check if ABCJS is available
   if (typeof ABCJS === 'undefined') {
@@ -195,6 +197,8 @@ export const MMLABCTransformer: QuartzTransformerPlugin<MMLABCOptions | undefine
   const visualObjMap = new WeakMap();
   
   // Track processed elements to avoid duplicate initialization
+  // WeakSet automatically removes references when elements are garbage collected,
+  // which is perfect for SPA navigation where DOM elements are dynamically created/destroyed
   const processedElements = new WeakSet();
 
   // Theme detection and switching for Quartz dark mode integration
@@ -471,6 +475,8 @@ export const MMLABCTransformer: QuartzTransformerPlugin<MMLABCOptions | undefine
   // This ensures notation renders on every page navigation
   window.addEventListener('nav', () => {
     // Call async initialization and handle any errors
+    // Errors are logged to console and also handled in try-catch blocks within the function
+    // User-visible error messages are shown inline for each failed notation block
     initializeMusicNotation().catch(err => {
       console.error('Error initializing music notation after navigation:', err);
     });
