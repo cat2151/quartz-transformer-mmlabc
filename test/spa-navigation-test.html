@@ -1,0 +1,518 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SPA Navigation Test - MML ABC Transformer</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            line-height: 1.6;
+        }
+        
+        .nav-buttons {
+            margin-bottom: 20px;
+            padding: 15px;
+            background-color: #f0f0f0;
+            border-radius: 4px;
+        }
+        
+        .nav-buttons button {
+            margin: 5px;
+            padding: 10px 20px;
+            font-size: 16px;
+            cursor: pointer;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 4px;
+        }
+        
+        .nav-buttons button:hover {
+            background-color: #45a049;
+        }
+        
+        .page {
+            display: none;
+            padding: 20px;
+            border: 2px solid #ddd;
+            border-radius: 4px;
+            min-height: 300px;
+        }
+        
+        .page.active {
+            display: block;
+        }
+        
+        .test-info {
+            background-color: #e8f5e9;
+            padding: 15px;
+            border-radius: 4px;
+            margin-bottom: 20px;
+        }
+        
+        .test-info h3 {
+            margin-top: 0;
+            color: #2e7d32;
+        }
+        
+        /* Include the ABC notation styles from the plugin */
+        .abc-notation {
+            margin: 1em 0;
+            padding: 1em;
+            background-color: #f5f5f5;
+            border-radius: 4px;
+            overflow-x: auto;
+            cursor: pointer;
+            position: relative;
+            max-width: 95%;
+        }
+        
+        .abc-notation svg {
+            max-width: 100%;
+            height: auto;
+        }
+        
+        .abc-notation svg path,
+        .abc-notation svg text {
+            fill: #000;
+        }
+        
+        .abc-notation.playing {
+            background-color: #e8f5e9;
+        }
+        
+        .abc-notation::before {
+            content: "▶ Click to play";
+            position: absolute;
+            top: 0.5em;
+            right: 0.5em;
+            font-size: 0.8em;
+            color: #666;
+            background-color: rgba(255, 255, 255, 0.9);
+            padding: 0.3em 0.6em;
+            border-radius: 3px;
+            pointer-events: none;
+        }
+        
+        .abc-notation.playing::before {
+            content: "🔊 Playing...";
+            color: #2e7d32;
+        }
+    </style>
+</head>
+<body>
+    <h1>SPA Navigation Test</h1>
+    
+    <div class="test-info">
+        <h3>Test Instructions:</h3>
+        <ol>
+            <li>Click "Page 2 (Music)" - music notation should render</li>
+            <li>Click "Page 1 (No Music)" - page changes to a simple page</li>
+            <li>Click "Page 2 (Music)" again - <strong>THIS IS THE TEST:</strong> music notation should render even after navigation</li>
+            <li>Click "Page 3 (More Music)" - another music page should render correctly</li>
+        </ol>
+        <p><strong>Expected behavior:</strong> Music notation should render on every navigation, not just the first time you visit a music page.</p>
+    </div>
+    
+    <div class="nav-buttons">
+        <button onclick="navigateTo('page1')">Page 1 (No Music)</button>
+        <button onclick="navigateTo('page2')">Page 2 (Music)</button>
+        <button onclick="navigateTo('page3')">Page 3 (More Music)</button>
+    </div>
+    
+    <div id="page1" class="page active">
+        <h2>Page 1 - Simple Content</h2>
+        <p>This page has no music notation. It's just a regular page with text.</p>
+        <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. This simulates navigating to a page without music notation.</p>
+    </div>
+    
+    <div id="page2" class="page">
+        <h2>Page 2 - Music Notation Examples</h2>
+        <p>This page contains music notation that should render after navigation.</p>
+        
+        <h3>Example 1: Simple Scale (MML)</h3>
+        <div class="abc-notation mml-block" data-mml="t120 l4 cdefgab>c" data-type="mml" role="button" tabindex="0" aria-label="Play music notation"></div>
+        
+        <h3>Example 2: Chord Progression</h3>
+        <div class="abc-notation chord-block" data-chord="C Am F G" data-type="chord" role="button" tabindex="0" aria-label="Play music notation"></div>
+    </div>
+    
+    <div id="page3" class="page">
+        <h2>Page 3 - More Music</h2>
+        <p>Another page with different music notation.</p>
+        
+        <h3>Complex Melody</h3>
+        <div class="abc-notation mml-block" data-mml="t140 l8 o4 c d e f g4 g4 a g f e d4 d4 c2" data-type="mml" role="button" tabindex="0" aria-label="Play music notation"></div>
+        
+        <h3>Jazz Chords</h3>
+        <div class="abc-notation chord-block" data-chord="Cmaj7 Am7 Dm7 G7" data-type="chord" role="button" tabindex="0" aria-label="Play music notation"></div>
+    </div>
+
+    <!-- Load abcjs from CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/abcjs@6/dist/abcjs-basic-min.min.js"></script>
+    
+    <!-- Use the plugin's script from dist (inline it for testing) -->
+    <script type="module" src="../dist/index.js"></script>
+    
+    <!-- Inline the plugin's afterDOMReady script for testing -->
+    <script type="module">
+// Initialize abcjs rendering for all ABC notation blocks
+// Supports Quartz v4 SPA navigation by listening for "nav" events
+(function() {
+  // Check if ABCJS is available
+  if (typeof ABCJS === 'undefined') {
+    console.error('ABCJS library not loaded');
+    return;
+  }
+
+  // Global state that persists across SPA navigations
+  // Cache the mml2abc module to avoid duplicate imports
+  let mml2abcModule = null;
+  
+  // Cache the chord2mml loading promise to avoid race conditions
+  let chord2mmlLoadPromise = null;
+  
+  // Global synth instance for audio playback
+  let currentSynth = null;
+  let currentPlayingElement = null;
+  
+  // Shared AudioContext (create once and reuse across navigations)
+  let sharedAudioContext = null;
+  
+  // WeakMap to store visual objects for each element
+  const visualObjMap = new WeakMap();
+  
+  // Track processed elements to avoid duplicate initialization
+  const processedElements = new WeakSet();
+
+  // Theme detection and switching for Quartz dark mode integration
+  const updateNotationTheme = function(isDark) {
+    const blocks = document.querySelectorAll('.abc-notation');
+    blocks.forEach(block => {
+      if (isDark) {
+        block.classList.add('theme-dark');
+        block.classList.remove('theme-light');
+      } else {
+        block.classList.add('theme-light');
+        block.classList.remove('theme-dark');
+      }
+    });
+  };
+
+  // Helper to detect Quartz's theme from document attributes or classes
+  const getQuartzTheme = function() {
+    const htmlElement = document.documentElement;
+    const bodyElement = document.body;
+    
+    // Check data-theme attribute (common in Quartz)
+    const dataTheme = htmlElement.getAttribute('data-theme') || bodyElement.getAttribute('data-theme');
+    if (dataTheme === 'dark') return 'dark';
+    if (dataTheme === 'light') return 'light';
+    
+    // Check for dark class on html or body
+    if (htmlElement.classList.contains('dark') || bodyElement.classList.contains('dark')) {
+      return 'dark';
+    }
+    
+    // Fallback to system preference
+    if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+      return 'dark';
+    }
+    
+    return 'light';
+  };
+  
+  // Main initialization function - called on initial load and SPA navigation
+  const initializeMusicNotation = async function() {
+    console.log('initializeMusicNotation called');
+    
+    // Apply current theme
+    const currentTheme = getQuartzTheme();
+    updateNotationTheme(currentTheme === 'dark');
+
+    // Process all abc-notation blocks
+    const blocks = document.querySelectorAll('.abc-notation');
+    console.log('Found', blocks.length, 'notation blocks to process');
+    
+    for (const element of blocks) {
+      // Skip if this element was already processed (idempotent initialization)
+      if (processedElements.has(element)) {
+        console.log('Skipping already processed element');
+        continue;
+      }
+      
+      // Mark as processed
+      processedElements.add(element);
+      
+      const type = element.getAttribute('data-type');
+      console.log('Processing element of type:', type);
+      
+      try {
+        let abcNotation = '';
+      
+      if (type === 'mml') {
+        const mmlData = element.getAttribute('data-mml');
+        if (mmlData) {
+          // Dynamically import mml2abc ES module from CDN
+          if (!mml2abcModule) {
+            mml2abcModule = await import('https://cdn.jsdelivr.net/gh/cat2151/mml2abc/dist/mml2abc.mjs');
+          }
+          abcNotation = mml2abcModule.parse(mmlData);
+        }
+      } else if (type === 'chord') {
+        const chordData = element.getAttribute('data-chord');
+        if (chordData) {
+          // Load chord2mml as a script (UMD bundle, not ES module)
+          if (typeof window.chord2mml === 'undefined') {
+            if (!chord2mmlLoadPromise) {
+              chord2mmlLoadPromise = new Promise((resolve, reject) => {
+                const script = document.createElement('script');
+                script.src = 'https://cdn.jsdelivr.net/gh/cat2151/chord2mml/dist/chord2mml.js';
+                script.integrity = 'sha384-s0MWjnJMkG/kT19h1SE4UrQ7YZ0eSnBKYgzstrrpAsrHer1g6ZqgCJJbmj0zTIcz';
+                script.crossOrigin = 'anonymous';
+                script.onload = resolve;
+                script.onerror = () => reject(new Error('Failed to load chord2mml script'));
+                document.head.appendChild(script);
+              });
+            }
+            await chord2mmlLoadPromise;
+          }
+          const mmlData = window.chord2mml.parse(chordData);
+          // Then convert MML to ABC (reuse cached module)
+          if (!mml2abcModule) {
+            mml2abcModule = await import('https://cdn.jsdelivr.net/gh/cat2151/mml2abc/dist/mml2abc.mjs');
+          }
+          abcNotation = mml2abcModule.parse(mmlData);
+        }
+      } else if (type === 'abc') {
+        // For ABC notation, no conversion needed - use directly
+        const abcData = element.getAttribute('data-abc');
+        if (abcData) {
+          abcNotation = abcData;
+          }
+      }
+      
+      if (abcNotation) {
+        // Calculate responsive staff width
+        const containerWidth = element.offsetWidth || element.clientWidth || 600;
+        const availableWidth = containerWidth - 40;
+        const staffWidth = Math.min(Math.max(availableWidth, 300), 800);
+        
+        // Render the ABC notation with abcjs
+        const visualObj = ABCJS.renderAbc(element, abcNotation, {
+          responsive: 'resize',
+          staffwidth: staffWidth,
+          scale: 1.0
+        });
+        
+        console.log('Rendered notation successfully');
+        
+        // Store the visual object using WeakMap
+        visualObjMap.set(element, visualObj);
+        
+        // Define the playback handler function
+        const handlePlayback = async function(e) {
+          e.preventDefault();
+          
+          // Stop any currently playing music
+          if (currentSynth) {
+            currentSynth.stop();
+            if (currentPlayingElement) {
+              currentPlayingElement.classList.remove('playing');
+            }
+          }
+          
+          // If clicking the same element that's playing, just stop
+          if (currentPlayingElement === element) {
+            currentPlayingElement = null;
+            currentSynth = null;
+            return;
+          }
+          
+          try {
+            // Create audio context once (requires user gesture for first time)
+            if (!sharedAudioContext) {
+              const AudioContextClass = window.AudioContext || window.webkitAudioContext;
+              if (AudioContextClass) {
+                sharedAudioContext = new AudioContextClass();
+              } else {
+                console.error('Web Audio API not supported');
+                return;
+              }
+            }
+            
+            // Ensure audio context is running
+            if (sharedAudioContext.state === 'suspended') {
+              await sharedAudioContext.resume();
+            }
+            
+            // Get the visual object for this element
+            const visualObj = visualObjMap.get(element);
+            if (!visualObj || !visualObj[0]) {
+              console.error('Visual object not found for element');
+              return;
+            }
+            
+            // Create synth
+            if (ABCJS.synth.CreateSynth) {
+              currentSynth = new ABCJS.synth.CreateSynth();
+              
+              // Initialize synth
+              await currentSynth.init({
+                audioContext: sharedAudioContext,
+                visualObj: visualObj[0],
+                options: {}
+              });
+              
+              // Prime the synth with the tune
+              await currentSynth.prime();
+              
+              // Mark as playing
+              element.classList.add('playing');
+              currentPlayingElement = element;
+              
+              // Set up event listener for when playback finishes
+              const cleanup = function() {
+                if (currentPlayingElement === element) {
+                  element.classList.remove('playing');
+                  currentPlayingElement = null;
+                  if (currentSynth && typeof currentSynth.stop === 'function') {
+                    currentSynth.stop();
+                  }
+                  currentSynth = null;
+                }
+              };
+              
+              // Start playback
+              const playbackPromise = currentSynth.start();
+              
+              // If start() returns a promise, use it to detect completion
+              if (playbackPromise && typeof playbackPromise.then === 'function') {
+                playbackPromise.then(function() {
+                  cleanup();
+                }).catch(function(error) {
+                  console.error('Playback ended or error:', error);
+                  cleanup();
+                });
+              }
+            } else {
+              console.error('ABCJS synth API not available');
+            }
+          } catch (error) {
+            console.error('Error playing music:', error);
+            element.classList.remove('playing');
+            currentPlayingElement = null;
+            currentSynth = null;
+          }
+        };
+        
+        // Add click handler for audio playback
+        element.addEventListener('click', handlePlayback);
+        
+        // Add keyboard handler for accessibility
+        element.addEventListener('keydown', async function(e) {
+          if (e.key === 'Enter' || e.key === ' ') {
+            e.preventDefault();
+            await handlePlayback(e);
+          }
+        });
+      }
+    } catch (error) {
+      console.error('Error rendering notation:', error);
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+      const errorParagraph = document.createElement('p');
+      errorParagraph.style.color = 'red';
+      if (errorMessage.includes('Failed to fetch') || errorMessage.includes('import')) {
+        errorParagraph.textContent = 'Error loading music notation library. Please check your internet connection.';
+      } else if (errorMessage.includes('parse')) {
+        const notationType = type === 'chord' ? 'chord' : type === 'abc' ? 'ABC' : 'MML';
+        errorParagraph.textContent = 'Error parsing ' + notationType + ' notation. Please check the syntax.';
+      } else {
+        errorParagraph.textContent = 'Error rendering music notation';
+      }
+      element.innerHTML = '';
+      element.appendChild(errorParagraph);
+    }
+  }
+};
+
+  // Listen for Quartz theme changes
+  document.addEventListener('themechange', (e) => {
+    const theme = e.detail?.theme;
+    if (theme === 'dark' || theme === 'light') {
+      updateNotationTheme(theme === 'dark');
+    }
+  });
+
+  // Listen for Quartz SPA navigation events
+  // This ensures notation renders on every page navigation
+  window.addEventListener('nav', () => {
+    // Call async initialization and handle any errors
+    console.log('SPA navigation detected - re-initializing music notation');
+    initializeMusicNotation().catch(err => {
+      console.error('Error initializing music notation after navigation:', err);
+    });
+  });
+
+  // Register cleanup function for SPA navigation
+  // This prevents memory leaks when navigating away
+  if (typeof window.addCleanup === 'function') {
+    window.addCleanup(() => {
+      // Stop any playing audio
+      if (currentSynth && typeof currentSynth.stop === 'function') {
+        currentSynth.stop();
+      }
+      if (currentPlayingElement) {
+        currentPlayingElement.classList.remove('playing');
+      }
+      currentSynth = null;
+      currentPlayingElement = null;
+    });
+  }
+
+  // Initial render on page load
+  console.log('Initial load - initializing music notation');
+  initializeMusicNotation().catch(err => {
+    console.error('Error initializing music notation on page load:', err);
+  });
+})();
+    </script>
+    
+    <!-- SPA Navigation Simulation -->
+    <script>
+        // Simulate Quartz's SPA navigation
+        function navigateTo(pageId) {
+            // Hide all pages
+            document.querySelectorAll('.page').forEach(page => {
+                page.classList.remove('active');
+            });
+            
+            // Show target page
+            const targetPage = document.getElementById(pageId);
+            if (targetPage) {
+                targetPage.classList.add('active');
+                
+                // Dispatch the 'nav' event that Quartz uses for SPA navigation
+                const navEvent = new CustomEvent('nav', {
+                    detail: { url: '#' + pageId }
+                });
+                window.dispatchEvent(navEvent);
+                
+                console.log('Navigated to', pageId);
+            }
+        }
+        
+        // Mock addCleanup function (Quartz provides this)
+        if (!window.addCleanup) {
+            window.addCleanup = function(fn) {
+                console.log('Cleanup function registered');
+                // In a real Quartz environment, this would be called on navigation
+            };
+        }
+    </script>
+</body>
+</html>

@@ -169,13 +169,17 @@ export const MMLABCTransformer: QuartzTransformerPlugin<MMLABCOptions | undefine
             contentType: "inline",
             script: `
 // Initialize abcjs rendering for all ABC notation blocks
-(async function() {
+// Supports Quartz v4 SPA navigation by listening for "nav" events
+// Note: Uses regular function wrapper (not async IIFE) to avoid blocking page load.
+// The async initializeMusicNotation() function is called with error handling.
+(function() {
   // Check if ABCJS is available
   if (typeof ABCJS === 'undefined') {
     console.error('ABCJS library not loaded');
     return;
   }
 
+  // Global state that persists across SPA navigations
   // Cache the mml2abc module to avoid duplicate imports
   let mml2abcModule = null;
   
@@ -186,11 +190,16 @@ export const MMLABCTransformer: QuartzTransformerPlugin<MMLABCOptions | undefine
   let currentSynth = null;
   let currentPlayingElement = null;
   
-  // Shared AudioContext (create once and reuse)
+  // Shared AudioContext (create once and reuse across navigations)
   let sharedAudioContext = null;
   
   // WeakMap to store visual objects for each element
   const visualObjMap = new WeakMap();
+  
+  // Track processed elements to avoid duplicate initialization
+  // WeakSet automatically removes references when elements are garbage collected,
+  // which is perfect for SPA navigation where DOM elements are dynamically created/destroyed
+  const processedElements = new WeakSet();
 
   // Theme detection and switching for Quartz dark mode integration
   const updateNotationTheme = function(isDark) {
@@ -206,10 +215,8 @@ export const MMLABCTransformer: QuartzTransformerPlugin<MMLABCOptions | undefine
     });
   };
 
-  // 1) Initial theme detection
-  // First try to detect Quartz's theme from document attributes or classes
+  // Helper to detect Quartz's theme from document attributes or classes
   const getQuartzTheme = function() {
-    // Check for Quartz-specific theme indicators
     const htmlElement = document.documentElement;
     const bodyElement = document.body;
     
@@ -230,29 +237,29 @@ export const MMLABCTransformer: QuartzTransformerPlugin<MMLABCOptions | undefine
     
     return 'light';
   };
-
-  const initialTheme = getQuartzTheme();
-  const initialIsDark = initialTheme === 'dark';
   
-  // Apply initial theme
-  updateNotationTheme(initialIsDark);
+  // Main initialization function - called on initial load and SPA navigation
+  const initializeMusicNotation = async function() {
+    // Apply current theme
+    const currentTheme = getQuartzTheme();
+    updateNotationTheme(currentTheme === 'dark');
 
-  // 2) Listen for Quartz theme changes
-  document.addEventListener('themechange', (e) => {
-    const theme = e.detail?.theme;
-    if (theme === 'dark' || theme === 'light') {
-      updateNotationTheme(theme === 'dark');
-    }
-  });
-
-  // Process all abc-notation blocks
-  const blocks = document.querySelectorAll('.abc-notation');
-  
-  for (const element of blocks) {
-    const type = element.getAttribute('data-type');
+    // Process all abc-notation blocks
+    const blocks = document.querySelectorAll('.abc-notation');
     
-    try {
-      let abcNotation = '';
+    for (const element of blocks) {
+      // Skip if this element was already processed (idempotent initialization)
+      if (processedElements.has(element)) {
+        continue;
+      }
+      
+      // Mark as processed
+      processedElements.add(element);
+      
+      const type = element.getAttribute('data-type');
+      
+      try {
+        let abcNotation = '';
       
       if (type === 'mml') {
         const mmlData = element.getAttribute('data-mml');
@@ -298,162 +305,205 @@ export const MMLABCTransformer: QuartzTransformerPlugin<MMLABCOptions | undefine
         }
       }
       
-      if (abcNotation) {
-        // コンテナのサイズに基づいて五線譜の幅をレスポンシブに計算
-        const containerWidth = element.offsetWidth || element.clientWidth || 600;
-        // .abc-notation の padding: 1em は左右で合計2em（約32px）
-        // フォントサイズが16pxと仮定すると、2em ≈ 32px + 安全マージン約8px = 40px
-        const availableWidth = containerWidth - 40;
-        // 最小300px、最大800pxの範囲に制限
-        const staffWidth = Math.min(Math.max(availableWidth, 300), 800);
-        
-        // Render the ABC notation with abcjs
-        const visualObj = ABCJS.renderAbc(element, abcNotation, {
-          responsive: 'resize',
-          staffwidth: staffWidth,
-          scale: 1.0
-        });
-        
-        // Store the visual object using WeakMap
-        visualObjMap.set(element, visualObj);
-        
-        // Define the playback handler function
-        const handlePlayback = async function(e) {
-          e.preventDefault();
+        if (abcNotation) {
+          // コンテナのサイズに基づいて五線譜の幅をレスポンシブに計算
+          const containerWidth = element.offsetWidth || element.clientWidth || 600;
+          // .abc-notation の padding: 1em は左右で合計2em（約32px）
+          // フォントサイズが16pxと仮定すると、2em ≈ 32px + 安全マージン約8px = 40px
+          const availableWidth = containerWidth - 40;
+          // 最小300px、最大800pxの範囲に制限
+          const staffWidth = Math.min(Math.max(availableWidth, 300), 800);
           
-          // Stop any currently playing music
-          if (currentSynth) {
-            currentSynth.stop();
-            if (currentPlayingElement) {
-              currentPlayingElement.classList.remove('playing');
-            }
-          }
+          // Render the ABC notation with abcjs
+          const visualObj = ABCJS.renderAbc(element, abcNotation, {
+            responsive: 'resize',
+            staffwidth: staffWidth,
+            scale: 1.0
+          });
           
-          // If clicking the same element that's playing, just stop
-          if (currentPlayingElement === element) {
-            currentPlayingElement = null;
-            currentSynth = null;
-            return;
-          }
+          // Store the visual object using WeakMap
+          visualObjMap.set(element, visualObj);
           
-          try {
-            // Create audio context once (requires user gesture for first time)
-            if (!sharedAudioContext) {
-              const AudioContextClass = window.AudioContext || window.webkitAudioContext;
-              if (AudioContextClass) {
-                sharedAudioContext = new AudioContextClass();
-              } else {
-                console.error('Web Audio API not supported');
-                return;
+          // Define the playback handler function
+          const handlePlayback = async function(e) {
+            e.preventDefault();
+            
+            // Stop any currently playing music
+            if (currentSynth) {
+              currentSynth.stop();
+              if (currentPlayingElement) {
+                currentPlayingElement.classList.remove('playing');
               }
             }
             
-            // Ensure audio context is running (some browsers start it in a suspended state)
-            if (sharedAudioContext && sharedAudioContext.state === 'suspended') {
-              await sharedAudioContext.resume();
-            }
-            
-            // Get the visual object for this element
-            const visualObj = visualObjMap.get(element);
-            if (!visualObj || !visualObj[0]) {
-              console.error('Visual object not found for element');
+            // If clicking the same element that's playing, just stop
+            if (currentPlayingElement === element) {
+              currentPlayingElement = null;
+              currentSynth = null;
               return;
             }
             
-            // Create synth
-            if (ABCJS.synth.CreateSynth) {
-              currentSynth = new ABCJS.synth.CreateSynth();
-              
-              // Initialize synth
-              await currentSynth.init({
-                audioContext: sharedAudioContext,
-                visualObj: visualObj[0],
-                options: {}
-              });
-              
-              // Prime the synth with the tune
-              await currentSynth.prime();
-              
-              // Mark as playing
-              element.classList.add('playing');
-              currentPlayingElement = element;
-              
-              // Set up event listener for when playback finishes
-              const cleanup = function() {
-                if (currentPlayingElement === element) {
-                  element.classList.remove('playing');
-                  currentPlayingElement = null;
-                  if (currentSynth && typeof currentSynth.stop === 'function') {
-                    currentSynth.stop();
-                  }
-                  currentSynth = null;
+            try {
+              // Create audio context once (requires user gesture for first time)
+              if (!sharedAudioContext) {
+                const AudioContextClass = window.AudioContext || window.webkitAudioContext;
+                if (AudioContextClass) {
+                  sharedAudioContext = new AudioContextClass();
+                } else {
+                  console.error('Web Audio API not supported');
+                  return;
                 }
-              };
-              
-              // Start playback
-              // abcjs CreateSynth's start() may return a promise that resolves when complete
-              const playbackPromise = currentSynth.start();
-              
-              // If start() returns a promise, use it to detect completion
-              if (playbackPromise && typeof playbackPromise.then === 'function') {
-                playbackPromise.then(function() {
-                  // Playback completed successfully
-                  cleanup();
-                }).catch(function(error) {
-                  // Playback error or stopped
-                  console.error('Playback ended or error:', error);
-                  cleanup();
-                });
-              } else {
-                // If start() doesn't return a promise, we have no way to detect completion
-                // This is actually fine - the user can stop playback by clicking again
-                // The cleanup will happen when they click to play something else or stop
-                console.debug('Playback started (no completion detection available)');
               }
-            } else {
-              console.error('ABCJS synth API not available');
-              const errorParagraph = document.createElement('p');
-              errorParagraph.style.color = 'orange';
-              errorParagraph.style.fontSize = '0.9em';
-              errorParagraph.textContent = 'Audio playback is not available in this version of abcjs.';
-              element.appendChild(errorParagraph);
+              
+              // Ensure audio context is running (some browsers start it in a suspended state)
+              if (sharedAudioContext && sharedAudioContext.state === 'suspended') {
+                await sharedAudioContext.resume();
+              }
+              
+              // Get the visual object for this element
+              const visualObj = visualObjMap.get(element);
+              if (!visualObj || !visualObj[0]) {
+                console.error('Visual object not found for element');
+                return;
+              }
+              
+              // Create synth
+              if (ABCJS.synth.CreateSynth) {
+                currentSynth = new ABCJS.synth.CreateSynth();
+                
+                // Initialize synth
+                await currentSynth.init({
+                  audioContext: sharedAudioContext,
+                  visualObj: visualObj[0],
+                  options: {}
+                });
+                
+                // Prime the synth with the tune
+                await currentSynth.prime();
+                
+                // Mark as playing
+                element.classList.add('playing');
+                currentPlayingElement = element;
+                
+                // Set up event listener for when playback finishes
+                const cleanup = function() {
+                  if (currentPlayingElement === element) {
+                    element.classList.remove('playing');
+                    currentPlayingElement = null;
+                    if (currentSynth && typeof currentSynth.stop === 'function') {
+                      currentSynth.stop();
+                    }
+                    currentSynth = null;
+                  }
+                };
+                
+                // Start playback
+                // abcjs CreateSynth's start() may return a promise that resolves when complete
+                const playbackPromise = currentSynth.start();
+                
+                // If start() returns a promise, use it to detect completion
+                if (playbackPromise && typeof playbackPromise.then === 'function') {
+                  playbackPromise.then(function() {
+                    // Playback completed successfully
+                    cleanup();
+                  }).catch(function(error) {
+                    // Playback error or stopped
+                    console.error('Playback ended or error:', error);
+                    cleanup();
+                  });
+                } else {
+                  // If start() doesn't return a promise, we have no way to detect completion
+                  // This is actually fine - the user can stop playback by clicking again
+                  // The cleanup will happen when they click to play something else or stop
+                  console.debug('Playback started (no completion detection available)');
+                }
+              } else {
+                console.error('ABCJS synth API not available');
+                const errorParagraph = document.createElement('p');
+                errorParagraph.style.color = 'orange';
+                errorParagraph.style.fontSize = '0.9em';
+                errorParagraph.textContent = 'Audio playback is not available in this version of abcjs.';
+                element.appendChild(errorParagraph);
+              }
+            } catch (error) {
+              console.error('Error playing music:', error);
+              element.classList.remove('playing');
+              currentPlayingElement = null;
+              currentSynth = null;
             }
-          } catch (error) {
-            console.error('Error playing music:', error);
-            element.classList.remove('playing');
-            currentPlayingElement = null;
-            currentSynth = null;
-          }
-        };
-        
-        // Add click handler for audio playback
-        element.addEventListener('click', handlePlayback);
-        
-        // Add keyboard handler for accessibility (Enter and Space keys)
-        element.addEventListener('keydown', async function(e) {
-          if (e.key === 'Enter' || e.key === ' ') {
-            e.preventDefault();
-            await handlePlayback(e);
-          }
-        });
+          };
+          
+          // Add click handler for audio playback
+          element.addEventListener('click', handlePlayback);
+          
+          // Add keyboard handler for accessibility (Enter and Space keys)
+          element.addEventListener('keydown', async function(e) {
+            if (e.key === 'Enter' || e.key === ' ') {
+              e.preventDefault();
+              await handlePlayback(e);
+            }
+          });
+        }
+      } catch (error) {
+        console.error('Error rendering notation:', error);
+        const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+        const errorParagraph = document.createElement('p');
+        errorParagraph.style.color = 'red';
+        if (errorMessage.includes('Failed to fetch') || errorMessage.includes('import')) {
+          errorParagraph.textContent = 'Error loading music notation library. Please check your internet connection.';
+        } else if (errorMessage.includes('parse')) {
+          const notationType = type === 'chord' ? 'chord' : type === 'abc' ? 'ABC' : 'MML';
+          errorParagraph.textContent = 'Error parsing ' + notationType + ' notation. Please check the syntax.';
+        } else {
+          errorParagraph.textContent = 'Error rendering music notation';
+        }
+        element.innerHTML = '';
+        element.appendChild(errorParagraph);
       }
-    } catch (error) {
-      console.error('Error rendering notation:', error);
-      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
-      const errorParagraph = document.createElement('p');
-      errorParagraph.style.color = 'red';
-      if (errorMessage.includes('Failed to fetch') || errorMessage.includes('import')) {
-        errorParagraph.textContent = 'Error loading music notation library. Please check your internet connection.';
-      } else if (errorMessage.includes('parse')) {
-        const notationType = type === 'chord' ? 'chord' : type === 'abc' ? 'ABC' : 'MML';
-        errorParagraph.textContent = 'Error parsing ' + notationType + ' notation. Please check the syntax.';
-      } else {
-        errorParagraph.textContent = 'Error rendering music notation';
-      }
-      element.innerHTML = '';
-      element.appendChild(errorParagraph);
     }
+  };
+
+  // Listen for Quartz theme changes
+  document.addEventListener('themechange', (e) => {
+    const theme = e.detail?.theme;
+    if (theme === 'dark' || theme === 'light') {
+      updateNotationTheme(theme === 'dark');
+    }
+  });
+
+  // Listen for Quartz SPA navigation events
+  // This ensures notation renders on every page navigation
+  window.addEventListener('nav', () => {
+    // Call async initialization and handle any errors
+    // Errors are logged to console and also handled in try-catch blocks within the function
+    // User-visible error messages are shown inline for each failed notation block
+    initializeMusicNotation().catch(err => {
+      console.error('Error initializing music notation after navigation:', err);
+    });
+  });
+
+  // Register cleanup function for SPA navigation
+  // This prevents memory leaks when navigating away
+  if (typeof window.addCleanup === 'function') {
+    window.addCleanup(() => {
+      // Stop any playing audio
+      if (currentSynth && typeof currentSynth.stop === 'function') {
+        currentSynth.stop();
+      }
+      if (currentPlayingElement) {
+        currentPlayingElement.classList.remove('playing');
+      }
+      currentSynth = null;
+      currentPlayingElement = null;
+      // Note: We keep sharedAudioContext, mml2abcModule, and chord2mmlLoadPromise
+      // cached across navigations for performance
+    });
   }
+
+  // Initial render on page load
+  initializeMusicNotation().catch(err => {
+    console.error('Error initializing music notation on page load:', err);
+  });
 })();
             `.trim(),
           },
