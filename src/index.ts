@@ -173,9 +173,13 @@ export const MMLABCTransformer: QuartzTransformerPlugin<MMLABCOptions | undefine
 // Note: Uses regular function wrapper (not async IIFE) to avoid blocking page load.
 // The async initializeMusicNotation() function is called with error handling.
 (function() {
+  // Plugin version for debugging
+  const PLUGIN_VERSION = '0.1.0-debug';
+  console.log('[MML-ABC-Transformer] Plugin loaded. Version:', PLUGIN_VERSION);
+  
   // Check if ABCJS is available
   if (typeof ABCJS === 'undefined') {
-    console.error('ABCJS library not loaded');
+    console.error('[MML-ABC-Transformer] ABCJS library not loaded');
     return;
   }
 
@@ -240,21 +244,27 @@ export const MMLABCTransformer: QuartzTransformerPlugin<MMLABCOptions | undefine
   
   // Main initialization function - called on initial load and SPA navigation
   const initializeMusicNotation = async function() {
+    console.log('[MML-ABC-Transformer] 五線譜表示処理を開始します');
+    const startTime = performance.now();
+    
     // Apply current theme
     const currentTheme = getQuartzTheme();
     updateNotationTheme(currentTheme === 'dark');
 
     // Process all abc-notation blocks
     const blocks = document.querySelectorAll('.abc-notation');
+    console.log('[MML-ABC-Transformer] 処理対象の楽譜ブロック数:', blocks.length);
     
     for (const element of blocks) {
       // Skip if this element was already processed (idempotent initialization)
       if (processedElements.has(element)) {
+        console.log('[MML-ABC-Transformer] スキップ: 既に処理済みの要素');
         continue;
       }
       
       // Mark as processed
       processedElements.add(element);
+      console.log('[MML-ABC-Transformer] 新しい楽譜要素を処理します。Type:', element.getAttribute('data-type'));
       
       const type = element.getAttribute('data-type');
       
@@ -461,6 +471,10 @@ export const MMLABCTransformer: QuartzTransformerPlugin<MMLABCOptions | undefine
         element.appendChild(errorParagraph);
       }
     }
+    
+    const endTime = performance.now();
+    const duration = (endTime - startTime).toFixed(2);
+    console.log('[MML-ABC-Transformer] 五線譜表示処理が完了しました。処理時間:', duration, 'ms');
   };
 
   // Listen for Quartz theme changes
@@ -474,11 +488,12 @@ export const MMLABCTransformer: QuartzTransformerPlugin<MMLABCOptions | undefine
   // Listen for Quartz SPA navigation events
   // This ensures notation renders on every page navigation
   window.addEventListener('nav', () => {
+    console.log('[MML-ABC-Transformer] SPA page 遷移を検知しました');
     // Call async initialization and handle any errors
     // Errors are logged to console and also handled in try-catch blocks within the function
     // User-visible error messages are shown inline for each failed notation block
     initializeMusicNotation().catch(err => {
-      console.error('Error initializing music notation after navigation:', err);
+      console.error('[MML-ABC-Transformer] Error initializing music notation after navigation:', err);
     });
   });
 
@@ -501,8 +516,9 @@ export const MMLABCTransformer: QuartzTransformerPlugin<MMLABCOptions | undefine
   }
 
   // Initial render on page load
+  console.log('[MML-ABC-Transformer] 初期ページ読み込み時の処理を開始します');
   initializeMusicNotation().catch(err => {
-    console.error('Error initializing music notation on page load:', err);
+    console.error('[MML-ABC-Transformer] Error initializing music notation on page load:', err);
   });
 })();
             `.trim(),

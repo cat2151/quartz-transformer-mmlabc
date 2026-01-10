@@ -1,6 +1,7 @@
 {
   "name": "quartz-transformer-mmlabc",
   "version": "0.1.0",
+  "type": "module",
   "description": "Quartz transformer plugin for MML and chord notation to ABC notation with abcjs rendering",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",

@@ -1,5 +1,9 @@
-const { test, expect } = require('@playwright/test');
-const path = require('path');
+import { test, expect } from '@playwright/test';
+import { fileURLToPath } from 'node:url';
+import { dirname, join } from 'node:path';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
 
 test.describe('Playback Fix - Issue #61', () => {
   test('demo.html should NOT have isRunning() TypeError', async ({ page }) => {
@@ -15,7 +19,7 @@ test.describe('Playback Fix - Issue #61', () => {
     });
 
     // Navigate to demo page
-    const demoPath = 'file://' + path.join(__dirname, '..', 'demo.html');
+    const demoPath = 'file://' + join(__dirname, '..', 'demo.html');
     await page.goto(demoPath);
 
     // Wait for notation to render
@@ -28,7 +32,7 @@ test.describe('Playback Fix - Issue #61', () => {
 
     // Screenshot for documentation
     await page.screenshot({ 
-      path: path.join(__dirname, 'playback-test.png'),
+      path: join(__dirname, 'playback-test.png'),
       fullPage: true 
     });
 
@@ -70,7 +74,7 @@ test.describe('Playback Fix - Issue #61', () => {
       jsErrors.push(error.message);
     });
 
-    const demoPath = 'file://' + path.join(__dirname, '..', 'demo.html');
+    const demoPath = 'file://' + join(__dirname, '..', 'demo.html');
     await page.goto(demoPath);
 
     await page.waitForSelector('.abc-notation', { timeout: 10000 });
