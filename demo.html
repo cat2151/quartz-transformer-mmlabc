@@ -362,43 +362,25 @@
                                     };
                                     
                                     // Start playback
-                                    currentSynth.start();
+                                    // abcjs CreateSynth's start() may return a promise that resolves when complete
+                                    const playbackPromise = currentSynth.start();
                                     
-                                    // Store a unique ID for this playback to handle race conditions
-                                    const playbackId = Date.now();
-                                    element.setAttribute('data-playback-id', playbackId.toString());
-                                    
-                                    // Check playback status with safety limit
-                                    let pollCount = 0;
-                                    const maxPolls = 6000; // Max 10 minutes (6000 * 100ms)
-                                    
-                                    const checkPlaybackStatus = function() {
-                                        pollCount++;
-                                        
-                                        // Check if this playback has been superseded
-                                        const currentPlaybackId = element.getAttribute('data-playback-id');
-                                        if (currentPlaybackId !== playbackId.toString()) {
-                                            return; // Stop polling for this playback
-                                        }
-                                        
-                                        // Safety check: stop after max polls
-                                        if (pollCount >= maxPolls) {
-                                            console.warn('Playback check timeout reached');
+                                    // If start() returns a promise, use it to detect completion
+                                    if (playbackPromise && typeof playbackPromise.then === 'function') {
+                                        playbackPromise.then(function() {
+                                            // Playback completed successfully
                                             cleanup();
-                                            return;
-                                        }
-                                        
-                                        // Check if synth is still playing
-                                        if (currentSynth && currentSynth.isRunning && !currentSynth.isRunning()) {
+                                        }).catch(function(error) {
+                                            // Playback error or stopped
+                                            console.error('Playback ended or error:', error);
                                             cleanup();
-                                        } else if (currentSynth) {
-                                            // Check again in 100ms
-                                            setTimeout(checkPlaybackStatus, 100);
-                                        }
-                                    };
-                                    
-                                    // Start checking after a short delay
-                                    setTimeout(checkPlaybackStatus, 100);
+                                        });
+                                    } else {
+                                        // If start() doesn't return a promise, we have no way to detect completion
+                                        // This is actually fine - the user can stop playback by clicking again
+                                        // The cleanup will happen when they click to play something else or stop
+                                        console.debug('Playback started (no completion detection available)');
+                                    }
                                 } else {
                                     console.error('ABCJS synth API not available');
                                     const errorParagraph = document.createElement('p');
