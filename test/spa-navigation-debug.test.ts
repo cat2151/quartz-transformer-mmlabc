@@ -5,6 +5,10 @@ import { dirname, join } from 'node:path';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 
+// Test constants
+const RENDERING_TIMEOUT_MS = 10000; // 10 seconds is a reasonable maximum for rendering
+const TEST_PAGE_PATH = 'file://' + join(__dirname, 'spa-navigation-test.html');
+
 test.describe('SPA Navigation Debug Logging Test', () => {
   test('should log debug messages on initial page load', async ({ page }) => {
     const consoleMessages: string[] = [];
@@ -17,10 +21,16 @@ test.describe('SPA Navigation Debug Logging Test', () => {
     });
 
     // Navigate to the SPA test page
-    await page.goto('file://' + join(__dirname, 'spa-navigation-test.html'));
+    await page.goto(TEST_PAGE_PATH);
 
-    // Wait for initial rendering to complete
-    await page.waitForTimeout(2000);
+    // Wait for rendering to complete by checking for the completion log
+    await page.waitForFunction(() => {
+      return window.console.toString().includes('五線譜表示処理が完了しました') ||
+             document.querySelectorAll('.abc-notation svg').length > 0;
+    }, { timeout: RENDERING_TIMEOUT_MS });
+    
+    // Small delay to ensure all logs are captured
+    await page.waitForTimeout(500);
 
     // Verify plugin version log is present
     const versionLogs = consoleMessages.filter(msg => 
@@ -65,51 +75,66 @@ test.describe('SPA Navigation Debug Logging Test', () => {
   });
 
   test('should log debug messages on SPA navigation', async ({ page }) => {
-    const consoleMessages: string[] = [];
+    const initialLoadMessages: string[] = [];
+    const navigationMessages: string[] = [];
+    let isNavigationPhase = false;
     
-    // Capture all console log messages
+    // Capture console messages in separate arrays
     page.on('console', msg => {
       if (msg.type() === 'log' || msg.type() === 'error') {
-        consoleMessages.push(msg.text());
+        const text = msg.text();
+        if (isNavigationPhase) {
+          navigationMessages.push(text);
+        } else {
+          initialLoadMessages.push(text);
+        }
       }
     });
 
     // Navigate to the SPA test page
-    await page.goto('file://' + join(__dirname, 'spa-navigation-test.html'));
+    await page.goto(TEST_PAGE_PATH);
 
-    // Wait for initial rendering
-    await page.waitForTimeout(2000);
-
-    // Clear messages to focus on navigation logs
-    consoleMessages.length = 0;
+    // Wait for initial rendering to complete
+    await page.waitForFunction(() => {
+      return document.querySelectorAll('.abc-notation svg').length > 0;
+    }, { timeout: RENDERING_TIMEOUT_MS });
 
     // Click to navigate to Page 2 (no music)
     await page.click('button:has-text("Page 2")');
-    await page.waitForTimeout(500);
+    await page.waitForTimeout(300);
 
-    // Clear messages again
-    consoleMessages.length = 0;
+    // Start capturing navigation messages
+    isNavigationPhase = true;
 
     // Navigate back to Page 1 (with music) - this should trigger SPA navigation
     await page.click('button:has-text("Page 1")');
-    await page.waitForTimeout(2000);
+    
+    // Wait for the navigation event to be processed
+    await page.waitForFunction(() => {
+      // Check if SPA navigation was detected in console
+      const logs = Array.from(document.querySelectorAll('body')).map(el => el.textContent);
+      return document.querySelectorAll('.abc-notation').length > 0;
+    }, { timeout: RENDERING_TIMEOUT_MS });
+    
+    // Small delay to ensure all logs are captured
+    await page.waitForTimeout(500);
 
     // Verify SPA navigation detection log
-    const navDetectionLogs = consoleMessages.filter(msg => 
+    const navDetectionLogs = navigationMessages.filter(msg => 
       msg.includes('[MML-ABC-Transformer]') && msg.includes('SPA page 遷移を検知しました')
     );
     expect(navDetectionLogs.length).toBeGreaterThan(0);
     console.log('✓ SPA navigation detection log found');
 
     // Verify rendering start log after navigation
-    const renderStartLogs = consoleMessages.filter(msg => 
+    const renderStartLogs = navigationMessages.filter(msg => 
       msg.includes('[MML-ABC-Transformer]') && msg.includes('五線譜表示処理を開始します')
     );
     expect(renderStartLogs.length).toBeGreaterThan(0);
     console.log('✓ Rendering start log found after navigation');
 
     // Verify rendering complete log after navigation
-    const renderCompleteLogs = consoleMessages.filter(msg => 
+    const renderCompleteLogs = navigationMessages.filter(msg => 
       msg.includes('[MML-ABC-Transformer]') && msg.includes('五線譜表示処理が完了しました')
     );
     expect(renderCompleteLogs.length).toBeGreaterThan(0);
@@ -117,7 +142,7 @@ test.describe('SPA Navigation Debug Logging Test', () => {
 
     // Print all navigation-related debug logs
     console.log('\n--- All Debug Logs on SPA Navigation ---');
-    consoleMessages.filter(msg => msg.includes('[MML-ABC-Transformer]')).forEach(msg => {
+    navigationMessages.filter(msg => msg.includes('[MML-ABC-Transformer]')).forEach(msg => {
       console.log(msg);
     });
   });
@@ -133,21 +158,32 @@ test.describe('SPA Navigation Debug Logging Test', () => {
     });
 
     // Navigate to the SPA test page
-    await page.goto('file://' + join(__dirname, 'spa-navigation-test.html'));
-    await page.waitForTimeout(2000);
+    await page.goto(TEST_PAGE_PATH);
+    
+    // Wait for initial rendering
+    await page.waitForFunction(() => {
+      return document.querySelectorAll('.abc-notation svg').length > 0;
+    }, { timeout: RENDERING_TIMEOUT_MS });
 
     // Navigate to Page 3 (with music)
     await page.click('button:has-text("Page 3")');
-    await page.waitForTimeout(2000);
+    await page.waitForFunction(() => {
+      return document.querySelectorAll('.abc-notation').length > 0;
+    }, { timeout: RENDERING_TIMEOUT_MS });
 
-    // Clear messages
+    // Clear messages to focus on re-navigation
     consoleMessages.length = 0;
 
     // Navigate to Page 2 (no music) and back to Page 3
     await page.click('button:has-text("Page 2")');
-    await page.waitForTimeout(500);
+    await page.waitForTimeout(300);
     await page.click('button:has-text("Page 3")');
-    await page.waitForTimeout(2000);
+    
+    // Wait for navigation to complete
+    await page.waitForFunction(() => {
+      return document.querySelectorAll('.abc-notation').length > 0;
+    }, { timeout: RENDERING_TIMEOUT_MS });
+    await page.waitForTimeout(500);
 
     // On the second visit to Page 3, elements might be processed or skipped depending on DOM lifecycle
     // Just verify that navigation was detected and processing occurred
@@ -182,8 +218,13 @@ test.describe('SPA Navigation Debug Logging Test', () => {
     });
 
     // Navigate to the SPA test page
-    await page.goto('file://' + join(__dirname, 'spa-navigation-test.html'));
-    await page.waitForTimeout(2000);
+    await page.goto(TEST_PAGE_PATH);
+    
+    // Wait for rendering to complete
+    await page.waitForFunction(() => {
+      return document.querySelectorAll('.abc-notation svg').length > 0;
+    }, { timeout: RENDERING_TIMEOUT_MS });
+    await page.waitForTimeout(500);
 
     // Find performance logs
     const performanceLogs = consoleMessages.filter(msg => 
@@ -201,8 +242,8 @@ test.describe('SPA Navigation Debug Logging Test', () => {
     if (timingMatch) {
       const renderTime = parseFloat(timingMatch[1]);
       console.log('✓ Rendering time measured:', renderTime, 'ms');
-      // Sanity check: rendering should complete in reasonable time (< 10 seconds)
-      expect(renderTime).toBeLessThan(10000);
+      // Sanity check: rendering should complete in reasonable time
+      expect(renderTime).toBeLessThan(RENDERING_TIMEOUT_MS);
     }
   });
 
@@ -217,8 +258,13 @@ test.describe('SPA Navigation Debug Logging Test', () => {
     });
 
     // Navigate to the SPA test page
-    await page.goto('file://' + join(__dirname, 'spa-navigation-test.html'));
-    await page.waitForTimeout(2000);
+    await page.goto(TEST_PAGE_PATH);
+    
+    // Wait for rendering to complete
+    await page.waitForFunction(() => {
+      return document.querySelectorAll('.abc-notation svg').length > 0;
+    }, { timeout: RENDERING_TIMEOUT_MS });
+    await page.waitForTimeout(500);
 
     // Check for type detection logs
     const typeLogs = consoleMessages.filter(msg => 
