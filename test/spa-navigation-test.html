@@ -250,9 +250,9 @@
       
       const type = element.getAttribute('data-type');
       console.log('Processing element of type:', type);
-    
-    try {
-      let abcNotation = '';
+      
+      try {
+        let abcNotation = '';
       
       if (type === 'mml') {
         const mmlData = element.getAttribute('data-mml');
@@ -293,7 +293,7 @@
         const abcData = element.getAttribute('data-abc');
         if (abcData) {
           abcNotation = abcData;
-        }
+          }
       }
       
       if (abcNotation) {
@@ -346,7 +346,7 @@
             }
             
             // Ensure audio context is running
-            if (sharedAudioContext && sharedAudioContext.state === 'suspended') {
+            if (sharedAudioContext.state === 'suspended') {
               await sharedAudioContext.resume();
             }
             
