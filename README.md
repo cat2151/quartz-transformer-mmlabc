@@ -1,6 +1,6 @@
 # quartz-transformer-mmlabc
 
-**A Quartz transformer plugin that allows you to display sheet music and enable click-to-play functionality by simply writing chord progressions in code blocks. MML (Music Macro Language) and ABC Notation are also supported.**
+**A Quartz transformer plugin that allows you to display sheet music and enable click-to-play functionality by simply writing chord progressions in a code block. MML (Music Macro Language) and ABC Notation are also available.**
 
 <p align="left">
   <a href="README.ja.md"><img src="https://img.shields.io/badge/🇯🇵-Japanese-red.svg" alt="Japanese"></a>
@@ -8,21 +8,22 @@
   <a href="https://deepwiki.com/cat2151/quartz-transformer-mmlabc"><img src="https://deepwiki.com/badge.svg" alt="Ask DeepWiki"></a>
 </p>
 
-※Portions of this document are AI-generated.
+※Some parts of this document are AI-generated.
 
 ## Quick Links
 | Item | Link |
 |------|--------|
 | 📊 Development Status | [generated-docs/development-status](generated-docs/development-status.md) |
 
-## Current State
-- Implementation is largely complete.
+## Status
+- Most features have been implemented.
 - Currently dogfooding.
 - Breaking changes may occur.
+- demo: https://cat2151.github.io/digital-garden/Quartz-%E3%82%B3%E3%83%BC%E3%83%89%E9%80%B2%E8%A1%8C%E3%82%92%E4%BA%94%E7%B7%9A%E8%AD%9C%E3%81%A7%E8%A1%A8%E7%A4%BA%E3%81%97%E3%81%A6%E3%82%AF%E3%83%AA%E3%83%83%E3%82%AF%E3%81%A7%E6%BC%94%E5%A5%8F%E3%81%A7%E3%81%8D%E3%82%8B%E3%82%88%E3%81%86%E3%81%AB%E3%81%97%E3%81%9F
 
 ## In 3 Lines
-- In Obsidian, you can display and play sheet music by writing chord progressions in code blocks: https://github.com/cat2151/obsidian-plugin-mmlabc
-- To achieve the same functionality in Quartz 4, a new transformer plugin has been created.
+- In Obsidian, you can write chord progressions in a code block to display sheet music and play them: https://github.com/cat2151/obsidian-plugin-mmlabc
+- To achieve the same functionality in Quartz4, a new transformer plugin was created.
 - Similar to the Obsidian version, MML (Music Macro Language) and ABC Notation are also available.
 
 ## Features
@@ -31,12 +32,12 @@
 - 🎸 Converts `chord` code blocks to MML, then to ABC Notation, and renders them with abcjs.
 - 🎼 Supports `abc` notation code blocks for troubleshooting.
 - 🎨 Displays sheet music as SVG.
-- 🎧 Click-to-Play Music - Click on the rendered sheet music to play the music.
-- ⌨️ Keyboard accessibility support (play with Enter or Space key).
+- 🎧 Click to Play Music - Clicking the rendered sheet music plays the music.
+- ⌨️ Keyboard Accessibility (Play with Enter or Space key).
 
 ## Installation
 
-Execute the following in your Quartz installation directory:
+Please run the following in your Quartz installation directory:
 
 ```powershell
 npm install github:cat2151/quartz-transformer-mmlabc; pushd node_modules/quartz-transformer-mmlabc; npm run build; popd
@@ -44,25 +45,25 @@ npm install github:cat2151/quartz-transformer-mmlabc; pushd node_modules/quartz-
 
 Reason for this step:
 - The plugin is installed directly from GitHub (not from npm).
-- The `dist` directory containing compiled JavaScript is not included in the repository.
-- Skipping this step will cause an error when running Quartz, as the plugin's entry point (`dist/index.js`) will not exist.
+- The `dist` directory, which contains the compiled JavaScript, is not included in the repository.
+- If you skip this step, Quartz will throw an error when run because the plugin's entry point (`dist/index.js`) will not exist.
 
-Furthermore, add the following before `Build Quartz` in `.github\workflows\deploy.yml`:
+Additionally, before `Build Quartz` in `.github\workflows\deploy.yml`, please add the following:
 ```yml
       - name: Build quartz-transformer-mmlabc
         run: npm run build
         working-directory: node_modules/quartz-transformer-mmlabc
 ```
 Reason for this step:
-- When deploying with GitHub Actions, without this, the plugin's entry point (`dist/index.js`) will not exist, causing an error during `Build Quartz`.
+- Without this step, during deployment with GitHub Actions, `Build Quartz` will fail because the plugin's entry point (`dist/index.js`) will not exist.
 
 ### How to Update the Plugin (2 Options)
 
-**IMPORTANT**: This plugin is currently Work In Progress and may undergo frequent breaking changes (non-stable). You have two options for updating the plugin:
+**Important**: This plugin is currently Work In Progress, and breaking changes may occur frequently (nonstable). There are two options for updating the plugin:
 
 #### Option 1: Always Use the Latest Version on Deployment (Recommended for Development)
 
-If you want to use the latest version of the plugin with every deployment, add the following steps to `.github/workflows/deploy.yml`:
+If you want to use the latest version of the plugin with each deployment, please add the following steps to `.github/workflows/deploy.yml`:
 
 ```yml
       - name: Install Dependencies
@@ -75,16 +76,16 @@ If you want to use the latest version of the plugin with every deployment, add t
 ```
 
 **Pros**:
-- Always applies the latest features and bug fixes.
-- Critical bug fixes are reflected immediately.
+- Always benefits from the latest features and bug fixes.
+- Critical bug fixes are applied immediately.
 
 **Cons**:
 - Breaking changes may be applied immediately.
-- Build time is slightly increased.
+- Build time will be slightly longer.
 
-#### Option 2: Rely on Dependabot for Weekly Updates
+#### Option 2: Rely on Weekly Updates via Dependabot
 
-If Dependabot is configured, it will automatically create weekly PRs for plugin updates. With this method, you can review the updates before merging.
+If you have Dependabot configured, it will automatically create weekly PRs for plugin updates. With this method, you can review the updates before merging.
 
 Example `.github/dependabot.yml`:
 ```yml
@@ -97,8 +98,8 @@ updates:
 ```
 
 **Pros**:
-- You can review updates before merging.
-- Allows for operation with a stable version.
+- Allows reviewing updates before merging.
+- Enables operating with stable versions.
 
 **Cons**:
 - Plugin updates may be delayed by up to one week.
@@ -106,7 +107,7 @@ updates:
 
 ## Usage
 
-### Using in Quartz Configuration
+### Usage in Quartz Configuration
 
 Add the transformer to `quartz.config.ts`:
 
@@ -117,22 +118,22 @@ import { MMLABCTransformer } from "quartz-transformer-mmlabc"
 
 const config: QuartzConfig = {
   configuration: {
-    // ... Site configuration
+    // ... site settings
   },
   plugins: {
     transformers: [
       Plugin.FrontMatter(),
       Plugin.CreatedModifiedDate({ priority: ["frontmatter", "filesystem"] }),
-      // Add MMLABC Transformer
+      // Add the MMLABC transformer
       MMLABCTransformer(),
-      // ... Other transformers
+      // ... other transformers
     ],
     filters: [Plugin.RemoveDrafts()],
     emitters: [
       Plugin.AliasRedirects(),
       Plugin.ComponentResources(),
       Plugin.ContentPage(),
-      // ... Other emitters
+      // ... other emitters
     ],
   },
 }
@@ -140,13 +141,13 @@ const config: QuartzConfig = {
 export default config
 ```
 
-**Key Points:**
+**Important points:**
 - Import `QuartzConfig` and built-in plugins from Quartz's internal paths.
-- Import this plugin by its npm package name.
-- Add it to the `transformers` array along with other transformers.
-- The order usually doesn't matter unless there are dependencies between plugins.
+- This plugin is imported by its npm package name.
+- Add to the `transformers` array along with other transformers.
+- The order is usually not an issue unless there are dependencies between plugins.
 
-### Using in Markdown Files
+### Usage in Markdown Files
 
 #### MML Notation
 
@@ -177,7 +178,7 @@ C D E F|G A B c|
 ```
 ````
 
-This is useful for troubleshooting or when you want to write ABC Notation directly.
+Useful for troubleshooting or when you want to write ABC notation directly.
 
 ## Options
 
@@ -191,39 +192,39 @@ MMLABCTransformer({
 })
 ```
 
-## How It Works
+## How it Works
 
-1. During Quartz's build process, the plugin detects code blocks with `mml`, `chord`, or `abc` language tags.
+1. The plugin detects code blocks with `mml`, `chord`, or `abc` language tags during the Quartz build process.
 2. These code blocks are replaced with HTML div elements containing the source notation as a data attribute.
 3. In the browser:
-   - Loads abcjs and mml2abc from CDN.
+   - Loads abcjs and mml2abc from a CDN.
    - For MML blocks: Converts MML to ABC Notation using mml2abc.
    - For chord progression blocks: Converts chord progressions to MML using chord2mml, then to ABC Notation.
    - For ABC blocks: Uses the notation directly without conversion.
-   - Renders ABC Notation as an interactive SVG using abcjs.
+   - Renders ABC Notation as interactive SVG using abcjs.
    - Initializes an audio synthesizer to support music playback.
-   - Adds click event handlers to allow playing music by clicking on the sheet music.
+   - Adds a click event handler to allow playing music by clicking the sheet music.
 
 ### Quartz v4 SPA Navigation Support
 
-This plugin fully supports Quartz v4's SPA (Single Page Application) navigation:
+This plugin is fully compatible with Quartz v4's SPA (Single Page Application) navigation:
 
-- **Automatic Reinitialization**: Listens for Quartz's `nav` event and automatically renders sheet music on page transitions.
+- **Automatic Re-initialization**: Listens for Quartz's `nav` event and automatically renders sheet music on page transitions.
 - **Memory Leak Prevention**: Uses `window.addCleanup()` for proper cleanup during navigation.
-- **Idempotency**: Uses `WeakSet` to track elements and avoid processing the same element multiple times.
-- **Performance Optimization**: Caches CDN modules (mml2abc, chord2mml) and AudioContext across navigations.
+- **Idempotence**: Tracks elements with a `WeakSet` to avoid processing the same element multiple times.
+- **Performance Optimization**: Caches CDN modules (mml2abc, chord2mml) and AudioContext between navigations.
 
-This ensures reliable rendering not only on initial access but also when navigating to pages containing sheet music from other pages (Fix for Issue #63).
+This ensures that sheet music is rendered not only on initial access but also when navigating to a page containing music from other pages (fixes Issue #63).
 
 ## Notes
 
 - Conversion to HTML occurs during Quartz's build process.
-- Actual sheet music conversion and rendering occur in the browser.
+- The actual sheet music conversion and rendering happen in the browser.
 - CDN library versions are specified based on verified operation with easychord2mml by @cat2151.
-- Conversion from MML to ABC uses mml2abc loaded from CDN.
-- Conversion from chord progression to MML uses chord2mml loaded from CDN.
-- Rendering uses abcjs (latest version 6.x.x) loaded from CDN.
-- Libraries are loaded dynamically to avoid bundling issues.
+- MML to ABC conversion uses mml2abc loaded from a CDN.
+- Chord progression to MML conversion uses chord2mml loaded from a CDN.
+- Rendering uses abcjs (latest version 6.x.x) loaded from a CDN.
+- To avoid bundling issues, libraries are loaded dynamically.
 
 ## Testing
 
@@ -239,7 +240,7 @@ npm test
 npm run test:integration
 
 # Run all tests
-npm run test:all
+npm run test:testall
 
 # Run tests in watch mode
 npm run test:watch
@@ -251,26 +252,26 @@ npm run test:ui
 ### Test Coverage
 
 The test suite includes:
-- Unit tests for AST transformation logic (Vitest).
-- HTML escaping tests (newlines, tabs, special characters).
-- Plugin options and configuration tests.
-- Edge case handling.
-- External resource validation.
-- Integration tests for browser rendering and interactive features (Playwright).
+- Unit tests for AST transformation logic (Vitest)
+- HTML escaping tests (newlines, tabs, special characters)
+- Tests for plugin options and configuration
+- Handling of edge cases
+- Validation of external resources
+- Integration tests for browser rendering and interactive features (Playwright)
 
-For manual testing, use the included `demo.html` file.
+For manual testing, please use the included `demo.html` file.
 
-**Note**: When a Coding Agent runs tests on a Linux Runner, CDN access may be blocked, preventing the display of sheet music. If you wish to verify the sheet music display, please test on a physical machine (local environment).
+**Note**: When a Coding Agent runs tests on a Linux Runner, CDN access may be blocked, preventing sheet music from being displayed. If you want to verify sheet music display, please test on a physical machine (local environment).
 
 ## Dependencies
 
 ### Runtime (Loaded via CDN)
 
-**IMPORTANT**: The following library versions are specified based on verified operation with [easychord2mml](https://github.com/cat2151/easychord2mml/blob/main/index.html) by @cat2151. Do not change these URLs.
+**Important**: The following library versions are specified based on verified operation with [easychord2mml](https://github.com/cat2151/easychord2mml/blob/main/index.html) by @cat2151. Please do not change these URLs.
 
 - [abcjs](https://github.com/paulrosen/abcjs) - A JavaScript library for rendering ABC music notation.
   - CDN: `https://cdn.jsdelivr.net/npm/abcjs@6/dist/abcjs-basic-min.min.js`
-  - Specifying `@6` ensures the latest version 6.x.x is always retrieved.
+  - Specifying `@6` always fetches the latest version 6.x.x.
 - [mml2abc](https://github.com/cat2151/mml2abc) - Converts Music Macro Language to ABC Notation.
   - CDN: `https://cdn.jsdelivr.net/gh/cat2151/mml2abc/dist/mml2abc.mjs`
   - Loaded via dynamic ES module import.
@@ -279,7 +280,7 @@ For manual testing, use the included `demo.html` file.
   - Loaded in UMD bundle format.
   - Ensures security using SRI (Subresource Integrity) checksum.
   - Checksum: `sha384-s0MWjnJMkG/kT19h1SE4UrQ7YZ0eSnBKYgzstrrpAsrHer1g6ZqgCJJbmj0zTIcz`
-  - *Checksum re-verification is required when the library is updated.
+  - ※Checksum re-validation is required when the library is updated.
 
 ### Build Time
 - [unified](https://github.com/unifiedjs/unified) - Interface for parsing and transforming content.
@@ -313,23 +314,23 @@ quartz-transformer-mmlabc/
 └── README.md
 ```
 
-## Reasons for Adopting an External Package Approach
+## Reason for Adopting an External Package Approach
 
-This plugin adopts a distribution method as an external npm package, rather than being integrated directly into Quartz itself. This design decision is based on the following reasons:
+This plugin adopts a method of distribution as an external npm package, rather than being embedded within the Quartz core. This design decision is based on the following reasons:
 
-1.  **Reusability**
-    -   The same plugin can be used across multiple Quartz projects.
-    -   Eliminates the need to copy code into each project.
+1. **Reusability**
+   - The same plugin can be used across multiple Quartz projects.
+   - No need to copy code into each project.
 
-2.  **Independence**
-    -   Allows for independent release cycles and version management for the plugin.
-    -   Can be developed and updated without being affected by Quartz core updates.
+2. **Independence**
+   - The plugin can have its own release cycle and version management.
+   - Development and updates can occur independently of Quartz core updates.
 
-3.  **Shareability**
-    -   Easily shareable with the community via GitHub.
-    -   Increases accessibility for a wider user base as an open-source project.
+3. **Shareability**
+   - Easily shareable with the community via GitHub.
+   - Increases adoption by a wider user base as an open-source project.
 
-This approach maximizes the plugin's value and allows it to cater to a broader user base.
+This approach maximizes the plugin's value and caters to a broader user base.
 
 ## License
 
@@ -342,4 +343,4 @@ MIT License - See the LICENSE file for details.
 - [mml2abc](https://cat2151.github.io/mml2abc/) - MML to ABC converter.
 - [chord2mml](https://cat2151.github.io/chord2mml/) - Chord progression notation to MML converter.
 
-Note: The English README.md is automatically generated from README.ja.md via Gemini translation using GitHub Actions.
+※This English README.md is automatically generated from README.ja.md by GitHub Actions using Gemini's translation.
