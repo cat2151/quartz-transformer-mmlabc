@@ -744,6 +744,23 @@ describe('MMLABCTransformer', () => {
       expect(inlineScript?.script).toContain('theme-light')
     })
 
+    it('should not contain TypeScript syntax in inline script', () => {
+      const plugin = MMLABCTransformer()
+      const resources = plugin.externalResources!(mockBuildCtx)
+
+      const inlineScript = resources.js!.find(js => js.contentType === 'inline')
+      
+      // Check for TypeScript type annotations that would cause browser errors
+      // Pattern matches parameter type annotations like (param: type) or (param: string)
+      const typeAnnotationPattern = /\([^)]*:\s*(string|number|boolean|any|void)\s*\)/
+      
+      expect(inlineScript?.script).toBeDefined()
+      expect(typeAnnotationPattern.test(inlineScript!.script!)).toBe(false)
+      
+      // Specifically check for the problematic pattern from issue #69
+      expect(inlineScript?.script).not.toContain('(source: string)')
+    })
+
     it('should include dynamic theme classes in CSS', () => {
       const plugin = MMLABCTransformer()
       const resources = plugin.externalResources!(mockBuildCtx)

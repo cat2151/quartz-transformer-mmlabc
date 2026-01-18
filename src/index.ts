@@ -492,7 +492,7 @@ export const MMLABCTransformer: QuartzTransformerPlugin<MMLABCOptions | undefine
   let initialLoadComplete = false;
   
   // Wrapper function to handle navigation with debouncing
-  const handleNavigation = (source: string) => {
+  const handleNavigation = (source) => {
     console.log('[MML-ABC-Transformer] ナビゲーションを検知しました。ソース:', source);
     
     // Prevent concurrent initializations
