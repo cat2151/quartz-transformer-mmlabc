@@ -1,4 +1,4 @@
-Last updated: 2026-01-11
+Last updated: 2026-01-19
 
 
 # プロジェクト概要生成プロンプト（来訪者向け）
@@ -82,6 +82,7 @@ Last updated: 2026-01-11
 - 一通り実装しました
 - ドッグフーディング中です
 - 破壊的変更をする可能性があります
+- demo : https://cat2151.github.io/digital-garden/Quartz-%E3%82%B3%E3%83%BC%E3%83%89%E9%80%B2%E8%A1%8C%E3%82%92%E4%BA%94%E7%B7%9A%E8%AD%9C%E3%81%A7%E8%A1%A8%E7%A4%BA%E3%81%97%E3%81%A6%E3%82%AF%E3%83%AA%E3%83%83%E3%82%AF%E3%81%A7%E6%BC%94%E5%A5%8F%E3%81%A7%E3%81%8D%E3%82%8B%E3%82%88%E3%81%86%E3%81%AB%E3%81%97%E3%81%9F
 
 ## 3行で説明
 - Obsidianで、コード進行をコードブロックに書くと、五線譜を表示して鳴らすことができます : https://github.com/cat2151/obsidian-plugin-mmlabc
@@ -467,6 +468,9 @@ MIT License - 詳細はLICENSEファイルを参照してください
   📖 61.md
   📖 63.md
   📖 65.md
+  📖 67-solution.md
+  📖 67.md
+  📖 69.md
 📊 package-lock.json
 📊 package.json
 📘 playwright.config.ts
@@ -494,12 +498,12 @@ MIT License - 詳細はLICENSEファイルを参照してください
   - 関数: なし
   - インポート: @playwright/test
 
-**src/index.test.ts** (832行, 24175バイト)
+**src/index.test.ts** (857行, 25611バイト)
   - 関数: なし
   - インポート: vitest, ./index
 
-**src/index.ts** (654行, 23706バイト)
-  - 関数: wrapper, escapeHtml, updateNotationTheme, getQuartzTheme, initializeMusicNotation, handlePlayback, cleanup, markdownPlugins, if, externalResources, function, forEach, for, then, catch, addEventListener, media
+**src/index.ts** (733行, 26382バイト)
+  - 関数: wrapper, escapeHtml, updateNotationTheme, getQuartzTheme, initializeMusicNotation, handlePlayback, cleanup, handleNavigation, markdownPlugins, if, externalResources, function, forEach, for, then, catch, addEventListener, some, media
   - インポート: unist-util-visit, unified, ./quartz/cfg
 
 **test/integration-test.html** (159行, 6453バイト)
@@ -518,7 +522,7 @@ MIT License - 詳細はLICENSEファイルを参照してください
   - 関数: if
   - インポート: @playwright/test, node:url, node:path
 
-**test/spa-navigation-debug.test.ts** (286行, 10487バイト)
+**test/spa-navigation-debug.test.ts** (316行, 11932バイト)
   - 関数: if
   - インポート: @playwright/test, node:url, node:path
 
@@ -538,6 +542,7 @@ MIT License - 詳細はLICENSEファイルを参照してください
       - initializeMusicNotation ()
       - handlePlayback ()
       - cleanup ()
+      - handleNavigation ()
       - markdownPlugins ()
       - externalResources ()
       - function ()
@@ -545,6 +550,7 @@ MIT License - 詳細はLICENSEファイルを参照してください
       - then ()
       - catch ()
       - addEventListener ()
+      - some ()
 - if (src/index.ts)
 - for (src/index.ts)
 - media (src/index.ts)
@@ -593,4 +599,4 @@ package-lock.json
 
 
 ---
-Generated at: 2026-01-11 07:01:41 JST
+Generated at: 2026-01-19 07:01:38 JST

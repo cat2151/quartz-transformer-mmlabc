@@ -1,4 +1,4 @@
-Last updated: 2026-01-11
+Last updated: 2026-01-19
 
 # 開発状況生成プロンプト（開発者向け）
 
@@ -238,6 +238,9 @@ Last updated: 2026-01-11
 - issue-notes/61.md
 - issue-notes/63.md
 - issue-notes/65.md
+- issue-notes/67-solution.md
+- issue-notes/67.md
+- issue-notes/69.md
 - package-lock.json
 - package.json
 - playwright.config.ts
@@ -310,36 +313,31 @@ Last updated: 2026-01-11
 
 ## 最近の変更（過去7日間）
 ### コミット履歴:
-0d67caf Merge pull request #66 from cat2151/copilot/add-console-debug-logs
-9929ab0 Address PR review comments: remove redundant logs, fix test conditions, improve message capture
-b8b13a6 Add comprehensive documentation for debug logging implementation
-eb48b4c Improve test reliability by replacing fixed timeouts with condition-based waits
-d8264b9 Add comprehensive debug logging and automated tests
-45a7f5a Initial plan
-c2b294b Add issue note for #65 [auto]
-1d7839c Auto-translate README.ja.md to README.md [auto]
-5088ad0 Merge pull request #64 from cat2151/copilot/fix-abcjs-notation-display
-292b193 Fix code indentation issues from code review
+142e09c Auto-translate README.ja.md to README.md [auto]
+69b4116 Update README.ja.md with demo link and description
+1f2fd69 Merge pull request #70 from cat2151/copilot/fix-console-error-navigation
+0c2ee6d Add detailed comments to regex pattern for better maintainability
+620243f Improve TypeScript syntax detection and fix type assertion
+c877c37 Fix TypeScript syntax in inline browser script (issue #69)
+5144b47 Initial plan
+f8a18ba Add issue note for #69 [auto]
+cb23e73 Merge pull request #68 from cat2151/copilot/investigate-issue-46-logs
+d47f2ea Address PR review feedback
 
 ### 変更されたファイル:
-DEBUG-LOGGING-SUMMARY.md
 README.ja.md
 README.md
-SPA-FIX-SUMMARY.md
-demo.html
-issue-notes/61.md
-issue-notes/63.md
-issue-notes/65.md
-package.json
-playwright.config.ts
+generated-docs/development-status-generated-prompt.md
+generated-docs/development-status.md
+generated-docs/project-overview-generated-prompt.md
+generated-docs/project-overview.md
+issue-notes/67-solution.md
+issue-notes/67.md
+issue-notes/69.md
+src/index.test.ts
 src/index.ts
-test/integration.test.ts
-test/playback-fix.test.ts
-test/playback-simple.spec.js
 test/spa-navigation-debug.test.ts
-test/spa-navigation-test-README.md
-test/spa-navigation-test.html
 
 
 ---
-Generated at: 2026-01-11 07:01:41 JST
+Generated at: 2026-01-19 07:01:38 JST
