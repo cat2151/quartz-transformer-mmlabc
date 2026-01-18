@@ -280,27 +280,25 @@ MutationObserverの適切なクリーンアップにより：
 - `nav`イベントが動作する環境: より速く動作
 - `nav`イベントが動作しない環境: MutationObserverがフォールバック
 
-## コードレビューフィードバックへの対応
+## 実装時の設計判断
 
 ### 1. アロー関数の使用
 ```typescript
-// Before
-const handleNavigation = function(source) { ... }
-
-// After
-const handleNavigation = (source) => { ... }
+const handleNavigation = (source: string) => { ... }
 ```
 モダンなJavaScriptの慣習に従い、一貫性を向上。
 
 ### 2. 型アサーションの明示
 ```typescript
-// Before
-const element = node;
-
-// After  
 const element = node as Element;
 ```
 TypeScriptの型安全性を向上。
+
+### 3. MutationObserverの遅延設定
+初期レンダリング完了後にMutationObserverを設定することで、自身の初期レンダリングによるDOM変更を検知しないようにする。
+
+### 4. popstateイベントの遅延登録
+一部のブラウザでは初回ページロード時にpopstateイベントが発火するため、100ms遅延して登録し、`initialLoadComplete`フラグで初回ロードと区別。
 
 ## 変更ファイル
 

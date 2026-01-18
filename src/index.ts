@@ -488,8 +488,11 @@ export const MMLABCTransformer: QuartzTransformerPlugin<MMLABCOptions | undefine
   // Flag to prevent duplicate initialization from multiple event sources
   let isInitializing = false;
   
+  // Flag to track if initial load has completed
+  let initialLoadComplete = false;
+  
   // Wrapper function to handle navigation with debouncing
-  const handleNavigation = (source) => {
+  const handleNavigation = (source: string) => {
     console.log('[MML-ABC-Transformer] ナビゲーションを検知しました。ソース:', source);
     
     // Prevent concurrent initializations
@@ -521,71 +524,81 @@ export const MMLABCTransformer: QuartzTransformerPlugin<MMLABCOptions | undefine
   console.log('[MML-ABC-Transformer] "nav" イベントリスナーを登録しました');
   
   // Fallback: popstate event for browser back/forward
-  window.addEventListener('popstate', () => {
-    handleNavigation('popstate event');
-  });
-  console.log('[MML-ABC-Transformer] "popstate" イベントリスナーを登録しました');
-  
-  // Fallback: Observe DOM changes to detect when new content is loaded
-  // This catches navigation even if the event system fails
-  const observer = new MutationObserver((mutations) => {
-    // Check if any new .abc-notation elements were added
-    for (const mutation of mutations) {
-      if (mutation.type === 'childList') {
-        const addedNodes = Array.from(mutation.addedNodes);
-        const hasNewNotation = addedNodes.some(node => {
-          if (node.nodeType === Node.ELEMENT_NODE) {
-            const element = node as Element;
-            return element.classList?.contains('abc-notation') || 
-                   element.querySelector?.('.abc-notation');
-          }
-          return false;
-        });
-        
-        if (hasNewNotation) {
-          handleNavigation('MutationObserver');
-          break; // Only handle once per batch of mutations
-        }
+  // Note: In some browsers, popstate fires on initial page load. We delay registration
+  // to avoid redundant initialization with the initial load call.
+  setTimeout(() => {
+    window.addEventListener('popstate', () => {
+      if (initialLoadComplete) {
+        handleNavigation('popstate event');
       }
-    }
-  });
-  
-  // Observe the body for childList changes (content swaps during SPA navigation)
-  observer.observe(document.body, {
-    childList: true,
-    subtree: true
-  });
-  console.log('[MML-ABC-Transformer] MutationObserver を設定しました');
-
-  // Register cleanup function for SPA navigation
-  // This prevents memory leaks when navigating away
-  if (typeof window.addCleanup === 'function') {
-    window.addCleanup(() => {
-      // Stop any playing audio
-      if (currentSynth && typeof currentSynth.stop === 'function') {
-        currentSynth.stop();
-      }
-      if (currentPlayingElement) {
-        currentPlayingElement.classList.remove('playing');
-      }
-      currentSynth = null;
-      currentPlayingElement = null;
-      
-      // Disconnect the MutationObserver to prevent memory leaks
-      if (observer) {
-        observer.disconnect();
-      }
-      
-      // Note: We keep sharedAudioContext, mml2abcModule, and chord2mmlLoadPromise
-      // cached across navigations for performance
     });
-  }
-
+    console.log('[MML-ABC-Transformer] "popstate" イベントリスナーを登録しました（遅延登録）');
+  }, 100);
+  
   // Initial render on page load
   console.log('[MML-ABC-Transformer] 初期ページ読み込み時の処理を開始します');
-  initializeMusicNotation().catch(err => {
-    console.error('[MML-ABC-Transformer] Error initializing music notation on page load:', err);
-  });
+  initializeMusicNotation()
+    .catch(err => {
+      console.error('[MML-ABC-Transformer] Error initializing music notation on page load:', err);
+    })
+    .finally(() => {
+      initialLoadComplete = true;
+      
+      // Fallback: Observe DOM changes to detect when new content is loaded
+      // Set up MutationObserver after initial load to avoid detecting our own initial rendering
+      const observer = new MutationObserver((mutations) => {
+        // Check if any new .abc-notation elements were added
+        for (const mutation of mutations) {
+          if (mutation.type === 'childList') {
+            const addedNodes = Array.from(mutation.addedNodes);
+            const hasNewNotation = addedNodes.some(node => {
+              if (node.nodeType === Node.ELEMENT_NODE) {
+                const element = node as Element;
+                return element.classList?.contains('abc-notation') || 
+                       element.querySelector?.('.abc-notation');
+              }
+              return false;
+            });
+            
+            if (hasNewNotation) {
+              handleNavigation('MutationObserver');
+              break; // Only handle once per batch of mutations
+            }
+          }
+        }
+      });
+      
+      // Observe the body for childList changes (content swaps during SPA navigation)
+      observer.observe(document.body, {
+        childList: true,
+        subtree: true
+      });
+      console.log('[MML-ABC-Transformer] MutationObserver を設定しました');
+      
+      // Register cleanup function for SPA navigation
+      // This prevents memory leaks when navigating away
+      if (typeof window.addCleanup === 'function') {
+        window.addCleanup(() => {
+          // Stop any playing audio
+          if (currentSynth && typeof currentSynth.stop === 'function') {
+            currentSynth.stop();
+          }
+          if (currentPlayingElement) {
+            currentPlayingElement.classList.remove('playing');
+          }
+          currentSynth = null;
+          currentPlayingElement = null;
+          
+          // Disconnect the MutationObserver to prevent memory leaks
+          if (observer) {
+            observer.disconnect();
+          }
+          
+          // Note: We keep sharedAudioContext, mml2abcModule, and chord2mmlLoadPromise
+          // cached across navigations for performance
+        });
+      }
+    });
 })();
             `.trim(),
           },

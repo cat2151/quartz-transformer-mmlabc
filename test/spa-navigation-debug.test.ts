@@ -220,7 +220,8 @@ test.describe('SPA Navigation Debug Logging Test', () => {
     // On the second visit to Page 3, elements might be processed or skipped depending on DOM lifecycle
     // Just verify that navigation was detected and processing occurred
     const navDetectionLogs = reNavigationMessages.filter(msg => 
-      msg.includes('[MML-ABC-Transformer]') && msg.includes('SPA page 遷移を検知しました')
+      msg.includes('[MML-ABC-Transformer]') && 
+      (msg.includes('ナビゲーションを検知しました') || msg.includes('SPA page 遷移を検知しました'))
     );
     expect(navDetectionLogs.length).toBeGreaterThanOrEqual(1);
 
