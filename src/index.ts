@@ -485,17 +485,77 @@ export const MMLABCTransformer: QuartzTransformerPlugin<MMLABCOptions | undefine
     }
   });
 
-  // Listen for Quartz SPA navigation events
-  // This ensures notation renders on every page navigation
-  window.addEventListener('nav', () => {
-    console.log('[MML-ABC-Transformer] SPA page 遷移を検知しました');
+  // Flag to prevent duplicate initialization from multiple event sources
+  let isInitializing = false;
+  
+  // Wrapper function to handle navigation with debouncing
+  const handleNavigation = function(source) {
+    console.log('[MML-ABC-Transformer] ナビゲーションを検知しました。ソース:', source);
+    
+    // Prevent concurrent initializations
+    if (isInitializing) {
+      console.log('[MML-ABC-Transformer] 初期化が既に実行中のためスキップします');
+      return;
+    }
+    
+    isInitializing = true;
+    
     // Call async initialization and handle any errors
-    // Errors are logged to console and also handled in try-catch blocks within the function
-    // User-visible error messages are shown inline for each failed notation block
-    initializeMusicNotation().catch(err => {
-      console.error('[MML-ABC-Transformer] Error initializing music notation after navigation:', err);
-    });
+    initializeMusicNotation()
+      .catch(err => {
+        console.error('[MML-ABC-Transformer] Error initializing music notation after navigation:', err);
+      })
+      .finally(() => {
+        isInitializing = false;
+      });
+  };
+
+  // Listen for Quartz SPA navigation events
+  // Multiple event sources to ensure we catch navigation in different Quartz configurations
+  console.log('[MML-ABC-Transformer] イベントリスナーを登録します');
+  
+  // Primary: Quartz v4 "nav" event
+  window.addEventListener('nav', () => {
+    handleNavigation('nav event');
   });
+  console.log('[MML-ABC-Transformer] "nav" イベントリスナーを登録しました');
+  
+  // Fallback: popstate event for browser back/forward
+  window.addEventListener('popstate', () => {
+    handleNavigation('popstate event');
+  });
+  console.log('[MML-ABC-Transformer] "popstate" イベントリスナーを登録しました');
+  
+  // Fallback: Observe DOM changes to detect when new content is loaded
+  // This catches navigation even if the event system fails
+  const observer = new MutationObserver((mutations) => {
+    // Check if any new .abc-notation elements were added
+    for (const mutation of mutations) {
+      if (mutation.type === 'childList') {
+        const addedNodes = Array.from(mutation.addedNodes);
+        const hasNewNotation = addedNodes.some(node => {
+          if (node.nodeType === Node.ELEMENT_NODE) {
+            const element = node;
+            return element.classList?.contains('abc-notation') || 
+                   element.querySelector?.('.abc-notation');
+          }
+          return false;
+        });
+        
+        if (hasNewNotation) {
+          handleNavigation('MutationObserver');
+          break; // Only handle once per batch of mutations
+        }
+      }
+    }
+  });
+  
+  // Observe the body for childList changes (content swaps during SPA navigation)
+  observer.observe(document.body, {
+    childList: true,
+    subtree: true
+  });
+  console.log('[MML-ABC-Transformer] MutationObserver を設定しました');
 
   // Register cleanup function for SPA navigation
   // This prevents memory leaks when navigating away
@@ -510,6 +570,12 @@ export const MMLABCTransformer: QuartzTransformerPlugin<MMLABCOptions | undefine
       }
       currentSynth = null;
       currentPlayingElement = null;
+      
+      // Disconnect the MutationObserver to prevent memory leaks
+      if (observer) {
+        observer.disconnect();
+      }
+      
       // Note: We keep sharedAudioContext, mml2abcModule, and chord2mmlLoadPromise
       // cached across navigations for performance
     });
