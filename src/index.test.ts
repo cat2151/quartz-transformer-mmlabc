@@ -752,11 +752,13 @@ describe('MMLABCTransformer', () => {
       
       // Check for TypeScript type annotations that would cause browser errors
       // More comprehensive pattern that matches:
-      // - Type assertions: node as Element (with word boundary before)
-      // - Variable type annotations: const x: Type = or : Type; or : Type,
-      // - Parameter type annotations: (param: type)
-      // - Return type annotations: function(): Type
-      // Note: Uses word boundaries to avoid matching phrases in comments like "as a"
+      // - Type assertions: (\w+\s+as\s+[A-Z]\w*[^a-z])
+      //   Matches "node as Element" but not "as a" or "as playing" in comments
+      //   Requires: word before 'as', capitalized type, and non-lowercase after
+      // - Type annotations: :\s*(string|number|boolean|any|void|Element|Node|[A-Z]\w*)\s*(\)|;|=|,)
+      //   Matches variable, parameter, and return type annotations
+      //   Examples: "const x: string =", "(param: number)", "function(): void;"
+      // Note: Uses word boundaries and character class checks to avoid false positives
       const typeAnnotationPattern = /(\w+\s+as\s+[A-Z]\w*[^a-z])|:\s*(string|number|boolean|any|void|Element|Node|[A-Z]\w*)\s*(\)|;|=|,)/
       
       expect(inlineScript?.script).toBeDefined()
