@@ -489,7 +489,7 @@ export const MMLABCTransformer: QuartzTransformerPlugin<MMLABCOptions | undefine
   let isInitializing = false;
   
   // Wrapper function to handle navigation with debouncing
-  const handleNavigation = function(source) {
+  const handleNavigation = (source) => {
     console.log('[MML-ABC-Transformer] ナビゲーションを検知しました。ソース:', source);
     
     // Prevent concurrent initializations
@@ -535,7 +535,7 @@ export const MMLABCTransformer: QuartzTransformerPlugin<MMLABCOptions | undefine
         const addedNodes = Array.from(mutation.addedNodes);
         const hasNewNotation = addedNodes.some(node => {
           if (node.nodeType === Node.ELEMENT_NODE) {
-            const element = node;
+            const element = node as Element;
             return element.classList?.contains('abc-notation') || 
                    element.querySelector?.('.abc-notation');
           }
