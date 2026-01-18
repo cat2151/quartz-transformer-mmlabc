@@ -744,6 +744,31 @@ describe('MMLABCTransformer', () => {
       expect(inlineScript?.script).toContain('theme-light')
     })
 
+    it('should not contain TypeScript syntax in inline script', () => {
+      const plugin = MMLABCTransformer()
+      const resources = plugin.externalResources!(mockBuildCtx)
+
+      const inlineScript = resources.js!.find(js => js.contentType === 'inline')
+      
+      // Check for TypeScript type annotations that would cause browser errors
+      // More comprehensive pattern that matches:
+      // - Type assertions: (\w+\s+as\s+[A-Z]\w*[^a-z])
+      //   Matches "node as Element" but not "as a" or "as playing" in comments
+      //   Requires: word before 'as', capitalized type, and non-lowercase after
+      // - Type annotations: :\s*(string|number|boolean|any|void|Element|Node|[A-Z]\w*)\s*(\)|;|=|,)
+      //   Matches variable, parameter, and return type annotations
+      //   Examples: "const x: string =", "(param: number)", "function(): void;"
+      // Note: Uses word boundaries and character class checks to avoid false positives
+      const typeAnnotationPattern = /(\w+\s+as\s+[A-Z]\w*[^a-z])|:\s*(string|number|boolean|any|void|Element|Node|[A-Z]\w*)\s*(\)|;|=|,)/
+      
+      expect(inlineScript?.script).toBeDefined()
+      expect(typeAnnotationPattern.test(inlineScript!.script!)).toBe(false)
+      
+      // Specifically check for the problematic patterns from issues
+      expect(inlineScript?.script).not.toContain('(source: string)')
+      expect(inlineScript?.script).not.toContain('as Element')
+    })
+
     it('should include dynamic theme classes in CSS', () => {
       const plugin = MMLABCTransformer()
       const resources = plugin.externalResources!(mockBuildCtx)
