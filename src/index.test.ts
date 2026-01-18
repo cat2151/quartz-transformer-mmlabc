@@ -751,14 +751,20 @@ describe('MMLABCTransformer', () => {
       const inlineScript = resources.js!.find(js => js.contentType === 'inline')
       
       // Check for TypeScript type annotations that would cause browser errors
-      // Pattern matches parameter type annotations like (param: type) or (param: string)
-      const typeAnnotationPattern = /\([^)]*:\s*(string|number|boolean|any|void)\s*\)/
+      // More comprehensive pattern that matches:
+      // - Type assertions: node as Element (with word boundary before)
+      // - Variable type annotations: const x: Type = or : Type; or : Type,
+      // - Parameter type annotations: (param: type)
+      // - Return type annotations: function(): Type
+      // Note: Uses word boundaries to avoid matching phrases in comments like "as a"
+      const typeAnnotationPattern = /(\w+\s+as\s+[A-Z]\w*[^a-z])|:\s*(string|number|boolean|any|void|Element|Node|[A-Z]\w*)\s*(\)|;|=|,)/
       
       expect(inlineScript?.script).toBeDefined()
       expect(typeAnnotationPattern.test(inlineScript!.script!)).toBe(false)
       
-      // Specifically check for the problematic pattern from issue #69
+      // Specifically check for the problematic patterns from issues
       expect(inlineScript?.script).not.toContain('(source: string)')
+      expect(inlineScript?.script).not.toContain('as Element')
     })
 
     it('should include dynamic theme classes in CSS', () => {

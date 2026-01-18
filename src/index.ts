@@ -553,7 +553,7 @@ export const MMLABCTransformer: QuartzTransformerPlugin<MMLABCOptions | undefine
             const addedNodes = Array.from(mutation.addedNodes);
             const hasNewNotation = addedNodes.some(node => {
               if (node.nodeType === Node.ELEMENT_NODE) {
-                const element = node as Element;
+                const element = node;
                 return element.classList?.contains('abc-notation') || 
                        element.querySelector?.('.abc-notation');
               }
