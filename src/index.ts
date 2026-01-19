@@ -244,41 +244,41 @@ export const MMLABCTransformer: QuartzTransformerPlugin<MMLABCOptions | undefine
 
   // ===== nav デバッグ可視化 =====
 
-  const logNavDebug = (where: string) => (e: Event) => {
-    const ce = e as CustomEvent
+  function logNavDebug(where: string) {
+    return function (e: Event) {
+      const ce = e as any
 
-    const abcNodes = document.querySelectorAll('.abc-notation')
-    const processed = document.querySelectorAll('[data-mmlabc-processed]')
+      const abcNodes = document.querySelectorAll('.abc-notation')
+      const processed = document.querySelectorAll('[data-mmlabc-processed]')
 
-    console.groupCollapsed(
-      `%c[nav @ ${where}]`,
-      'color:#ff6; font-weight:bold'
-    )
+      console.groupCollapsed('[nav @ ' + where + ']')
 
-    console.log('event:', e)
-    console.log('detail:', ce.detail ?? null)
-    console.log('target:', e.target)
-    console.log('currentTarget:', e.currentTarget)
+      console.log('event:', e)
+      console.log('detail:', ce && ce.detail)
+      console.log('target:', e.target)
+      console.log('currentTarget:', e.currentTarget)
 
-    console.log('abc-notation count:', abcNodes.length)
-    console.log('processed count:', processed.length)
+      console.log('abc-notation count:', abcNodes.length)
+      console.log('processed count:', processed.length)
 
-    if (abcNodes.length > 0) {
-      console.log('sample abc element:', abcNodes[0])
-      console.log(
-        'sample processed?',
-        abcNodes[0].hasAttribute('data-mmlabc-processed')
-      )
+      if (abcNodes.length > 0) {
+        const el = abcNodes[0] as HTMLElement
+        console.log('sample abc element:', el)
+        console.log(
+          'sample processed?',
+          el.hasAttribute('data-mmlabc-processed')
+        )
+      }
+
+      console.groupEnd()
     }
-
-    console.groupEnd()
   }
 
-  // capture → bubble → window の順で全部見る
-  document.addEventListener('nav', logNavDebug('document(capture)'), true)
+  // capture → bubble → window
+  document.addEventListener('nav', logNavDebug('document-capture'), true)
   document.addEventListener('nav', logNavDebug('document'))
   window.addEventListener('nav', logNavDebug('window'))
-  
+
   // ===== 以上、nav デバッグ可視化 =====
   
   // Main initialization function - called on initial load and SPA navigation
