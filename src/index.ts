@@ -246,7 +246,7 @@ export const MMLABCTransformer: QuartzTransformerPlugin<MMLABCOptions | undefine
 
   function logNavDebug(where) {
     return function (e) {
-      const ce = e as any
+      const ce = e
 
       const abcNodes = document.querySelectorAll('.abc-notation')
       const processed = document.querySelectorAll('[data-mmlabc-processed]')
@@ -262,7 +262,7 @@ export const MMLABCTransformer: QuartzTransformerPlugin<MMLABCOptions | undefine
       console.log('processed count:', processed.length)
 
       if (abcNodes.length > 0) {
-        const el = abcNodes[0] as HTMLElement
+        const el = abcNodes[0]
         console.log('sample abc element:', el)
         console.log(
           'sample processed?',
