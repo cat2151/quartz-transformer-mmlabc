@@ -244,8 +244,8 @@ export const MMLABCTransformer: QuartzTransformerPlugin<MMLABCOptions | undefine
 
   // ===== nav デバッグ可視化 =====
 
-  function logNavDebug(where: string) {
-    return function (e: Event) {
+  function logNavDebug(where) {
+    return function (e) {
       const ce = e as any
 
       const abcNodes = document.querySelectorAll('.abc-notation')
