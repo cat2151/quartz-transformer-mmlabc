@@ -1,4 +1,4 @@
-Last updated: 2026-01-19
+Last updated: 2026-01-20
 
 
 # プロジェクト概要生成プロンプト（来訪者向け）
@@ -471,6 +471,8 @@ MIT License - 詳細はLICENSEファイルを参照してください
   📖 67-solution.md
   📖 67.md
   📖 69.md
+  📖 71.md
+  📖 72.md
 📊 package-lock.json
 📊 package.json
 📘 playwright.config.ts
@@ -502,8 +504,8 @@ MIT License - 詳細はLICENSEファイルを参照してください
   - 関数: なし
   - インポート: vitest, ./index
 
-**src/index.ts** (733行, 26382バイト)
-  - 関数: wrapper, escapeHtml, updateNotationTheme, getQuartzTheme, initializeMusicNotation, handlePlayback, cleanup, handleNavigation, markdownPlugins, if, externalResources, function, forEach, for, then, catch, addEventListener, some, media
+**src/index.ts** (772行, 27498バイト)
+  - 関数: wrapper, logNavDebug, escapeHtml, updateNotationTheme, getQuartzTheme, initializeMusicNotation, handlePlayback, cleanup, handleNavigation, markdownPlugins, if, externalResources, function, forEach, for, then, catch, addEventListener, some, media
   - インポート: unist-util-visit, unified, ./quartz/cfg
 
 **test/integration-test.html** (159行, 6453バイト)
@@ -536,8 +538,9 @@ MIT License - 詳細はLICENSEファイルを参照してください
 
 ## 関数呼び出し階層
 - wrapper (src/index.ts)
-  - escapeHtml ()
-    - updateNotationTheme ()
+  - logNavDebug ()
+    - escapeHtml ()
+      - updateNotationTheme ()
       - getQuartzTheme ()
       - initializeMusicNotation ()
       - handlePlayback ()
@@ -599,4 +602,4 @@ package-lock.json
 
 
 ---
-Generated at: 2026-01-19 07:01:38 JST
+Generated at: 2026-01-20 07:01:37 JST
