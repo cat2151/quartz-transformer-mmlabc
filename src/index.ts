@@ -241,6 +241,45 @@ export const MMLABCTransformer: QuartzTransformerPlugin<MMLABCOptions | undefine
     
     return 'light';
   };
+
+  // ===== nav デバッグ可視化 =====
+
+  const logNavDebug = (where: string) => (e: Event) => {
+    const ce = e as CustomEvent
+
+    const abcNodes = document.querySelectorAll('.abc-notation')
+    const processed = document.querySelectorAll('[data-mmlabc-processed]')
+
+    console.groupCollapsed(
+      `%c[nav @ ${where}]`,
+      'color:#ff6; font-weight:bold'
+    )
+
+    console.log('event:', e)
+    console.log('detail:', ce.detail ?? null)
+    console.log('target:', e.target)
+    console.log('currentTarget:', e.currentTarget)
+
+    console.log('abc-notation count:', abcNodes.length)
+    console.log('processed count:', processed.length)
+
+    if (abcNodes.length > 0) {
+      console.log('sample abc element:', abcNodes[0])
+      console.log(
+        'sample processed?',
+        abcNodes[0].hasAttribute('data-mmlabc-processed')
+      )
+    }
+
+    console.groupEnd()
+  }
+
+  // capture → bubble → window の順で全部見る
+  document.addEventListener('nav', logNavDebug('document(capture)'), true)
+  document.addEventListener('nav', logNavDebug('document'))
+  window.addEventListener('nav', logNavDebug('window'))
+  
+  // ===== 以上、nav デバッグ可視化 =====
   
   // Main initialization function - called on initial load and SPA navigation
   const initializeMusicNotation = async function() {
