@@ -370,12 +370,13 @@
     
     isInitializing = true;
     
-    // CRITICAL FIX FOR ISSUE #71:
-    // During SPA navigation, Quartz replaces DOM elements with new instances.
-    // The WeakSet automatically handles this: old elements are garbage collected,
-    // and new elements (even for the same page) are different object references
-    // that don't exist in the WeakSet, so they will be processed correctly.
-    // No manual clearing is needed.
+    // SPA navigation in Quartz replaces existing DOM elements with new instances.
+    // Using a WeakSet to track processed elements means that old elements can be
+    // garbage collected when removed from the DOM, and newly created elements
+    // (even for the same page) have different object references that are not yet
+    // in the WeakSet, so they will be initialized again as expected.
+    // Because of this behavior, no manual clearing of the WeakSet is required
+    // between navigations.
     
     // Call async initialization and handle any errors
     initializeMusicNotation()
