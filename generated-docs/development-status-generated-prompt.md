@@ -1,4 +1,4 @@
-Last updated: 2026-01-20
+Last updated: 2026-02-02
 
 # 開発状況生成プロンプト（開発者向け）
 
@@ -246,6 +246,7 @@ Last updated: 2026-01-20
 - package-lock.json
 - package.json
 - playwright.config.ts
+- src/browser-runtime.js
 - src/index.test.ts
 - src/index.ts
 - test/README.md
@@ -260,22 +261,24 @@ Last updated: 2026-01-20
 - vitest.config.ts
 
 ## 現在のオープンIssues
-## [Issue #72](../issue-notes/72.md): バグ修正が落ち着いたら、単一責任の原則に従ってソース分割する（今の段階だと、LLMに貼るのが便利な単一ソースのほうがよさそう）
-[issue-notes/72.md](https://github.com/cat2151/quartz-transformer-mmlabc/blob/main/issue-notes/72.md)
-
-...
+## [Issue #74](../issue-notes/74.md): Fix self-navigation rendering by switching to nav-driven architecture
+- [x] 問題の理解と分析
+  - [x] issue-notes/71.mdを読んで根本原因を理解
+  - [x] 現在の実装を確認（MutationObserver主導）
+  - [x] 問題: navイベントより前にMutationObserverが発火してレンダリング
+- [x] 最小限の変更で修正を実装
+  - [x] navイベントリスナーをdocumentに変更（windowから）
+  - [x] MutationObserverを削除（タイミング問題の根本原因）
+  - [x] setTimeout(0)を追加してDOM安定化を保証
+  - [x] デバッグログを改善して動作...
 ラベル: 
---- issue-notes/72.md の内容 ---
+--- issue-notes/74.md の内容 ---
 
 ```markdown
-# issue バグ修正が落ち着いたら、単一責任の原則に従ってソース分割する（今の段階だと、LLMに貼るのが便利な単一ソースのほうがよさそう） #72
-[issues #72](https://github.com/cat2151/quartz-transformer-mmlabc/issues/72)
-
-
 
 ```
 
-## [Issue #71](../issue-notes/71.md): 左ペインから自分自身のページを開なおすと五線譜が消えてしまうし、そのときconsoleには何も出力されない（ナビゲーションを検知できていない）
+## [Issue #71](../issue-notes/71.md): 左ペインから自分自身のページを開きなおすと五線譜が消えてしまうし、そのときconsoleには何も出力されない（ナビゲーションを検知できていない）
 [issue-notes/71.md](https://github.com/cat2151/quartz-transformer-mmlabc/blob/main/issue-notes/71.md)
 
 ...
@@ -1005,177 +1008,148 @@ MIT License - 詳細はLICENSEファイルを参照してください
 {% endraw %}
 ```
 
-### .github/actions-tmp/issue-notes/2.md
+### .github/actions-tmp/issue-notes/4.md
 ```md
 {% raw %}
-# issue GitHub Actions「関数コールグラフhtmlビジュアライズ生成」を共通ワークフロー化する #2
-[issues #2](https://github.com/cat2151/github-actions/issues/2)
-
+# issue GitHub Actions「project概要生成」を共通ワークフロー化する #4
+[issues #4](https://github.com/cat2151/github-actions/issues/4)
 
 # prompt
 ```
 あなたはGitHub Actionsと共通ワークフローのスペシャリストです。
 このymlファイルを、以下の2つのファイルに分割してください。
-1. 共通ワークフロー       cat2151/github-actions/.github/workflows/callgraph_enhanced.yml
-2. 呼び出し元ワークフロー cat2151/github-actions/.github/workflows/call-callgraph_enhanced.yml
+1. 共通ワークフロー       cat2151/github-actions/.github/workflows/daily-project-summary.yml
+2. 呼び出し元ワークフロー cat2151/github-actions/.github/workflows/call-daily-project-summary.yml
 まずplanしてください
 ```
 
-# 結果
-- indent
-    - linter？がindentのエラーを出しているがyml内容は見た感じOK
-    - テキストエディタとagentの相性問題と判断する
-    - 別のテキストエディタでsaveしなおし、テキストエディタをreload
-    - indentのエラーは解消した
-- LLMレビュー
-    - agent以外の複数のLLMにレビューさせる
-    - prompt
+# 結果、あちこちハルシネーションのあるymlが生成された
+- agentの挙動があからさまにハルシネーション
+    - インデントが修正できない、「失敗した」という
+    - 構文誤りを認識できない
+- 人力で修正した
+
+# このagentによるセルフレビューが信頼できないため、別のLLMによるセカンドオピニオンを試す
 ```
 あなたはGitHub Actionsと共通ワークフローのスペシャリストです。
-以下の2つのファイルをレビューしてください。最優先で、エラーが発生するかどうかだけレビューしてください。エラー以外の改善事項のチェックをするかわりに、エラー発生有無チェックに最大限注力してください。
+以下の2つのファイルをレビューしてください。最優先で、エラーが発生するかどうかだけレビューてください。エラー以外の改善事項のチェックをするかわりに、エラー発生有無チェックに最大限注力してください。
+
+--- 呼び出し元
+
+name: Call Daily Project Summary
+
+on:
+  schedule:
+    # 日本時間 07:00 (UTC 22:00 前日)
+    - cron: '0 22 * * *'
+  workflow_dispatch:
+
+jobs:
+  call-daily-project-summary:
+    uses: cat2151/github-actions/.github/workflows/daily-project-summary.yml
+    secrets:
+      GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
 
 --- 共通ワークフロー
-
-# GitHub Actions Reusable Workflow for Call Graph Generation
-name: Generate Call Graph
-
-# TODO Windowsネイティブでのtestをしていた名残が残っているので、今後整理していく。今はWSL act でtestしており、Windowsネイティブ環境依存問題が解決した
-#  ChatGPTにレビューさせるとそこそこ有用そうな提案が得られたので、今後それをやる予定
-#  agentに自己チェックさせる手も、セカンドオピニオンとして選択肢に入れておく
-
+name: Daily Project Summary
 on:
   workflow_call:
 
 jobs:
-  check-commits:
+  generate-summary:
     runs-on: ubuntu-latest
-    outputs:
-      should-run: ${{ steps.check.outputs.should-run }}
+
+    permissions:
+      contents: write
+      issues: read
+      pull-requests: read
+
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
         with:
-          fetch-depth: 50 # 過去のコミットを取得
+          token: ${{ secrets.GITHUB_TOKEN }}
+          fetch-depth: 0  # 履歴を取得するため
 
-      - name: Check for user commits in last 24 hours
-        id: check
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install dependencies
         run: |
-          node .github/scripts/callgraph_enhanced/check-commits.cjs
+          # 一時的なディレクトリで依存関係をインストール
+          mkdir -p /tmp/summary-deps
+          cd /tmp/summary-deps
+          npm init -y
+          npm install @google/generative-ai @octokit/rest
+          # generated-docsディレクトリを作成
+          mkdir -p $GITHUB_WORKSPACE/generated-docs
 
-  generate-callgraph:
-    needs: check-commits
-    if: needs.check-commits.outputs.should-run == 'true'
-    runs-on: ubuntu-latest
-    permissions:
-      contents: write
-      security-events: write
-      actions: read
-
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
-
-      - name: Set Git identity
+      - name: Generate project summary
+        env:
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_REPOSITORY: ${{ github.repository }}
+          NODE_PATH: /tmp/summary-deps/node_modules
         run: |
-          git config user.name "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          node .github/scripts/generate-project-summary.cjs
 
-      - name: Remove old CodeQL packages cache
-        run: rm -rf ~/.codeql/packages
-
-      - name: Check Node.js version
+      - name: Check for generated summaries
+        id: check_summaries
         run: |
-          node .github/scripts/callgraph_enhanced/check-node-version.cjs
+          if [ -f "generated-docs/project-overview.md" ] && [ -f "generated-docs/development-status.md" ]; then
+            echo "summaries_generated=true" >> $GITHUB_OUTPUT
+          else
+            echo "summaries_generated=false" >> $GITHUB_OUTPUT
+          fi
 
-      - name: Install CodeQL CLI
+      - name: Commit and push summaries
+        if: steps.check_summaries.outputs.summaries_generated == 'true'
         run: |
-          wget https://github.com/github/codeql-cli-binaries/releases/download/v2.22.1/codeql-linux64.zip
-          unzip codeql-linux64.zip
-          sudo mv codeql /opt/codeql
-          echo "/opt/codeql" >> $GITHUB_PATH
+          git config --local user.email "action@github.com"
+          git config --local user.name "GitHub Action"
+          # package.jsonの変更のみリセット（generated-docsは保持）
+          git restore package.json 2>/dev/null || true
+          # サマリーファイルのみを追加
+          git add generated-docs/project-overview.md
+          git add generated-docs/development-status.md
+          git commit -m "Update project summaries (overview & development status)"
+          git push
 
-      - name: Install CodeQL query packs
+      - name: Summary generation result
         run: |
-          /opt/codeql/codeql pack install .github/codeql-queries
-
-      - name: Check CodeQL exists
-        run: |
-          node .github/scripts/callgraph_enhanced/check-codeql-exists.cjs
-
-      - name: Verify CodeQL Configuration
-        run: |
-          node .github/scripts/callgraph_enhanced/analyze-codeql.cjs verify-config
-
-      - name: Remove existing CodeQL DB (if any)
-        run: |
-          rm -rf codeql-db
-
-      - name: Perform CodeQL Analysis
-        run: |
-          node .github/scripts/callgraph_enhanced/analyze-codeql.cjs analyze
-
-      - name: Check CodeQL Analysis Results
-        run: |
-          node .github/scripts/callgraph_enhanced/analyze-codeql.cjs check-results
-
-      - name: Debug CodeQL execution
-        run: |
-          node .github/scripts/callgraph_enhanced/analyze-codeql.cjs debug
-
-      - name: Wait for CodeQL results
-        run: |
-          node -e "setTimeout(()=>{}, 10000)"
-
-      - name: Find and process CodeQL results
-        run: |
-          node .github/scripts/callgraph_enhanced/find-process-results.cjs
-
-      - name: Generate HTML graph
-        run: |
-          node .github/scripts/callgraph_enhanced/generate-html-graph.cjs
-
-      - name: Copy files to generated-docs and commit results
-        run: |
-          node .github/scripts/callgraph_enhanced/copy-commit-results.cjs
-
---- 呼び出し元
-# 呼び出し元ワークフロー: call-callgraph_enhanced.yml
-name: Call Call Graph Enhanced
-
-on:
-  schedule:
-    # 毎日午前5時(JST) = UTC 20:00前日
-    - cron: '0 20 * * *'
-  workflow_dispatch:
-
-jobs:
-  call-callgraph-enhanced:
-    # uses: cat2151/github-actions/.github/workflows/callgraph_enhanced.yml
-    uses: ./.github/workflows/callgraph_enhanced.yml # ローカルでのテスト用
+          if [ "${{ steps.check_summaries.outputs.summaries_generated }}" == "true" ]; then
+            echo "✅ Project summaries updated successfully"
+            echo "📊 Generated: project-overview.md & development-status.md"
+          else
+            echo "ℹ️ No summaries generated (likely no user commits in the last 24 hours)"
+          fi
 ```
 
-# レビュー結果OKと判断する
-- レビュー結果を人力でレビューした形になった
+# 上記promptで、2つのLLMにレビューさせ、合格した
 
-# test
-- #4 同様にローカル WSL + act でtestする
-- エラー。userのtest設計ミス。
-  - scriptの挙動 : src/ がある前提
-  - 今回の共通ワークフローのリポジトリ : src/ がない
-  - 今回testで実現したいこと
-    - 仮のソースでよいので、関数コールグラフを生成させる
-  - 対策
-    - src/ にダミーを配置する
-- test green
-  - ただしcommit pushはしてないので、html内容が0件NG、といったケースの検知はできない
-  - もしそうなったら別issueとしよう
+# 細部を、先行する2つのymlを参照に手直しした
+
+# ローカルtestをしてからcommitできるとよい。方法を検討する
+- ローカルtestのメリット
+    - 素早く修正のサイクルをまわせる
+    - ムダにgit historyを汚さない
+        - これまでの事例：「実装したつもり」「エラー。修正したつもり」「エラー。修正したつもり」...（以降エラー多数）
+- 方法
+    - ※検討、WSL + act を環境構築済みである。test可能であると判断する
+    - 呼び出し元のURLをコメントアウトし、相対パス記述にする
+    - ※備考、テスト成功すると結果がcommit pushされる。それでよしとする
+- 結果
+    - OK
+    - secretsを簡略化できるか試した、できなかった、現状のsecrets記述が今わかっている範囲でベストと判断する
+    - OK
 
 # test green
 
 # commit用に、yml 呼び出し元 uses をlocal用から本番用に書き換える
 
 # closeとする
-- もしhtml内容が0件NG、などになったら、別issueとするつもり
 
 {% endraw %}
 ```
@@ -1511,35 +1485,30 @@ VM66:97 sample processed? false
 {% endraw %}
 ```
 
-### issue-notes/72.md
-```md
-{% raw %}
-# issue バグ修正が落ち着いたら、単一責任の原則に従ってソース分割する（今の段階だと、LLMに貼るのが便利な単一ソースのほうがよさそう） #72
-[issues #72](https://github.com/cat2151/quartz-transformer-mmlabc/issues/72)
-
-
-
-{% endraw %}
-```
-
 ## 最近の変更（過去7日間）
 ### コミット履歴:
-0b5e8ab Summarize navigation and rendering issues in Quartz SPA
-05c631f Add issue note for #72 [auto]
-c769e67 Add Japanese question to issue notes
-1c0b2ec debug logger for navigation を記載しなおし、取得したlogを記載した
-b5e566c まだtsの部分が残っていたので人力でjsに修正 : Remove type assertion from event parameter
-fd8847f LLMが「jsを書くべき場所にtsを書」いて落ちたので、人力で修正
-740022c Refactor logNavDebug function for clarity
-370415e Implement navigation debug logging
-4e73a33 Enhance nav event logging and debugging
-2caff63 Update issue-notes/71.md with new insights
+2903178 Merge pull request #73 from cat2151/copilot/refactor-source-code-structure
+189a7eb docs: Update copilot-instructions.md to reflect new architecture
+32c1353 fix: Address PR review feedback
+eaed20d fix: Address code review feedback
+ff5cbf6 test: Add test for browser runtime loading
+5f9c067 refactor: Split source code following single responsibility principle
+6065ff5 Initial plan
 
 ### 変更されたファイル:
+.github/copilot-instructions.md
+generated-docs/development-status-generated-prompt.md
+generated-docs/development-status.md
+generated-docs/project-overview-generated-prompt.md
+generated-docs/project-overview.md
 issue-notes/71.md
 issue-notes/72.md
+package-lock.json
+package.json
+src/browser-runtime.js
+src/index.test.ts
 src/index.ts
 
 
 ---
-Generated at: 2026-01-20 07:01:37 JST
+Generated at: 2026-02-02 07:01:49 JST

@@ -1,4 +1,4 @@
-Last updated: 2026-01-20
+Last updated: 2026-02-02
 
 
 # プロジェクト概要生成プロンプト（来訪者向け）
@@ -421,6 +421,7 @@ MIT License - 詳細はLICENSEファイルを参照してください
     "@types/node": "^20.19.0",
     "@vitest/ui": "^4.0.16",
     "abcjs": "^6.4.0",
+    "copyfiles": "^2.4.1",
     "typescript": "^5.3.3",
     "vitest": "^4.0.16"
   }
@@ -477,6 +478,7 @@ MIT License - 詳細はLICENSEファイルを参照してください
 📊 package.json
 📘 playwright.config.ts
 📁 src/
+  📜 browser-runtime.js
   📘 index.test.ts
   📘 index.ts
 📁 test/
@@ -500,13 +502,17 @@ MIT License - 詳細はLICENSEファイルを参照してください
   - 関数: なし
   - インポート: @playwright/test
 
-**src/index.test.ts** (857行, 25611バイト)
+**src/browser-runtime.js** (470行, 18407バイト)
+  - 関数: wrapper, logNavDebug, updateNotationTheme, getQuartzTheme, initializeMusicNotation, handlePlayback, cleanup, handleNavigation, function, if, forEach, for, then, catch, addEventListener, some
+  - インポート: なし
+
+**src/index.test.ts** (880行, 26525バイト)
   - 関数: なし
   - インポート: vitest, ./index
 
-**src/index.ts** (772行, 27498バイト)
-  - 関数: wrapper, logNavDebug, escapeHtml, updateNotationTheme, getQuartzTheme, initializeMusicNotation, handlePlayback, cleanup, handleNavigation, markdownPlugins, if, externalResources, function, forEach, for, then, catch, addEventListener, some, media
-  - インポート: unist-util-visit, unified, ./quartz/cfg
+**src/index.ts** (317行, 9665バイト)
+  - 関数: loadBrowserRuntime, escapeHtml, markdownPlugins, if, externalResources, media
+  - インポート: unist-util-visit, unified, fs
 
 **test/integration-test.html** (159行, 6453バイト)
   - 関数: なし
@@ -537,25 +543,26 @@ MIT License - 詳細はLICENSEファイルを参照してください
   - インポート: vitest/config
 
 ## 関数呼び出し階層
-- wrapper (src/index.ts)
+- wrapper (src/browser-runtime.js)
   - logNavDebug ()
-    - escapeHtml ()
-      - updateNotationTheme ()
+    - updateNotationTheme ()
       - getQuartzTheme ()
       - initializeMusicNotation ()
       - handlePlayback ()
       - cleanup ()
       - handleNavigation ()
-      - markdownPlugins ()
-      - externalResources ()
       - function ()
       - forEach ()
       - then ()
       - catch ()
       - addEventListener ()
       - some ()
-- if (src/index.ts)
-- for (src/index.ts)
+- if (src/browser-runtime.js)
+  - loadBrowserRuntime (src/index.ts)
+    - escapeHtml ()
+      - markdownPlugins ()
+      - externalResources ()
+- for (src/browser-runtime.js)
 - media (src/index.ts)
 
 
@@ -602,4 +609,4 @@ package-lock.json
 
 
 ---
-Generated at: 2026-01-20 07:01:37 JST
+Generated at: 2026-02-02 07:01:48 JST
