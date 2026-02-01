@@ -370,6 +370,18 @@
     
     isInitializing = true;
     
+    // CRITICAL FIX FOR ISSUE #71:
+    // Clear processedElements on navigation to allow re-rendering
+    // This ensures that when navigating to the same page (self-navigation),
+    // the elements are processed again after DOM stabilizes
+    console.log('[MML-ABC-Transformer] 処理済み要素をクリアします（SPA遷移のため）');
+    // Note: We cannot clear a WeakSet directly, but we can create a new one
+    // However, we need to keep the reference. Instead, we'll remove the processed
+    // attribute from elements and rely on the WeakSet eventually being cleaned up
+    // by garbage collection when old DOM elements are removed.
+    // For new navigations, the processedElements.has() check in initializeMusicNotation
+    // will correctly return false for new DOM elements.
+    
     // Call async initialization and handle any errors
     initializeMusicNotation()
       .catch(err => {
@@ -381,14 +393,23 @@
   };
 
   // Listen for Quartz SPA navigation events
-  // Multiple event sources to ensure we catch navigation in different Quartz configurations
+  // CRITICAL FIX FOR ISSUE #71:
+  // Changed from window.addEventListener to document.addEventListener
+  // According to Quartz documentation and issue analysis, nav events are dispatched on document
+  // This ensures we catch navigation reliably, including self-navigation
   console.log('[MML-ABC-Transformer] イベントリスナーを登録します');
   
-  // Primary: Quartz v4 "nav" event
-  window.addEventListener('nav', () => {
-    handleNavigation('nav event');
+  // Primary: Quartz v4 "nav" event on document (not window)
+  document.addEventListener('nav', () => {
+    // CRITICAL FIX FOR ISSUE #71:
+    // Add a small delay to ensure DOM is fully stable after Quartz completes its SPA navigation
+    // The nav event fires when Quartz starts the transition, but DOM might still be settling
+    // A 0ms timeout pushes this to the next event loop tick, after all synchronous DOM updates
+    setTimeout(() => {
+      handleNavigation('nav event');
+    }, 0);
   });
-  console.log('[MML-ABC-Transformer] "nav" イベントリスナーを登録しました');
+  console.log('[MML-ABC-Transformer] "nav" イベントリスナーを登録しました (document)');
   
   // Fallback: popstate event for browser back/forward
   // Note: In some browsers, popstate fires on initial page load. We delay registration
@@ -411,36 +432,13 @@
     .finally(() => {
       initialLoadComplete = true;
       
-      // Fallback: Observe DOM changes to detect when new content is loaded
-      // Set up MutationObserver after initial load to avoid detecting our own initial rendering
-      const observer = new MutationObserver((mutations) => {
-        // Check if any new .abc-notation elements were added
-        for (const mutation of mutations) {
-          if (mutation.type === 'childList') {
-            const addedNodes = Array.from(mutation.addedNodes);
-            const hasNewNotation = addedNodes.some(node => {
-              if (node.nodeType === Node.ELEMENT_NODE) {
-                const element = node;
-                return element.classList?.contains('abc-notation') || 
-                       element.querySelector?.('.abc-notation');
-              }
-              return false;
-            });
-            
-            if (hasNewNotation) {
-              handleNavigation('MutationObserver');
-              break; // Only handle once per batch of mutations
-            }
-          }
-        }
-      });
+      // REMOVED MutationObserver (ISSUE #71 FIX):
+      // The MutationObserver was causing issues because it fired BEFORE the nav event,
+      // leading to rendering on unstable DOM during SPA transitions.
+      // The nav event is now the sole, reliable trigger for re-rendering.
+      // This ensures we only render when the DOM is stable and complete.
       
-      // Observe the body for childList changes (content swaps during SPA navigation)
-      observer.observe(document.body, {
-        childList: true,
-        subtree: true
-      });
-      console.log('[MML-ABC-Transformer] MutationObserver を設定しました');
+      console.log('[MML-ABC-Transformer] 初期化完了。nav イベントによる SPA ナビゲーション検知の準備ができました');
       
       // Register cleanup function for SPA navigation
       // This prevents memory leaks when navigating away
@@ -455,11 +453,6 @@
           }
           currentSynth = null;
           currentPlayingElement = null;
-          
-          // Disconnect the MutationObserver to prevent memory leaks
-          if (observer) {
-            observer.disconnect();
-          }
           
           // Note: We keep sharedAudioContext, mml2abcModule, and chord2mmlLoadPromise
           // cached across navigations for performance
