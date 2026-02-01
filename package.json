@@ -6,7 +6,8 @@
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "scripts": {
-    "build": "tsc",
+    "build": "tsc && npm run copy:runtime",
+    "copy:runtime": "cp src/browser-runtime.js dist/browser-runtime.js",
     "test": "vitest run",
     "test:integration": "playwright test",
     "test:all": "npm run test && npm run test:integration",
