@@ -371,16 +371,11 @@
     isInitializing = true;
     
     // CRITICAL FIX FOR ISSUE #71:
-    // Clear processedElements on navigation to allow re-rendering
-    // This ensures that when navigating to the same page (self-navigation),
-    // the elements are processed again after DOM stabilizes
-    console.log('[MML-ABC-Transformer] 処理済み要素をクリアします（SPA遷移のため）');
-    // Note: We cannot clear a WeakSet directly, but we can create a new one
-    // However, we need to keep the reference. Instead, we'll remove the processed
-    // attribute from elements and rely on the WeakSet eventually being cleaned up
-    // by garbage collection when old DOM elements are removed.
-    // For new navigations, the processedElements.has() check in initializeMusicNotation
-    // will correctly return false for new DOM elements.
+    // During SPA navigation, Quartz replaces DOM elements with new instances.
+    // The WeakSet automatically handles this: old elements are garbage collected,
+    // and new elements (even for the same page) are different object references
+    // that don't exist in the WeakSet, so they will be processed correctly.
+    // No manual clearing is needed.
     
     // Call async initialization and handle any errors
     initializeMusicNotation()
@@ -402,9 +397,12 @@
   // Primary: Quartz v4 "nav" event on document (not window)
   document.addEventListener('nav', () => {
     // CRITICAL FIX FOR ISSUE #71:
-    // Add a small delay to ensure DOM is fully stable after Quartz completes its SPA navigation
-    // The nav event fires when Quartz starts the transition, but DOM might still be settling
-    // A 0ms timeout pushes this to the next event loop tick, after all synchronous DOM updates
+    // Use setTimeout(0) to defer rendering until after Quartz completes its DOM operations.
+    // Quartz dispatches 'nav' synchronously during its DOM replacement process.
+    // By deferring to the next event loop tick, we ensure all synchronous DOM updates
+    // are complete before we query and process .abc-notation elements.
+    // This is sufficient because Quartz's nav event is synchronous and completes
+    // all DOM manipulations in the same call stack.
     setTimeout(() => {
       handleNavigation('nav event');
     }, 0);
