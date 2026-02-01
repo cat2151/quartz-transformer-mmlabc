@@ -6,7 +6,8 @@
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "scripts": {
-    "build": "tsc",
+    "build": "tsc && npm run copy:runtime",
+    "copy:runtime": "copyfiles -u 1 src/browser-runtime.js dist",
     "test": "vitest run",
     "test:integration": "playwright test",
     "test:all": "npm run test && npm run test:integration",
@@ -36,6 +37,7 @@
     "@types/node": "^20.19.0",
     "@vitest/ui": "^4.0.16",
     "abcjs": "^6.4.0",
+    "copyfiles": "^2.4.1",
     "typescript": "^5.3.3",
     "vitest": "^4.0.16"
   },

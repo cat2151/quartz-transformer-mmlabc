@@ -24,8 +24,12 @@ export const MMLABCTransformer: QuartzTransformerPlugin<MMLABCOptions | undefine
 2. データ属性を持つdiv要素を含む `html` ノードに置き換え
 3. `escapeHtml()` ヘルパーで `&`, `<`, `>`, `"`, `'`, `\n`, `\r`, `\t` をエスケープ
 
-### ブラウザランタイム (afterDOMLoadedスクリプト)
-インラインJavaScript（約200行）が処理：
+### ブラウザランタイム (src/browser-runtime.js)
+**重要**: このファイルはトランスパイルされず、ブラウザで直接実行されるJavaScriptです。
+- **TypeScript構文を書かないこと**: 型アノテーション、interface等は使用不可
+- 純粋なJavaScriptのみを記述してください
+
+約471行のJavaScriptが処理：
 - `mml2abc` と `chord2mml` のCDNからの動的ESモジュールインポート
 - 変換チェーン: `chord → chord2mml → mml → mml2abc → abc → abcjs.renderAbc`
 - Web Audio API再生用の共有 `AudioContext`
@@ -76,11 +80,34 @@ data-mml="${escapeHtml(mmlCode)}"
 ### アクセシビリティ
 レンダリングされる全要素に含む: `role="button"`, `tabindex="0"`, `aria-label="Play music notation"`
 
+## ⚠️ 重要な注意事項: TypeScript/JavaScript の分離
+
+このプロジェクトは**Issue #72**の対応として、TypeScriptとJavaScriptを物理的に分離しています。
+
+**問題の背景:**
+- 以前は`src/index.ts`内の文字列テンプレートにJavaScriptコードが埋め込まれていた
+- この部分はトランスパイルされず、ブラウザで直接実行される
+- Coding agentが編集時に誤ってTypeScript構文（型アノテーション、interface等）を書き込んでしまう
+- ブラウザで構文エラーが発生
+
+**現在の構造:**
+- `src/index.ts` - **TypeScript専用**（トランスパイル対象）
+- `src/browser-runtime.js` - **JavaScript専用**（非トランスパイル、ブラウザ直接実行）
+
+**編集時の注意:**
+- `browser-runtime.js`を編集する際は、**TypeScript構文を絶対に使用しないこと**
+- 型アノテーション、interface、enum等は使用不可
+- 純粋なJavaScript（ES6+）のみを記述すること
+
 ## ファイル構造
 
-- `src/index.ts` - 単一ファイルのプラグイン実装（約410行）
+- `src/index.ts` - TypeScript transformer plugin実装（約316行、トランスパイル対象）
+- `src/browser-runtime.js` - ブラウザ実行JavaScript（約471行、**非トランスパイル**）
+  - ⚠️ **重要**: TypeScript構文を使用しないこと
 - `src/index.test.ts` - 包括的なテストスイート（約800行）
 - `dist/` - ビルド出力（gitignore、`npm run build` で生成）
+  - `index.js` - トランスパイルされたTypeScript
+  - `browser-runtime.js` - コピーされたJavaScript（ビルド時に`copyfiles`でコピー）
 
 ## インテグレーションの注意点
 

@@ -33,6 +33,29 @@ describe('MMLABCTransformer', () => {
       expect(plugin).toBeDefined()
       expect(plugin.name).toBe('MMLABCTransformer')
     })
+
+    it('should load browser runtime script from separate file', () => {
+      const plugin = MMLABCTransformer()
+      const resources = plugin.externalResources!(mockBuildCtx)
+      
+      // Find the inline script resource
+      const inlineScript = resources.js?.find(
+        js => js.contentType === 'inline' && js.loadTime === 'afterDOMReady'
+      )
+      
+      expect(inlineScript).toBeDefined()
+      expect(inlineScript?.script).toBeDefined()
+      
+      // Verify the script contains expected browser runtime content
+      const script = inlineScript?.script || ''
+      expect(script).toContain('MML-ABC-Transformer')
+      expect(script).toContain('initializeMusicNotation')
+      expect(script).toContain('ABCJS')
+      expect(script).toContain('visualObjMap')
+      
+      // Verify it's a non-empty, substantial script (should be ~18KB)
+      expect(script.length).toBeGreaterThan(10000)
+    })
   })
 
   describe('AST transformation - MML blocks', () => {
