@@ -76,7 +76,7 @@
 
   function logNavDebug(where) {
     return function (e) {
-      const ce = e
+      const customEvent = e
 
       const abcNodes = document.querySelectorAll('.abc-notation')
       const processed = document.querySelectorAll('[data-mmlabc-processed]')
@@ -84,7 +84,7 @@
       console.groupCollapsed('[nav @ ' + where + ']')
 
       console.log('event:', e)
-      console.log('detail:', ce && ce.detail)
+      console.log('detail:', customEvent && customEvent.detail)
       console.log('target:', e.target)
       console.log('currentTarget:', e.currentTarget)
 
