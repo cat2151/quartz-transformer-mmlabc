@@ -40,22 +40,10 @@
 Please run the following in your Quartz installation directory:
 
 ```powershell
-npm install github:cat2151/quartz-transformer-mmlabc; pushd node_modules/quartz-transformer-mmlabc; npm run build; popd
+npm install github:cat2151/quartz-transformer-mmlabc
 ```
 
-Reason for this step:
-- The plugin is installed directly from GitHub (not from npm).
-- The `dist` directory, which contains the compiled JavaScript, is not included in the repository.
-- If you skip this step, Quartz will throw an error when run because the plugin's entry point (`dist/index.js`) will not exist.
-
-Additionally, before `Build Quartz` in `.github\workflows\deploy.yml`, please add the following:
-```yml
-      - name: Build quartz-transformer-mmlabc
-        run: npm run build
-        working-directory: node_modules/quartz-transformer-mmlabc
-```
-Reason for this step:
-- Without this step, during deployment with GitHub Actions, `Build Quartz` will fail because the plugin's entry point (`dist/index.js`) will not exist.
+The plugin is installed directly from GitHub (not from npm). Pre-built files (the `dist` directory) are included in the repository, so you can use it immediately after installation.
 
 ### How to Update the Plugin (2 Options)
 
@@ -70,9 +58,6 @@ If you want to use the latest version of the plugin with each deployment, please
         run: npm ci
       - name: Update quartz-transformer-mmlabc to latest
         run: npm update quartz-transformer-mmlabc
-      - name: Build quartz-transformer-mmlabc
-        run: npm run build
-        working-directory: node_modules/quartz-transformer-mmlabc
 ```
 
 **Pros**:
