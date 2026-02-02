@@ -40,22 +40,43 @@
 Quartzをインストールしたディレクトリにて以下を実行してください
 
 ```powershell
-npm install github:cat2151/quartz-transformer-mmlabc; pushd node_modules/quartz-transformer-mmlabc; npm run build; popd
+npm install github:cat2151/quartz-transformer-mmlabc
 ```
 
-この手順が必要な理由：
-- プラグインはGitHubから直接インストールされます（npmからではありません）
-- コンパイルされたJavaScriptを含む`dist`ディレクトリはリポジトリに含まれていません
-- この手順をスキップすると、プラグインのエントリーポイント（`dist/index.js`）が存在しないため、Quartzの実行時にエラーが発生します。
+プラグインはGitHubから直接インストールされます（npmからではありません）。ビルド済みファイル（`dist`ディレクトリ）はリポジトリに含まれているため、インストール後すぐに使用できます。
 
-さらに、`.github\workflows\deploy.yml` の `Build Quartz`の前に、以下を追加してください
+### 既存ユーザー向けの移行ガイド
+
+**重要**: このバージョンから `dist` フォルダがリポジトリに含まれるようになり、手動ビルドが不要になりました。
+
+#### GitHub Actions ワークフローの更新
+
+既に GitHub Actions でプラグインをビルドしている場合、**ビルドステップを削除**してください。
+
+**変更前:**
 ```yml
+      - name: Install Dependencies
+        run: npm ci
+      - name: Update quartz-transformer-mmlabc to latest
+        run: npm update quartz-transformer-mmlabc
       - name: Build quartz-transformer-mmlabc
         run: npm run build
         working-directory: node_modules/quartz-transformer-mmlabc
+      - name: Build Quartz
+        run: npx quartz build
 ```
-この手順が必要な理由：
-- GitHub Actionsでのdeploy時に、これがないと、プラグインのエントリーポイント（`dist/index.js`）が存在しないため、`Build Quartz`時にエラーが発生します。
+
+**変更後:**
+```yml
+      - name: Install Dependencies
+        run: npm ci
+      - name: Update quartz-transformer-mmlabc to latest
+        run: npm update quartz-transformer-mmlabc
+      - name: Build Quartz
+        run: npx quartz build
+```
+
+**変更内容**: `Build quartz-transformer-mmlabc` ステップを削除します。ビルド済みファイルがリポジトリに含まれているため、このステップは不要になりました。
 
 ### プラグインの更新方法（2つの選択肢）
 
@@ -70,9 +91,6 @@ npm install github:cat2151/quartz-transformer-mmlabc; pushd node_modules/quartz-
         run: npm ci
       - name: Update quartz-transformer-mmlabc to latest
         run: npm update quartz-transformer-mmlabc
-      - name: Build quartz-transformer-mmlabc
-        run: npm run build
-        working-directory: node_modules/quartz-transformer-mmlabc
 ```
 
 **メリット**:
