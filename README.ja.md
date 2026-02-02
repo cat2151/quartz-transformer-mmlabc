@@ -45,6 +45,39 @@ npm install github:cat2151/quartz-transformer-mmlabc
 
 プラグインはGitHubから直接インストールされます（npmからではありません）。ビルド済みファイル（`dist`ディレクトリ）はリポジトリに含まれているため、インストール後すぐに使用できます。
 
+### 既存ユーザー向けの移行ガイド
+
+**重要**: このバージョンから `dist` フォルダがリポジトリに含まれるようになり、手動ビルドが不要になりました。
+
+#### GitHub Actions ワークフローの更新
+
+既に GitHub Actions でプラグインをビルドしている場合、**ビルドステップを削除**してください。
+
+**変更前:**
+```yml
+      - name: Install Dependencies
+        run: npm ci
+      - name: Update quartz-transformer-mmlabc to latest
+        run: npm update quartz-transformer-mmlabc
+      - name: Build quartz-transformer-mmlabc
+        run: npm run build
+        working-directory: node_modules/quartz-transformer-mmlabc
+      - name: Build Quartz
+        run: npx quartz build
+```
+
+**変更後:**
+```yml
+      - name: Install Dependencies
+        run: npm ci
+      - name: Update quartz-transformer-mmlabc to latest
+        run: npm update quartz-transformer-mmlabc
+      - name: Build Quartz
+        run: npx quartz build
+```
+
+**変更内容**: `Build quartz-transformer-mmlabc` ステップを削除します。ビルド済みファイルがリポジトリに含まれているため、このステップは不要になりました。
+
 ### プラグインの更新方法（2つの選択肢）
 
 **重要**: このプラグインは現在 Work In Progress であり、頻繁に破壊的変更が行われる可能性があります（nonstable）。プラグインの更新方法として、以下の2つの選択肢があります：

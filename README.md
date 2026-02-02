@@ -45,6 +45,39 @@ npm install github:cat2151/quartz-transformer-mmlabc
 
 The plugin is installed directly from GitHub (not from npm). Pre-built files (the `dist` directory) are included in the repository, so you can use it immediately after installation.
 
+### Migration Guide for Existing Users
+
+**Important**: Starting from this version, the `dist` folder is included in the repository, eliminating the need for manual builds.
+
+#### Updating GitHub Actions Workflow
+
+If you are already building the plugin in GitHub Actions, **remove the build step**.
+
+**Before:**
+```yml
+      - name: Install Dependencies
+        run: npm ci
+      - name: Update quartz-transformer-mmlabc to latest
+        run: npm update quartz-transformer-mmlabc
+      - name: Build quartz-transformer-mmlabc
+        run: npm run build
+        working-directory: node_modules/quartz-transformer-mmlabc
+      - name: Build Quartz
+        run: npx quartz build
+```
+
+**After:**
+```yml
+      - name: Install Dependencies
+        run: npm ci
+      - name: Update quartz-transformer-mmlabc to latest
+        run: npm update quartz-transformer-mmlabc
+      - name: Build Quartz
+        run: npx quartz build
+```
+
+**Changes**: Remove the `Build quartz-transformer-mmlabc` step. This step is no longer needed because pre-built files are included in the repository.
+
 ### How to Update the Plugin (2 Options)
 
 **Important**: This plugin is currently Work In Progress, and breaking changes may occur frequently (nonstable). There are two options for updating the plugin:
