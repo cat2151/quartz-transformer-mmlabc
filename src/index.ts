@@ -1,7 +1,8 @@
 import { visit } from "unist-util-visit"
 import type { Pluggable } from "unified"
 import { readFileSync } from "fs"
-import { join } from "path"
+import { join, dirname } from "path"
+import { fileURLToPath } from "url"
 
 // Type definitions for Quartz plugin interface
 interface BuildCtx {
@@ -65,8 +66,8 @@ const defaultOptions: MMLABCOptions = {
  * @throws {Error} If the browser-runtime.js file cannot be found
  */
 function loadBrowserRuntime(): string {
-  // For CommonJS build (tsc compiles to CommonJS by default)
-  const scriptPath = join(__dirname, 'browser-runtime.js')
+  const currentDir = dirname(fileURLToPath(import.meta.url))
+  const scriptPath = join(currentDir, 'browser-runtime.js')
   return readFileSync(scriptPath, 'utf-8')
 }
 
