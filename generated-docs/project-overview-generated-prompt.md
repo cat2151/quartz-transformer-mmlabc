@@ -1,4 +1,4 @@
-Last updated: 2026-02-02
+Last updated: 2026-02-10
 
 
 # プロジェクト概要生成プロンプト（来訪者向け）
@@ -103,22 +103,43 @@ Last updated: 2026-02-02
 Quartzをインストールしたディレクトリにて以下を実行してください
 
 ```powershell
-npm install github:cat2151/quartz-transformer-mmlabc; pushd node_modules/quartz-transformer-mmlabc; npm run build; popd
+npm install github:cat2151/quartz-transformer-mmlabc
 ```
 
-この手順が必要な理由：
-- プラグインはGitHubから直接インストールされます（npmからではありません）
-- コンパイルされたJavaScriptを含む`dist`ディレクトリはリポジトリに含まれていません
-- この手順をスキップすると、プラグインのエントリーポイント（`dist/index.js`）が存在しないため、Quartzの実行時にエラーが発生します。
+プラグインはGitHubから直接インストールされます（npmからではありません）。ビルド済みファイル（`dist`ディレクトリ）はリポジトリに含まれているため、インストール後すぐに使用できます。
 
-さらに、`.github\workflows\deploy.yml` の `Build Quartz`の前に、以下を追加してください
+### 既存ユーザー向けの移行ガイド
+
+**重要**: このバージョンから `dist` フォルダがリポジトリに含まれるようになり、手動ビルドが不要になりました。
+
+#### GitHub Actions ワークフローの更新
+
+既に GitHub Actions でプラグインをビルドしている場合、**ビルドステップを削除**してください。
+
+**変更前:**
 ```yml
+      - name: Install Dependencies
+        run: npm ci
+      - name: Update quartz-transformer-mmlabc to latest
+        run: npm update quartz-transformer-mmlabc
       - name: Build quartz-transformer-mmlabc
         run: npm run build
         working-directory: node_modules/quartz-transformer-mmlabc
+      - name: Build Quartz
+        run: npx quartz build
 ```
-この手順が必要な理由：
-- GitHub Actionsでのdeploy時に、これがないと、プラグインのエントリーポイント（`dist/index.js`）が存在しないため、`Build Quartz`時にエラーが発生します。
+
+**変更後:**
+```yml
+      - name: Install Dependencies
+        run: npm ci
+      - name: Update quartz-transformer-mmlabc to latest
+        run: npm update quartz-transformer-mmlabc
+      - name: Build Quartz
+        run: npx quartz build
+```
+
+**変更内容**: `Build quartz-transformer-mmlabc` ステップを削除します。ビルド済みファイルがリポジトリに含まれているため、このステップは不要になりました。
 
 ### プラグインの更新方法（2つの選択肢）
 
@@ -133,9 +154,6 @@ npm install github:cat2151/quartz-transformer-mmlabc; pushd node_modules/quartz-
         run: npm ci
       - name: Update quartz-transformer-mmlabc to latest
         run: npm update quartz-transformer-mmlabc
-      - name: Build quartz-transformer-mmlabc
-        run: npm run build
-        working-directory: node_modules/quartz-transformer-mmlabc
 ```
 
 **メリット**:
@@ -430,12 +448,17 @@ MIT License - 詳細はLICENSEファイルを参照してください
 ## ファイル階層ツリー
 📄 .gitignore
 📖 DEBUG-LOGGING-SUMMARY.md
+📖 ISSUE-71-FIX-SUMMARY.md
 📄 LICENSE
 📖 README.ja.md
 📖 README.md
 📖 SPA-FIX-SUMMARY.md
 📄 _config.yml
 🌐 demo.html
+📁 dist/
+  📜 browser-runtime.js
+  📘 index.d.ts
+  📜 index.js
 📖 example.md
 📁 generated-docs/
 📁 issue-notes/
@@ -474,6 +497,8 @@ MIT License - 詳細はLICENSEファイルを参照してください
   📖 69.md
   📖 71.md
   📖 72.md
+  📖 75.md
+  📖 77.md
 📊 package-lock.json
 📊 package.json
 📘 playwright.config.ts
@@ -498,19 +523,31 @@ MIT License - 詳細はLICENSEファイルを参照してください
   - 関数: なし
   - インポート: なし
 
+**dist/browser-runtime.js** (462行, 18700バイト)
+  - 関数: wrapper, logNavDebug, updateNotationTheme, getQuartzTheme, initializeMusicNotation, handlePlayback, cleanup, handleNavigation, function, if, forEach, for, then, catch, addEventListener
+  - インポート: なし
+
+**dist/index.d.ts** (87行, 2675バイト)
+  - 関数: なし
+  - インポート: unified, ./quartz/cfg, ./quartz/plugins
+
+**dist/index.js** (250行, 8867バイト)
+  - 関数: loadBrowserRuntime, escapeHtml, MMLABCTransformer, markdownPlugins, if, externalResources, media
+  - インポート: unist-util-visit, fs, path
+
 **playwright.config.ts** (25行, 616バイト)
   - 関数: なし
   - インポート: @playwright/test
 
-**src/browser-runtime.js** (470行, 18407バイト)
-  - 関数: wrapper, logNavDebug, updateNotationTheme, getQuartzTheme, initializeMusicNotation, handlePlayback, cleanup, handleNavigation, function, if, forEach, for, then, catch, addEventListener, some
+**src/browser-runtime.js** (462行, 18700バイト)
+  - 関数: wrapper, logNavDebug, updateNotationTheme, getQuartzTheme, initializeMusicNotation, handlePlayback, cleanup, handleNavigation, function, if, forEach, for, then, catch, addEventListener
   - インポート: なし
 
 **src/index.test.ts** (880行, 26525バイト)
   - 関数: なし
   - インポート: vitest, ./index
 
-**src/index.ts** (317行, 9665バイト)
+**src/index.ts** (318行, 9710バイト)
   - 関数: loadBrowserRuntime, escapeHtml, markdownPlugins, if, externalResources, media
   - インポート: unist-util-visit, unified, fs
 
@@ -543,7 +580,7 @@ MIT License - 詳細はLICENSEファイルを参照してください
   - インポート: vitest/config
 
 ## 関数呼び出し階層
-- wrapper (src/browser-runtime.js)
+- wrapper (dist/browser-runtime.js)
   - logNavDebug ()
     - updateNotationTheme ()
       - getQuartzTheme ()
@@ -556,22 +593,26 @@ MIT License - 詳細はLICENSEファイルを参照してください
       - then ()
       - catch ()
       - addEventListener ()
-      - some ()
-- if (src/browser-runtime.js)
-  - loadBrowserRuntime (src/index.ts)
+- if (dist/browser-runtime.js)
+  - loadBrowserRuntime (dist/index.js)
     - escapeHtml ()
+      - MMLABCTransformer ()
       - markdownPlugins ()
       - externalResources ()
-- for (src/browser-runtime.js)
-- media (src/index.ts)
+- for (dist/browser-runtime.js)
+- media (dist/index.js)
 
 
 ## プロジェクト構造（ファイル一覧）
 DEBUG-LOGGING-SUMMARY.md
+ISSUE-71-FIX-SUMMARY.md
 README.ja.md
 README.md
 SPA-FIX-SUMMARY.md
 demo.html
+dist/browser-runtime.js
+dist/index.d.ts
+dist/index.js
 example.md
 issue-notes/19.md
 issue-notes/21.md
@@ -593,10 +634,6 @@ issue-notes/46.md
 issue-notes/47.md
 issue-notes/50.md
 issue-notes/51-solution.md
-issue-notes/51.md
-issue-notes/53.md
-issue-notes/55.md
-issue-notes/56-solution.md
 package-lock.json
 
 上記の情報を基に、プロンプトで指定された形式でプロジェクト概要を生成してください。
@@ -609,4 +646,4 @@ package-lock.json
 
 
 ---
-Generated at: 2026-02-02 07:01:48 JST
+Generated at: 2026-02-10 07:09:12 JST

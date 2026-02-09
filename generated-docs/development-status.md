@@ -1,66 +1,51 @@
-Last updated: 2026-02-02
+Last updated: 2026-02-10
 
 # Development Status
 
 ## 現在のIssues
-- [Issue #74](../issue-notes/74.md) は、QuartzのSPAナビゲーション時に五線譜が消えるという [Issue #71](../issue-notes/71.md) の問題を解決するため、MutationObserverではなく`nav`イベント主導の設計に切り替えることを目指しています。
-- [Issue #71](../issue-notes/71.md) の詳細分析では、現在のMutationObserver主導の設計がSPAライフサイクルと噛み合っておらず、`nav`イベントより先に不適切な描画が行われることが根本原因と特定されました。
-- [Issue #50](../issue-notes/50.md) は過去のレンダリング問題の再発有無を監視するもので、[Issue #31](../issue-notes/31.md) はドッグフーディングの継続を促しています。
+- [Issue #50](../issue-notes/50.md)は、以前発生した現象（[issue #46](https://github.com/cat2151/quartz-transformer-mmlabc/issues/46)に関連）が再発する可能性を監視し、スーパーリロードではなく通常のページリロードで解決できるかを確認する状態です。
+- [Issue #31](../issue-notes/31.md)では、このプロジェクト自身のGitHub Actionsや自動化スクリプトを「ドッグフーディング」し、実運用での検証と改善を進めることが目標とされています。
+- 最近の変更では、[#78](https://github.com/cat2151/quartz-transformer-mmlabc/pull/78)でQuartz 4のビルドエラーが修正され、CommonJSからESM出力への切り替えが行われました。
 
 ## 次の一手候補
-1. [Issue #74](../issue-notes/74.md): `src/browser-runtime.js` をnavイベント主導の設計に再構築
-   - 最初の小さな一歩: `src/browser-runtime.js` からMutationObserver関連コードを削除し、`document.addEventListener('nav', ...)` と `setTimeout(0)` を用いた再描画ロジックのスケルトンを作成する。
-   - Agent実行プロンプト:
+1. [Issue #31](../issue-notes/31.md): `daily-project-summary`ワークフローを本プロジェクトで有効化し、利用を開始する
+   - 最初の小さな一歩: `.github/workflows/call-daily-project-summary.yml`が適切にスケジュール実行されるように設定を見直す。
+   - Agent実行プロンプ:
      ```
-     対象ファイル: `src/browser-runtime.js`
+     対象ファイル: .github/workflows/call-daily-project-summary.yml
 
-     実行内容: `src/browser-runtime.js` の現状のMutationObserverに基づいた五線譜レンダリングロジックを削除し、[Issue #71](../issue-notes/71.md) で推奨された「document 中央集権 + nav 主導」の設計思想に基づき、`document.addEventListener('nav', ...)` を利用した新しい初期化・再描画ロジックのスケルトンを実装してください。具体的には、
-     1. 既存のMutationObserver関連コードをすべて削除する。
-     2. `document` オブジェクトに対して `nav` イベントリスナーを設定する。
-     3. イベントリスナー内で、五線譜のレンダリングを行うためのPlaceholder関数（例: `initializeMMLABCNotation()`）を呼び出すコードを記述し、その呼び出しを `setTimeout(0)` でラップしてDOMの安定を待つようにする。
-     4. レンダリング前の既存の五線譜要素をクリアするロジック（`document.querySelectorAll(".abc-notation").forEach(el => { el.innerHTML = ""; });`）をnavイベントリスナーの先頭に追加する。
+     実行内容: `call-daily-project-summary.yml`ワークフローを分析し、本プロジェクトのリポジトリで定期的に（例: 毎日午前中に）実行されるように設定を調整してください。特に、必要な環境変数（例: `GEMINI_API_KEY`）やシークレットが正しく渡されているかを確認し、`generated-docs/development-status.md`や`generated-docs/project-overview.md`が更新されるように設定してください。
 
-     確認事項: 変更前に、`src/browser-runtime.js` の既存ロジックがMutationObserverに強く依存していることを確認してください。また、`package.json`や`package-lock.json`に変更がないことを確認してください。
+     確認事項: 既存のworkflowファイルとの依存関係、および`project-summary`アクションが期待通りに動作するための前提条件（必要なトークンやAPIキーの有無）を確認してください。
 
-     期待する出力: 更新された `src/browser-runtime.js` ファイルのコードをmarkdown形式で出力してください。また、変更点の概要と、なぜこの変更が必要か（MutationObserverの問題とnavイベントへの移行）を簡潔に説明してください。
+     期待する出力: `call-daily-project-summary.yml`の変更案をmarkdown形式で出力し、設定変更後に期待される動作（どのファイルがどのように更新されるか）を説明してください。
      ```
 
-2. [Issue #71](../issue-notes/71.md): AGENTS.md を更新し、TypeScript/JavaScriptの責務分離とQuartzバージョン間の注意点を明記
-   - 最初の小さな一歩: `AGENTS.md` （存在しない場合は新規作成）に、TypeScriptとJavaScriptの役割分担に関するガイドラインと、Quartzのバージョン（v3 vs v4）による挙動の違いに関する検証第一の方針を追記する。
-   - Agent実行プロンプト:
+2. [Issue #50](../issue-notes/50.md): [issue #46](https://github.com/cat2151/quartz-transformer-mmlabc/issues/46)現象の再発条件と解決策を分析する
+   - 最初の小さな一歩: `src/index.ts`と`src/browser-runtime.js`の最新の変更内容を再確認し、リロード時の挙動に影響を与えうる箇所を特定する。
+   - Agent実行プロンプ:
      ```
-     対象ファイル: `AGENTS.md` (ファイルが存在しない場合は新規作成)
+     対象ファイル: src/index.ts, src/browser-runtime.js, dist/browser-runtime.js, package.json, tsconfig.json
 
-     実行内容: エージェントがTypeScriptコードをJavaScript部分に誤って記述する問題を回避し、またQuartzのバージョンによる動作の違いで無効な実装を行わないよう、`AGENTS.md` ファイルを更新または新規作成してください。以下の内容を含めてください。
-     1. **TypeScriptとJavaScriptの責務分離**: エージェントが変更すべきファイルが `.ts` ファイル（ビルド時のトランスフォーマーロジックなど）か、`src/browser-runtime.js` のような `.js` ファイル（クライアントサイドのスクリプト）かを明確に指示するガイドラインを記述してください。特に、`src/browser-runtime.js` は直接ブラウザで実行されるJavaScriptであり、TypeScriptのコードを記述してはならないことを強調してください。
-     2. **Quartzバージョン間の注意点**: 過去のQuartzバージョン（例: v3）で有効だった実装が、現在のQuartz v4では不適切である可能性があること、そしてその際には必ず**検証を第一**とする方針を示す注意書きを追記してください。
+     実行内容: [Issue #50](../issue-notes/50.md)で言及されている「issue #46の現象がまだ発生する可能性」について、`src/index.ts`および`src/browser-runtime.js`における最近のCommonJSからESMへの出力変更（コミット`db8367d`）が、SPAナビゲーションやリロード時のスクリプト実行順序に与える影響を分析してください。特に、スーパーリロードと通常のリロードで挙動が変わる可能性のあるコードパターンに焦点を当ててください。
 
-     確認事項: `AGENTS.md` ファイルが既に存在するかどうかを確認してください。存在しない場合は新規作成します。記述内容が開発者の混乱を招かないよう、簡潔かつ明確であることを確認してください。
+     確認事項: プロジェクトのモジュール解決戦略と、ブラウザでの`dist/browser-runtime.js`のロード・実行方法を把握してください。過去の[issue #46](https://github.com/cat2151/quartz-transformer-mmlabc/issues/46)関連の議論も参照し、問題の再現性に関するヒントを探してください。
 
-     期待する出力: 更新または新規作成された `AGENTS.md` ファイルの内容をmarkdown形式で出力してください。
+     期待する出力: [Issue #50](../issue-notes/50.md)の現象が再発する可能性のあるコード領域や、その原因として考えられるESM移行の影響について、markdown形式で分析結果を出力してください。また、診断のためのロギング追加やテストの提案があれば含めてください。
      ```
 
-3. [Issue #50](../issue-notes/50.md) / [Issue #31](../issue-notes/31.md): ドッグフーディングによる主要機能と過去バグの動作検証
-   - 最初の小さな一歩: 開発環境でプロジェクトを起動し、五線譜の表示、クリック再生、SPAナビゲーションの基本的な動作、および[Issue #50](../issue-notes/50.md) で言及された過去バグの再発がないかを手動で確認する。
-   - Agent実行プロンプト:
+3. [Issue #31](../issue-notes/31.md): `issue-note`ワークフローの安定性とリンク生成の正確性を確認する
+   - 最初の小さな一歩: `.github/workflows/call-issue-note.yml`が期待通りに実行され、`issue-notes/`ディレクトリに新しいissueノートが生成されるかを手動で確認する。
+   - Agent実行プロンプ:
      ```
-     対象ファイル: (なし。必要に応じて README.ja.md, issue-notes/50.md, issue-notes/31.md の更新)
+     対象ファイル: .github/workflows/call-issue-note.yml, .github/actions-tmp/.github/workflows/issue-note.yml, .github/actions-tmp/.github_automation/project_summary/scripts/development/IssueTracker.cjs
 
-     実行内容: 現在のプロジェクトの主要機能（五線譜の表示、クリック再生、SPAナビゲーション）を動作確認し、[Issue #50](../issue-notes/50.md) で言及されている以前のバグ（Issue #46関連）が再発していないかを確認してください。[Issue #31](../issue-notes/31.md) のドッグフーディングの一環として、基本的なユーザー体験に問題がないかを検証し、その結果を報告してください。具体的には、
-     1. プロジェクトをローカルでビルドし、Quartzサイトを起動する。
-     2. 五線譜を含むページにアクセスし、表示とクリック再生が正常に行われるか確認する。
-     3. 左ペインのリンクをクリックして複数回ページ遷移を行い、五線譜の再描画が問題なく行われるか、特にIssue #71で報告された自己ナビゲーション時の問題が発生しないかを確認する（ただし、これはIssue #74で修正中であることを考慮する）。
-     4. 特に過去のIssue #46に関連する「五線譜が消える、描画されない」現象が再発していないかを確認する。
+     実行内容: `.github/workflows/call-issue-note.yml`ワークフローとその基盤となるアクション（`.github/actions-tmp/.github/workflows/issue-note.yml`）およびスクリプト（`IssueTracker.cjs`）を分析し、新しいissueノートが常に正しく生成され、`[Issue #番号](../issue-notes/番号.md)`形式のMarkdownリンクが正確に作成されることを確認してください。特に、最近のコミットやリポジトリ構造の変更がリンクの解決に影響を与えていないかを検証してください。
 
-     確認事項: テスト環境の準備（npm run buildとサイトの起動）が整っていることを確認してください。また、確認中に発見された異常動作やエラーがあれば詳細に記録してください。
+     確認事項: ワークフローのトリガー条件、必要な入力、および出力ファイルの場所を把握してください。issueノートが期待されるフォーマットで生成されているか（特にIssue番号のリンク）を注意深く確認してください。
 
-     期待する出力: ドッグフーディングとバグ再発有無の確認結果をmarkdown形式で報告してください。以下の項目を含めてください。
-     - 検証日時と環境
-     - 各機能の動作確認結果（正常/異常）
-     - [Issue #50](../issue-notes/50.md) で言及された現象の再発有無
-     - [Issue #31](../issue-notes/31.md) の観点からの全体的な所感
-     - 発見された問題点があれば、その詳細な説明。
+     期待する出力: `issue-note`生成プロセスの安定性と、生成されるMarkdownリンクの正確性に関する評価をmarkdown形式で出力してください。もし改善点や潜在的な問題が発見された場合、具体的な修正提案を含めてください。
      ```
 
 ---
-Generated at: 2026-02-02 07:02:11 JST
+Generated at: 2026-02-10 07:09:33 JST
