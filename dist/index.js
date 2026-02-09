@@ -1,9 +1,7 @@
-"use strict";
-Object.defineProperty(exports, "__esModule", { value: true });
-exports.MMLABCTransformer = void 0;
-const unist_util_visit_1 = require("unist-util-visit");
-const fs_1 = require("fs");
-const path_1 = require("path");
+import { visit } from "unist-util-visit";
+import { readFileSync } from "fs";
+import { join, dirname } from "path";
+import { fileURLToPath } from "url";
 const defaultOptions = {
     enableMML: true,
     enableChord: true,
@@ -18,9 +16,9 @@ const defaultOptions = {
  * @throws {Error} If the browser-runtime.js file cannot be found
  */
 function loadBrowserRuntime() {
-    // For CommonJS build (tsc compiles to CommonJS by default)
-    const scriptPath = (0, path_1.join)(__dirname, 'browser-runtime.js');
-    return (0, fs_1.readFileSync)(scriptPath, 'utf-8');
+    const currentDir = dirname(fileURLToPath(import.meta.url));
+    const scriptPath = join(currentDir, 'browser-runtime.js');
+    return readFileSync(scriptPath, 'utf-8');
 }
 /**
  * Quartz transformer plugin for converting MML (Music Macro Language), chord progression,
@@ -68,7 +66,7 @@ function loadBrowserRuntime() {
  * export default config
  * ```
  */
-const MMLABCTransformer = (userOpts) => {
+export const MMLABCTransformer = (userOpts) => {
     const opts = { ...defaultOptions, ...userOpts };
     return {
         name: "MMLABCTransformer",
@@ -76,7 +74,7 @@ const MMLABCTransformer = (userOpts) => {
             return [
                 () => {
                     return (tree, _file) => {
-                        (0, unist_util_visit_1.visit)(tree, "code", (node) => {
+                        visit(tree, "code", (node) => {
                             const lang = node.lang?.toLowerCase();
                             // Handle MML blocks - replace with HTML that will be processed in browser
                             if (opts.enableMML && lang === "mml") {
@@ -232,7 +230,6 @@ html.dark .abc-notation {
         },
     };
 };
-exports.MMLABCTransformer = MMLABCTransformer;
 /**
  * Escape HTML special characters including newlines and whitespace
  * to prevent XSS vulnerabilities and ensure proper data attribute encoding
