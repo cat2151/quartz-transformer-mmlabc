@@ -1,4 +1,4 @@
-Last updated: 2026-02-10
+Last updated: 2026-03-02
 
 
 # プロジェクト概要生成プロンプト（来訪者向け）
@@ -646,4 +646,4 @@ package-lock.json
 
 
 ---
-Generated at: 2026-02-10 07:09:12 JST
+Generated at: 2026-03-02 07:01:32 JST
