@@ -160,6 +160,22 @@ describe('MMLABCTransformer', () => {
       expect(css.content).toContain('.abc-notation.theme-light')
       expect(css.content).toContain('Dynamic theme classes')
     })
+
+    it('should include MutationObserver for popup support', () => {
+      const plugin = MMLABCTransformer()
+      const resources = plugin.externalResources!(mockBuildCtx)
+
+      const inlineScript = resources.js?.find(
+        js => js.contentType === 'inline' && js.loadTime === 'afterDOMReady'
+      )
+      const script = inlineScript?.script || ''
+
+      // MutationObserver should be present to handle Quartz popups (Issue #81)
+      expect(script).toContain('MutationObserver')
+      expect(script).toContain('popupObserver')
+      expect(script).toContain('childList')
+      expect(script).toContain('subtree')
+    })
   })
 
   describe('Edge cases', () => {
