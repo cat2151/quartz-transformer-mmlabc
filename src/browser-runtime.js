@@ -428,7 +428,15 @@
   // calls initializeMusicNotation() directly (not through handleNavigation) so that
   // nav-triggered init is never blocked. processedElements WeakSet ensures each
   // element is rendered at most once even when both MO and nav init run concurrently.
+  //
+  // Two safeguards prevent redundant work:
+  // 1. popupInitPending: deduplicates multiple DOM mutations in the same tick
+  //    (e.g. a popover that inserts several nodes at once).
+  // 2. The observer is disconnected while initializeMusicNotation() runs to avoid
+  //    ABCJS.renderAbc's own SVG/DOM writes triggering the callback again.
+  let popupInitPending = false;
   const popupObserver = new MutationObserver(function(mutations) {
+    if (popupInitPending) return;
     let hasNew = false;
     for (const mutation of mutations) {
       if (hasNew) break;
@@ -449,11 +457,18 @@
       }
     }
     if (hasNew) {
+      popupInitPending = true;
       console.log('[MML-ABC-Transformer] 新しい楽譜要素を検知しました。処理を開始します');
       setTimeout(function() {
-        initializeMusicNotation().catch(function(err) {
-          console.error('[MML-ABC-Transformer] Error initializing notation (popup):', err);
-        });
+        popupObserver.disconnect();
+        initializeMusicNotation()
+          .catch(function(err) {
+            console.error('[MML-ABC-Transformer] Error initializing notation (popup):', err);
+          })
+          .finally(function() {
+            popupInitPending = false;
+            popupObserver.observe(document.body, { childList: true, subtree: true });
+          });
       }, 0);
     }
   });

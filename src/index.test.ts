@@ -170,9 +170,12 @@ describe('MMLABCTransformer', () => {
       )
       const script = inlineScript?.script || ''
 
-      // MutationObserver should be present to handle Quartz popups (Issue #81)
-      expect(script).toContain('MutationObserver')
-      expect(script).toContain('popupObserver')
+      // MutationObserver should be present and actively observing Quartz popups (Issue #81)
+      // Ensure a MutationObserver instance is created
+      expect(script).toContain('new MutationObserver')
+      // Ensure it observes document.body
+      expect(script).toContain('.observe(document.body')
+      // Ensure observe options include childList/subtree so popup changes are detected
       expect(script).toContain('childList')
       expect(script).toContain('subtree')
     })
