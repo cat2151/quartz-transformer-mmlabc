@@ -422,6 +422,58 @@
     console.log('[MML-ABC-Transformer] "popstate" イベントリスナーを登録しました（遅延登録）');
   }, 100);
   
+  // MutationObserver for popup/popover support (Issue #81)
+  // Quartz's "Recent Notes" popovers add .abc-notation elements to the DOM without
+  // firing a 'nav' event. This observer detects such new unprocessed elements and
+  // calls initializeMusicNotation() directly (not through handleNavigation) so that
+  // nav-triggered init is never blocked. processedElements WeakSet ensures each
+  // element is rendered at most once even when both MO and nav init run concurrently.
+  //
+  // Two safeguards prevent redundant work:
+  // 1. popupInitPending: deduplicates multiple DOM mutations in the same tick
+  //    (e.g. a popover that inserts several nodes at once).
+  // 2. The observer is disconnected while initializeMusicNotation() runs to avoid
+  //    ABCJS.renderAbc's own SVG/DOM writes triggering the callback again.
+  let popupInitPending = false;
+  const popupObserver = new MutationObserver(function(mutations) {
+    if (popupInitPending) return;
+    let hasNew = false;
+    for (const mutation of mutations) {
+      if (hasNew) break;
+      for (const node of mutation.addedNodes) {
+        if (hasNew) break;
+        if (node.nodeType !== Node.ELEMENT_NODE) continue;
+        if (node.classList.contains('abc-notation') && !processedElements.has(node)) {
+          hasNew = true;
+        } else {
+          const nested = node.querySelectorAll('.abc-notation');
+          for (const el of nested) {
+            if (!processedElements.has(el)) {
+              hasNew = true;
+              break;
+            }
+          }
+        }
+      }
+    }
+    if (hasNew) {
+      popupInitPending = true;
+      console.log('[MML-ABC-Transformer] 新しい楽譜要素を検知しました。処理を開始します');
+      setTimeout(function() {
+        popupObserver.disconnect();
+        initializeMusicNotation()
+          .catch(function(err) {
+            console.error('[MML-ABC-Transformer] Error initializing notation (popup):', err);
+          })
+          .finally(function() {
+            popupInitPending = false;
+            popupObserver.observe(document.body, { childList: true, subtree: true });
+          });
+      }, 0);
+    }
+  });
+  popupObserver.observe(document.body, { childList: true, subtree: true });
+
   // Initial render on page load
   console.log('[MML-ABC-Transformer] 初期ページ読み込み時の処理を開始します');
   initializeMusicNotation()
@@ -431,11 +483,12 @@
     .finally(() => {
       initialLoadComplete = true;
       
-      // REMOVED MutationObserver (ISSUE #71 FIX):
-      // The MutationObserver was causing issues because it fired BEFORE the nav event,
-      // leading to rendering on unstable DOM during SPA transitions.
-      // The nav event is now the sole, reliable trigger for re-rendering.
-      // This ensures we only render when the DOM is stable and complete.
+      // NOTE ON MutationObserver HISTORY (ISSUE #71 FIX):
+      // A general-purpose MutationObserver was previously removed because it fired
+      // BEFORE the nav event during SPA transitions, rendering on unstable DOM.
+      // The nav event remains the primary trigger for SPA re-rendering.
+      // A targeted popupObserver (above) was added for Issue #81 to handle Quartz
+      // popovers that insert .abc-notation elements without firing a nav event.
       
       console.log('[MML-ABC-Transformer] 初期化完了。nav イベントによる SPA ナビゲーション検知の準備ができました');
       
