@@ -1,50 +1,50 @@
-Last updated: 2026-03-02
+Last updated: 2026-03-07
 
 # Development Status
 
 ## 現在のIssues
--   `[Issue #79](../issue-notes/79.md)` は、`src/index.test.ts`と`test/spa-navigation-test.html`が500行を超過しており、リファクタリングが推奨されています。
--   `[Issue #50](../issue-notes/50.md)` は、`[Issue #46](../issue-notes/46.md)` で報告された現象の再発可能性について様子見をしており、リロードで解決できるか確認中です。
--   `[Issue #31](../issue-notes/31.md)` は、プロジェクトのドッグフーディング（自己利用による検証）が未実施であり、実践による改善点の発見が期待されています。
+- [Issue #83](../issue-notes/83.md) は、`src/browser-runtime.js` が500行を超過しており、単一責任の原則に基づいたリファクタリングが推奨されています。
+- [Issue #31](../issue-notes/31.md) は、プロジェクトの機能を実際に利用（ドッグフーディング）して、潜在的な改善点やバグを発見することを目的としています。
+- 最近のコミットでは、[Issue #81](../issue-notes/81.md) で報告されたQuartzポップアップでの五線譜描画問題と、[Issue #71](../issue-notes/71.md) のSPAナビゲーション関連の修正が完了しており、その安定性の検証が重要です。
 
 ## 次の一手候補
-1.  `src/index.test.ts` のリファクタリング `[Issue #79](../issue-notes/79.md)`
-    -   最初の小さな一歩: `src/index.test.ts` の内容を分析し、現在のテストスイートを論理的に分割できるテストグループ（`describe`ブロック）を特定し、新しいテストファイルへの分割案を検討する。
-    -   Agent実行プロンプト:
-        ```
-        対象ファイル: `src/index.test.ts`
+1. [Issue #83](../issue-notes/83.md): `src/browser-runtime.js` のリファクタリング計画
+   - 最初の小さな一歩: `src/browser-runtime.js` 内の `initializeMusicNotation` 関数と `handlePlayback` 関数を分析し、機能ごとに独立した小さな関数への分割候補を特定する。
+   - Agent実行プロンプ:
+     ```
+     対象ファイル: `src/browser-runtime.js`
 
-        実行内容: `src/index.test.ts` の内容を分析し、テストの種類（例: Plugin initialization, AST transformation - MML blocks, External resources, Edge casesなど）に基づいて、複数のより小さなテストファイルに分割するための論理的な分割案をMarkdown形式で提案してください。各分割案に対して、新しいファイル名とそのファイルに含まれるべきテストスイート（`describe`ブロック）の概要を記述してください。
+     実行内容: `src/browser-runtime.js` 内の `initializeMusicNotation` 関数と `handlePlayback` 関数について、主要なロジックブロックに分割するための分析を行い、各ロジックブロック（例: テーマ処理、外部ライブラリのロード、ABCJSのレンダリング、オーディオシンセサイザーの管理、イベントリスナーの登録）を独立した関数として抽出する提案をmarkdown形式で出力してください。また、それぞれの関数が単一責任の原則に従っているか評価してください。
 
-        確認事項: テストの依存関係や、各テストブロックが独立して実行可能であるかを確認してください。分割後にテストカバレッジが低下しないように注意してください。
+     確認事項: `dist/browser-runtime.js` が本番ビルドであり、`src/browser-runtime.js` がソースコードであることを理解し、変更は `src` 側に行うことを前提とします。リファクタリングによって外部API（`mml2abc` や `chord2mml` のインポート、`ABCJS` の利用）との連携が損なわれないことを確認します。
 
-        期待する出力: 提案される分割案を記述したMarkdown形式のレポート。
-        ```
+     期待する出力: `src/browser-runtime.js` のリファクタリング提案をMarkdown形式で記述してください。提案には、分割すべき関数名、その役割、元のコードからの抜粋、および分割後のコード構造の概要を含めてください。
+     ```
 
-2.  `test/spa-navigation-test.html` のインライン要素外部化 `[Issue #79](../issue-notes/79.md)`
-    -   最初の小さな一歩: `test/spa-navigation-test.html` に含まれるインラインの `<style>` タグと `<script>` タグの内容を抽出し、それぞれを外部CSSファイルおよび外部JavaScriptファイルとして分離する具体的な変更案を作成する。
-    -   Agent実行プロンプト:
-        ```
-        対象ファイル: `test/spa-navigation-test.html`
+2. [Issue #31](../issue-notes/31.md): プロジェクトのドッグフーディング計画の策定
+   - 最初の小さな一歩: Quartzサイト（またはローカルのビルド）で、MML/Chord/ABC記譜法の表示、オーディオ再生、SPAナビゲーション、ポップアップ表示（例: Recent Notes）などの主要機能を網羅的に確認するためのテスト観点をリストアップする。
+   - Agent実行プロンプ:
+     ```
+     対象ファイル: `generated-docs/development-status.md`, `generated-docs/project-overview.md`, `test/integration-test.html`, `test/spa-navigation-test.html`
 
-        実行内容: `test/spa-navigation-test.html` の内容を分析し、インラインCSSとインラインJavaScriptをそれぞれ別ファイルに分割し、HTMLからそれらを参照するように変更するための具体的な手順と、新しいファイル名をMarkdown形式で提案してください。また、`test/spa-navigation-test.html` からは分割されたファイルを参照する形で修正案を提示してください。
+     実行内容: 本プロジェクトの主要機能（MML/Chord/ABC記譜法の表示、オーディオ再生、SPAナビゲーション、ポップアップ内での表示）について、Quartzサイト（またはローカルビルド）でのドッグフーディングを想定し、テスト観点と確認手順をmarkdown形式で出力してください。特に、ユーザー視点での使い勝手や、予期せぬ挙動がないかに焦点を当ててください。
 
-        確認事項: 既存のCSSルールやJavaScriptのロジックが分割後も正しく機能することを確認してください。SPAナビゲーションテストの挙動が変わらないように注意してください。
+     確認事項: `dist/browser-runtime.js` が適切にビルド・配置されていることを前提とします。また、既存のテストファイルが基本的な機能検証に役立つことを考慮しつつ、より網羅的なユーザーシナリオを考案します。
 
-        期待する出力: HTML、CSS、JavaScriptの分割案とその具体的なコード変更（新しいファイルの内容とHTMLの修正）をMarkdown形式で記述したレポート。
-        ```
+     期待する出力: ドッグフーディング計画をMarkdown形式で生成してください。計画には、テストすべき主要機能リスト、各機能の確認手順（期待される動作を含む）、および発見された問題や改善点を記録するためのテンプレートを含めてください。
+     ```
 
-3.  `[Issue #50](../issue-notes/50.md)` の現象再評価と再現手順の明確化
-    -   最初の小さな一歩: `issue-notes/50.md` に記載されている「issue 46 の現象」が具体的にどのようなものだったのかを文書から抽出し、現在のプロジェクトの状態においてその現象が再発する可能性について仮説を立てる。
-    -   Agent実行プロンプト:
-        ```
-        対象ファイル: `issue-notes/50.md`
+3. [Issue #81](../issue-notes/81.md) および [Issue #71](../issue-notes/71.md) の修正確認とリグレッションテスト計画
+   - 最初の小さな一歩: Quartzの「Recent Notes」機能を使用して、ポップアップ内に表示される五線譜が正しく描画されるかを確認する手動テストシナリオを作成する。
+   - Agent実行プロンプ:
+     ```
+     対象ファイル: `src/browser-runtime.js`, `dist/browser-runtime.js`, `issue-notes/81.md`, `test/spa-navigation-test.html`
 
-        実行内容: `issue-notes/50.md` の内容を分析し、「issue 46 の現象」が現在のコードベースで再発する可能性について評価してください。この現象の具体的な再現手順が文書に記述されているか、または推測できるかを述べ、もし再現手順が不明確であれば、その明確化のための次のステップ（例: 詳細な情報収集、特定のコード箇所のレビュー）を提案してください。
+     実行内容: 最近修正された [Issue #81](../issue-notes/81.md) (ポップアップ表示時に五線譜が描画されない問題) および [Issue #71](../issue-notes/71.md) (SPAナビゲーションでの描画問題) の機能が正しく動作し、かつ回帰が発生していないことを確認するための手動テスト計画をmarkdown形式で作成してください。特に、Quartzの「Recent Notes」機能や、複数のページ遷移を伴うシナリオを含めてください。
 
-        確認事項: 現在のコードベースで `[Issue #46](../issue-notes/46.md)` の原因となったバグが修正されているか、または影響を受ける箇所が存在しないかを確認してください。
+     確認事項: 修正が `src/browser-runtime.js` に適用され、`dist/browser-runtime.js` にビルドされていることを前提とします。MutationObserverのロジックが意図通りに機能しているか、`nav` イベントと `popstate` イベントのハンドリングが正しいかを確認します。
 
-        期待する出力: `[Issue #50](../issue-notes/50.md)` の現状分析と次のアクション提案をMarkdown形式で記述したレポート。
+     期待する出力: [Issue #81](../issue-notes/81.md) および [Issue #71](../issue-notes/71.md) の修正確認とリグレッションテスト計画をMarkdown形式で生成してください。計画には、具体的なテストシナリオ、期待される結果、およびテスト中に確認すべきログ出力（コンソールログなど）の指示を含めてください。
 
 ---
-Generated at: 2026-03-02 07:01:49 JST
+Generated at: 2026-03-07 07:03:25 JST

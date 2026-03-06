@@ -1,4 +1,4 @@
-Last updated: 2026-03-02
+Last updated: 2026-03-07
 
 
 # プロジェクト概要生成プロンプト（来訪者向け）
@@ -462,47 +462,22 @@ MIT License - 詳細はLICENSEファイルを参照してください
 📖 example.md
 📁 generated-docs/
 📁 issue-notes/
-  📖 19.md
-  📖 21.md
-  📖 22.md
-  📖 24.md
   📖 25.md
-  📖 26.md
   📖 31.md
-  📖 32.md
-  📖 33.md
-  📖 34.md
-  📖 38.md
-  📖 40.md
-  📖 42.md
   📖 44-investigation.md
-  📖 44.md
   📖 46-solution.md
-  📖 46.md
-  📖 47.md
-  📖 50.md
   📖 51-solution.md
-  📖 51.md
-  📖 53.md
-  📖 55.md
   📖 56-solution.md
   📖 56.md
-  📖 58.md
-  📖 59.md
-  📖 61.md
-  📖 63.md
-  📖 65.md
   📖 67-solution.md
-  📖 67.md
-  📖 69.md
   📖 71.md
-  📖 72.md
-  📖 75.md
-  📖 77.md
+  📖 81.md
 📊 package-lock.json
 📊 package.json
 📘 playwright.config.ts
 📁 src/
+  📘 ast-abc-multiple.test.ts
+  📘 ast-mml-chord.test.ts
   📜 browser-runtime.js
   📘 index.test.ts
   📘 index.ts
@@ -513,6 +488,7 @@ MIT License - 詳細はLICENSEファイルを参照してください
   📘 playback-fix.test.ts
   📜 playback-simple.spec.js
   📘 spa-navigation-debug.test.ts
+  📜 spa-navigation-runtime.js
   📖 spa-navigation-test-README.md
   🌐 spa-navigation-test.html
 📊 tsconfig.json
@@ -523,8 +499,8 @@ MIT License - 詳細はLICENSEファイルを参照してください
   - 関数: なし
   - インポート: なし
 
-**dist/browser-runtime.js** (462行, 18700バイト)
-  - 関数: wrapper, logNavDebug, updateNotationTheme, getQuartzTheme, initializeMusicNotation, handlePlayback, cleanup, handleNavigation, function, if, forEach, for, then, catch, addEventListener
+**dist/browser-runtime.js** (515行, 20993バイト)
+  - 関数: wrapper, logNavDebug, updateNotationTheme, getQuartzTheme, initializeMusicNotation, handlePlayback, cleanup, handleNavigation, function, if, forEach, for, then, catch, addEventListener, MutationObserver, setTimeout, finally
   - インポート: なし
 
 **dist/index.d.ts** (87行, 2675バイト)
@@ -539,11 +515,19 @@ MIT License - 詳細はLICENSEファイルを参照してください
   - 関数: なし
   - インポート: @playwright/test
 
-**src/browser-runtime.js** (462行, 18700バイト)
-  - 関数: wrapper, logNavDebug, updateNotationTheme, getQuartzTheme, initializeMusicNotation, handlePlayback, cleanup, handleNavigation, function, if, forEach, for, then, catch, addEventListener
+**src/ast-abc-multiple.test.ts** (302行, 8117バイト)
+  - 関数: なし
+  - インポート: vitest, ./index
+
+**src/ast-mml-chord.test.ts** (363行, 10002バイト)
+  - 関数: なし
+  - インポート: vitest, ./index
+
+**src/browser-runtime.js** (515行, 20993バイト)
+  - 関数: wrapper, logNavDebug, updateNotationTheme, getQuartzTheme, initializeMusicNotation, handlePlayback, cleanup, handleNavigation, function, if, forEach, for, then, catch, addEventListener, MutationObserver, setTimeout, finally
   - インポート: なし
 
-**src/index.test.ts** (880行, 26525バイト)
+**src/index.test.ts** (258行, 9695バイト)
   - 関数: なし
   - インポート: vitest, ./index
 
@@ -571,7 +555,11 @@ MIT License - 詳細はLICENSEファイルを参照してください
   - 関数: if
   - インポート: @playwright/test, node:url, node:path
 
-**test/spa-navigation-test.html** (528行, 19096バイト)
+**test/spa-navigation-runtime.js** (330行, 12785バイト)
+  - 関数: updateNotationTheme, getQuartzTheme, initializeMusicNotation, handlePlayback, cleanup, events, if, function, forEach, for, then, catch, addEventListener
+  - インポート: なし
+
+**test/spa-navigation-test.html** (198行, 6701バイト)
   - 関数: なし
   - インポート: なし
 
@@ -593,6 +581,9 @@ MIT License - 詳細はLICENSEファイルを参照してください
       - then ()
       - catch ()
       - addEventListener ()
+      - MutationObserver ()
+      - setTimeout ()
+      - finally ()
 - if (dist/browser-runtime.js)
   - loadBrowserRuntime (dist/index.js)
     - escapeHtml ()
@@ -601,6 +592,7 @@ MIT License - 詳細はLICENSEファイルを参照してください
       - externalResources ()
 - for (dist/browser-runtime.js)
 - media (dist/index.js)
+- events (test/spa-navigation-runtime.js)
 
 
 ## プロジェクト構造（ファイル一覧）
@@ -614,27 +606,27 @@ dist/browser-runtime.js
 dist/index.d.ts
 dist/index.js
 example.md
-issue-notes/19.md
-issue-notes/21.md
-issue-notes/22.md
-issue-notes/24.md
 issue-notes/25.md
-issue-notes/26.md
 issue-notes/31.md
-issue-notes/32.md
-issue-notes/33.md
-issue-notes/34.md
-issue-notes/38.md
-issue-notes/40.md
-issue-notes/42.md
 issue-notes/44-investigation.md
-issue-notes/44.md
 issue-notes/46-solution.md
-issue-notes/46.md
-issue-notes/47.md
-issue-notes/50.md
 issue-notes/51-solution.md
+issue-notes/56-solution.md
+issue-notes/56.md
+issue-notes/67-solution.md
+issue-notes/71.md
+issue-notes/81.md
 package-lock.json
+package.json
+playwright.config.ts
+src/ast-abc-multiple.test.ts
+src/ast-mml-chord.test.ts
+src/browser-runtime.js
+src/index.test.ts
+src/index.ts
+test/README.md
+test/integration-test.html
+tsconfig.json
 
 上記の情報を基に、プロンプトで指定された形式でプロジェクト概要を生成してください。
 特に以下の点を重視してください：
@@ -646,4 +638,4 @@ package-lock.json
 
 
 ---
-Generated at: 2026-03-02 07:01:32 JST
+Generated at: 2026-03-07 07:03:06 JST
