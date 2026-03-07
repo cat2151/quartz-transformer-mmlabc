@@ -1,4 +1,4 @@
-Last updated: 2026-03-07
+Last updated: 2026-03-08
 
 
 # プロジェクト概要生成プロンプト（来訪者向け）
@@ -523,8 +523,8 @@ MIT License - 詳細はLICENSEファイルを参照してください
   - 関数: なし
   - インポート: vitest, ./index
 
-**src/browser-runtime.js** (515行, 20993バイト)
-  - 関数: wrapper, logNavDebug, updateNotationTheme, getQuartzTheme, initializeMusicNotation, handlePlayback, cleanup, handleNavigation, function, if, forEach, for, then, catch, addEventListener, MutationObserver, setTimeout, finally
+**src/browser-runtime.js** (478行, 19897バイト)
+  - 関数: wrapper, updateNotationTheme, getQuartzTheme, initializeMusicNotation, handlePlayback, cleanup, handleNavigation, function, if, forEach, for, then, catch, addEventListener, MutationObserver, setTimeout, finally
   - インポート: なし
 
 **src/index.test.ts** (258行, 9695バイト)
@@ -638,4 +638,4 @@ tsconfig.json
 
 
 ---
-Generated at: 2026-03-07 07:03:06 JST
+Generated at: 2026-03-08 07:01:24 JST

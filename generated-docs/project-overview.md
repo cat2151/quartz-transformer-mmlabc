@@ -1,221 +1,171 @@
-Last updated: 2026-03-07
+Last updated: 2026-03-08
 
 # Project Overview
 
 ## プロジェクト概要
-- コード進行をMarkdownのコードブロックに書くだけで、五線譜表示とクリック演奏を可能にするQuartzトランスフォーマープラグインです。
-- Music Macro Language (MML) とABC Notationのコードブロックもサポートし、音楽表現を豊かにします。
-- Quartz v4のSPAナビゲーションに対応しており、ページ遷移後もスムーズに楽譜をレンダリング・再生できます。
+- このプロジェクトは、Quartz静的サイトでMarkdown内の音楽記法を五線譜として表示するプラグインです。
+- コード進行、MML（Music Macro Language）、ABC記法に対応し、楽譜のレンダリングとクリックによる演奏機能を提供します。
+- ブラウザ上で動的に楽譜を生成し、QuartzのSPA（Single Page Application）ナビゲーションにも完全対応しています。
 
 ## 技術スタック
-- フロントエンド: `abcjs` (ABC音楽記法のレンダリングとインタラクティブなSVG表示、音声再生)、動的に読み込まれる`mml2abc` (MMLからABCへの変換)、`chord2mml` (コード進行からMMLへの変換) を使用し、ブラウザ上で楽譜の描画と再生を行います。
-- 音楽・オーディオ: `abcjs`が提供するオーディオシンセサイザーにより、レンダリングされた楽譜のクリック再生機能を実現します。`mml2abc`と`chord2mml`が記法変換の中核を担います。
-- 開発ツール: `TypeScript` (静的型付けされたJavaScript開発)、`unified`と`unist-util-visit` (Markdown ASTの解析と変換)、`copyfiles` (ビルドファイルのコピー) を使用しています。
-- テスト: `Vitest` (ユニットテストフレームワーク) を用いてAST変換ロジックなどをテストし、`Playwright` (ブラウザ自動化ライブラリ) でブラウザ上でのレンダリングやインタラクティブ機能のインテグレーションテストを実行しています。
-- ビルドツール: `TypeScript`コンパイラがTypeScriptソースコードをJavaScriptに変換し、配布可能な`dist`ディレクトリを生成します。
-- 言語機能: `TypeScript`を採用することで、コードの可読性、保守性、および開発効率を高めています。
-- 自動化・CI/CD: GitHub Actionsを利用して、プラグインのデプロイ時の依存関係インストールやQuartzビルドの自動化、テストの実行を行っています。
-- 開発標準: TypeScriptによる型定義とVitest/Playwrightによる包括的なテストスイートを通じて、コード品質と安定性を確保しています。
+- フロントエンド: 
+  - **Quartz**: 高速でバッテリー同梱の静的サイトジェネレーターであり、本プラグインの実行環境となります。
+  - **HTML/CSS/JavaScript**: ブラウザ上で楽譜のレンダリング、インタラクティブな操作、音楽再生機能を実現するために使用されます。
+- 音楽・オーディオ: 
+  - **abcjs**: ABC音楽記法をインタラクティブなSVG形式の五線譜としてブラウザでレンダリングするJavaScriptライブラリです。クリック演奏機能も提供します。
+  - **mml2abc**: Music Macro Language (MML) 形式の音楽データをABC記法に変換するためのJavaScriptライブラリです。
+  - **chord2mml**: コード進行記法（例: `C Dm7 G7 C`）をMML形式に変換するためのJavaScriptライブラリです。
+- 開発ツール: 
+  - **unified**: コンテンツの抽象構文木（AST）を解析、変換、シリアライズするためのインターフェースを提供するツールです。Markdownの解析に使用されます。
+  - **unist-util-visit**: unifiedのエコシステム内で構文木を効率的に走査するためのユーティリティライブラリです。
+  - **copyfiles**: ビルドプロセス中にファイルを指定の場所にコピーするために使用されるユーティリティです。
+- テスト: 
+  - **Vitest**: 高速で機能豊富なユニットテストフレームワークです。プラグインのAST変換ロジックなどの単体テストに使用されます。
+  - **Playwright**: Chromium, Firefox, WebKitなどの主要なブラウザを自動化し、エンドツーエンドのインテグレーションテスト（ブラウザ上でのレンダリングやインタラクティブ機能の検証）を行うためのライブラリです。
+  - **@vitest/ui**: Vitestのテスト実行結果をGUIで表示するユーザーインターフェースです。
+- ビルドツール: 
+  - **TypeScript**: 静的型付けを導入したJavaScriptのスーパーセットです。コードの品質向上、保守性、開発効率の向上に貢献し、最終的にJavaScriptにトランスパイルされます。
+  - **npm**: Node.jsのパッケージマネージャーであり、プロジェクトの依存関係の管理、スクリプトの実行、パッケージのインストールに使用されます。
+- 言語機能: 
+  - **TypeScript**: 静的型付けにより、大規模なコードベースでの型安全な開発を可能にし、実行時エラーの削減に役立ちます。
+- 自動化・CI/CD: 
+  - **GitHub Actions**: リポジトリでのイベント（例: プッシュ、プルリクエスト）をトリガーに、依存関係のインストール、テストの実行、Quartzサイトのビルド、デプロイなどのワークフローを自動化するために使用されます。
+- 開発標準: 
+  - (特筆すべき開発標準ツールはプロジェクト情報に明示されていません)
 
 ## ファイル階層ツリー
 ```
-📄 .gitignore
-📖 DEBUG-LOGGING-SUMMARY.md
-📖 ISSUE-71-FIX-SUMMARY.md
-📄 LICENSE
-📖 README.ja.md
-📖 README.md
-📖 SPA-FIX-SUMMARY.md
-📄 _config.yml
-🌐 demo.html
-📁 dist/
-  📜 browser-runtime.js
-  📘 index.d.ts
-  📜 index.js
-📖 example.md
-📁 generated-docs/
-📁 issue-notes/
-  📖 25.md
-  📖 31.md
-  📖 44-investigation.md
-  📖 46-solution.md
-  📖 51-solution.md
-  📖 56-solution.md
-  📖 56.md
-  📖 67-solution.md
-  📖 71.md
-  📖 81.md
-📊 package-lock.json
-📊 package.json
-📘 playwright.config.ts
-📁 src/
-  📘 ast-abc-multiple.test.ts
-  📘 ast-mml-chord.test.ts
-  📜 browser-runtime.js
-  📘 index.test.ts
-  📘 index.ts
-📁 test/
-  📖 README.md
-  🌐 integration-test.html
-  📘 integration.test.ts
-  📘 playback-fix.test.ts
-  📜 playback-simple.spec.js
-  📘 spa-navigation-debug.test.ts
-  📜 spa-navigation-runtime.js
-  📖 spa-navigation-test-README.md
-  🌐 spa-navigation-test.html
-📊 tsconfig.json
-📘 vitest.config.ts
+quartz-transformer-mmlabc/
+├── src/
+│   ├── index.ts          # メインプラグイン実装
+│   └── index.test.ts     # ユニットテスト
+├── test/
+│   └── integration.test.ts # インテグレーションテスト
+├── dist/                 # コンパイル出力（生成）
+│   ├── index.js
+│   └── index.d.ts
+├── demo.html             # 手動テスト用デモファイル
+├── package.json
+├── tsconfig.json
+├── vitest.config.ts      # Vitestテスト設定
+├── playwright.config.ts  # Playwrightテスト設定
+└── README.md
 ```
 
 ## ファイル詳細説明
-- **`.gitignore`**: Gitが追跡しないファイルやディレクトリを指定する設定ファイルです。
-- **`DEBUG-LOGGING-SUMMARY.md`**: デバッグロギングに関する情報や要約を記述したドキュメントです。
-- **`ISSUE-71-FIX-SUMMARY.md`**: 特定のIssue (Issue #71) の修正内容に関する要約ドキュメントです。
-- **`LICENSE`**: プロジェクトのライセンス情報（MIT License）が記述されています。
-- **`README.ja.md` / `README.md`**: プロジェクトの概要、機能、インストール方法、使い方、開発ガイド、関連情報などを記述した主要なドキュメント（日本語版と英語版）です。
-- **`SPA-FIX-SUMMARY.md`**: SPA (Single Page Application) ナビゲーションに関する修正内容の要約ドキュメントです。
-- **`_config.yml`**: GitHub Pagesなどの設定ファイルとして使用される可能性があります。
-- **`demo.html`**: プラグインが実際にどのように動作するかを、手動で確認するためのデモ用HTMLファイルです。
-- **`dist/`**: TypeScriptソースコードをコンパイルした結果のJavaScriptファイルと型定義ファイルが格納されるディレクトリです。
-    - **`dist/browser-runtime.js`**: ブラウザ上で楽譜のレンダリング、音声再生、およびQuartz v4 SPAナビゲーション対応を処理するJavaScriptコードです。CDNから動的に読み込まれるライブラリの管理も行います。
-    - **`dist/index.d.ts`**: `src/index.ts`の型定義ファイルで、他のTypeScriptプロジェクトでこのプラグインを使用する際に型の情報を提供します。
-    - **`dist/index.js`**: Quartzトランスフォーマーのメインロジックを含むJavaScriptファイルです。Markdown ASTを走査し、`mml`, `chord`, `abc`コードブロックをHTML要素に変換します。
-- **`example.md`**: プラグインのMarkdown記述例を示すファイルです。
-- **`generated-docs/`**: `development-status.md`のような、自動生成されたドキュメントを格納するディレクトリです。
-- **`issue-notes/`**: 過去のGitHub Issueに関する詳細な調査メモや解決策が記述されたMarkdownファイル群です。
-- **`package-lock.json`**: `package.json`に記述された依存関係の正確なバージョンと依存ツリーを記録するファイルです。
-- **`package.json`**: プロジェクトのメタデータ（名前、バージョン、説明など）、スクリプト、および開発・実行時の依存関係を定義するファイルです。
-- **`playwright.config.ts`**: Playwrightを使ったインテグレーションテストの設定を定義するTypeScriptファイルです。
-- **`src/`**: プラグインのソースコードが格納されるディレクトリです。
-    - **`src/ast-abc-multiple.test.ts` / `src/ast-mml-chord.test.ts`**: Vitestを用いたユニットテストファイルで、AST (Abstract Syntax Tree) 変換ロジック（特に複数ブロックやMML/Chordブロックの処理）の正確性を検証します。
-    - **`src/browser-runtime.js`**: `dist/browser-runtime.js`の元となるソースコードで、ブラウザ上での実行を担当するJavaScriptロジックを記述しています。
-    - **`src/index.test.ts`**: Vitestを用いたユニットテストファイルで、プラグインのコア機能やエッジケースの処理などをテストします。
-    - **`src/index.ts`**: QuartzトランスフォーマーのメインエントリポイントとなるTypeScriptソースファイルです。Markdownのコードブロックを検出・変換するロジックが含まれます。
-- **`test/`**: テスト関連のファイル（インテグレーションテスト、テスト用HTML/JSなど）が格納されるディレクトリです。
-    - **`test/README.md`**: テストディレクトリに関する説明ドキュメントです。
-    - **`test/integration-test.html`**: Playwrightによるインテグレーションテストで使用されるHTMLファイルです。
-    - **`test/integration.test.ts`**: Playwrightを用いたインテグレーションテストファイルで、ブラウザ上での実際のレンダリングやDOM操作、CDNリソースの読み込みなどを検証します。
-    - **`test/playback-fix.test.ts`**: Playwrightを用いたインテグレーションテストファイルで、楽譜の再生機能に関する特定のバグ修正の検証に焦点を当てています。
-    - **`test/playback-simple.spec.js`**: Playwrightを用いた簡易的な楽譜再生テストスクリプトです。
-    - **`test/spa-navigation-debug.test.ts`**: Playwrightを用いたインテグレーションテストファイルで、QuartzのSPAナビゲーション中の楽譜の再初期化やクリーンアップ処理のデバッグと検証を行います。
-    - **`test/spa-navigation-runtime.js`**: SPAナビゲーションテスト中にブラウザ側で実行されるJavaScriptコードです。
-    - **`test/spa-navigation-test-README.md`**: SPAナビゲーションテストに関する説明ドキュメントです。
-    - **`test/spa-navigation-test.html`**: PlaywrightによるSPAナビゲーションテストで使用されるHTMLファイルです。
-- **`tsconfig.json`**: TypeScriptコンパイラの設定を定義するファイルです。
-- **`vitest.config.ts`**: Vitestの設定を定義するTypeScriptファイルです。
+- **DEBUG-LOGGING-SUMMARY.md**: デバッグログの出力や解析に関する要約が記述されたドキュメントです。
+- **ISSUE-71-FIX-SUMMARY.md**: プロジェクトで解決された特定の問題（Issue #71）の修正内容と経緯をまとめたドキュメントです。
+- **LICENSE**: プロジェクトのライセンス情報（MIT License）が記述されたファイルです。
+- **README.ja.md**: プロジェクトの目的、機能、使用方法、開発者向け情報などが日本語で詳細に説明された主要なドキュメントです。
+- **README.md**: `README.ja.md`の英語版であり、プロジェクトの情報を英語で提供します。
+- **SPA-FIX-SUMMARY.md**: QuartzのSPA（Single Page Application）ナビゲーション関連の課題と、その解決策に関する要約ドキュメントです。
+- **_config.yml**: 特定の設定を定義するYAML形式のファイルです。プロジェクト全体の動作に影響する設定が含まれる可能性があります。
+- **.gitignore**: Gitのバージョン管理システムが追跡しないファイルやディレクトリのパターンを定義するファイルです。ビルド生成物や一時ファイルなどを除外します。
+- **demo.html**: プラグインの動作を手動で確認するためのデモ用HTMLファイルです。様々な音楽記法がどのようにレンダリング・再生されるかを試すことができます。
+- **dist/**: TypeScriptコンパイラによって生成されたJavaScriptファイルと型定義ファイルが格納されるディレクトリです。
+  - **dist/browser-runtime.js**: ブラウザの実行環境で動的に読み込まれ、音楽記法の解析、楽譜のレンダリング、音楽再生のロジックを担当するJavaScriptファイルです。
+  - **dist/index.d.ts**: プラグインのメインファイル(`dist/index.js`)に対応するTypeScriptの型定義ファイルであり、外部から利用する際の型情報を提供します。
+  - **dist/index.js**: Quartzトランスフォーマープラグインのメインファイルです。Quartzのビルドプロセス中にMarkdownのコードブロックをHTML要素に変換するサーバーサイド（ビルド時）のロジックが含まれます。
+- **example.md**: プラグインの様々な音楽記法（MML, chord, abc）の使用例を示すMarkdownファイルです。
+- **generated-docs/**: 自動生成されるドキュメント（例えば、開発状況のレポートなど）が格納されるディレクトリです。
+- **issue-notes/**: 開発中に発見された特定の問題（Issue）に関する調査、議論、解決策のメモが格納されているディレクトリです。
+  - **issue-notes/25.md**, **issue-notes/31.md**, etc.: 各ファイルが特定のIssueに関する詳細な記録を保持しています。
+- **package-lock.json**: `package.json`に記述された依存関係の正確なツリー構造とバージョンを記録するファイルであり、再現可能なビルドを保証します。
+- **package.json**: Node.jsプロジェクトのメタデータ（プロジェクト名、バージョン、スクリプト、依存関係など）を定義するファイルです。
+- **playwright.config.ts**: Playwrightを用いたブラウザベースのインテグレーションテストの設定ファイルです。テスト環境や実行オプションを定義します。
+- **src/**: プロジェクトのソースコードが格納されるディレクトリです。
+  - **src/ast-abc-multiple.test.ts**: 複数行のABC記法ブロックのAST変換ロジックをテストするためのユニットテストファイルです。
+  - **src/ast-mml-chord.test.ts**: MMLおよびコード進行ブロックのAST変換ロジックをテストするためのユニットテストファイルです。
+  - **src/browser-runtime.js**: `dist/browser-runtime.js`の元となるソースファイルであり、ブラウザ側での動的な楽譜処理を担当します。
+  - **src/index.test.ts**: プラグインの主要なロジック(`src/index.ts`)のユニットテストを記述したファイルです。
+  - **src/index.ts**: Quartzトランスフォーマープラグインのメインソースコードです。Markdownの抽象構文木(AST)を処理し、音楽記法ブロックをブラウザ側で処理するためのHTML要素に変換します。
+- **test/**: 様々な種類のテスト関連ファイルが格納されるディレクトリです。
+  - **test/README.md**: テストディレクトリに関する情報や、テストの実行方法などを説明するドキュメントです。
+  - **test/integration-test.html**: インテグレーションテストで使用される静的なHTMLファイルです。
+  - **test/integration.test.ts**: Playwrightを用いた、実際のブラウザでの楽譜レンダリングとインタラクティブ機能の検証を行うインテグレーションテストファイルです。
+  - **test/playback-fix.test.ts**: 楽譜の再生機能における特定の修正を検証するためのPlaywrightテストファイルです。
+  - **test/playback-simple.spec.js**: 楽譜の基本的な再生機能をテストするPlaywrightのスペックファイルです。
+  - **test/spa-navigation-debug.test.ts**: QuartzのSPAナビゲーション環境下でのデバッグとテストを行うためのファイルです。
+  - **test/spa-navigation-runtime.js**: SPAナビゲーションテストのためにブラウザで実行されるランタイムスクリプトです。
+  - **test/spa-navigation-test-README.md**: SPAナビゲーションテストに関する詳細な説明ドキュメントです。
+  - **test/spa-navigation-test.html**: SPAナビゲーションテスト用のHTMLファイルです。
+- **tsconfig.json**: TypeScriptコンパイラのための設定ファイルです。コンパイルのターゲット、モジュール解決、出力ディレクトリなどのオプションを定義します。
+- **vitest.config.ts**: Vitestテストフレームワークのための設定ファイルであり、テストの実行方法やカバレッジレポートに関するオプションを定義します。
 
 ## 関数詳細説明
-- **`wrapper`**:
-    - 役割: ブラウザ側のJavaScriptコード全体をラップし、実行環境を隔離する即時実行関数（またはそれに近い構造）。
-    - 引数: なし。
-    - 戻り値: なし。
-    - 機能: 楽譜のレンダリングや再生、SPAナビゲーション対応など、ブラウザで実行されるすべてのロジックのエントリポイントとなります。
-- **`logNavDebug`**:
-    - 役割: SPAナビゲーション時のデバッグ情報をコンソールに出力する。
-    - 引数: `message` (string) - 出力するデバッグメッセージ。
-    - 戻り値: なし。
-    - 機能: 開発中にナビゲーションイベントの動作を追跡し、問題診断を支援します。
-- **`updateNotationTheme`**:
-    - 役割: Quartzサイトの現在のテーマ（ライト/ダークモード）に応じて、レンダリングされた楽譜のスタイルを更新する。
-    - 引数: なし (ただし、内部でDOM要素を参照して更新)。
-    - 戻り値: なし。
-    - 機能: ユーザーがテーマを切り替えた際に、楽譜の背景や線の色などがサイトのデザインと調和するように調整します。
-- **`getQuartzTheme`**:
-    - 役割: 現在のQuartzサイトのテーマ（'light'または'dark'）を検出する。
-    - 引数: なし。
-    - 戻り値: `string` - 'light' または 'dark'。
-    - 機能: `document.body`のクラス名やデータ属性を読み取り、サイトの視覚テーマを判定します。
-- **`initializeMusicNotation`**:
-    - 役割: ページ内のMML、Chord、ABCコードブロックを検出し、それらをabcjsで楽譜としてレンダリングし、インタラクティブな再生機能を設定する。
-    - 引数: なし。
-    - 戻り値: なし。
-    - 機能: コードブロックから記法を抽出し、必要に応じて`mml2abc`や`chord2mml`でABC記法に変換後、`abcjs`を使ってSVG形式で楽譜を描画。再生のためのオーディオシンセサイザーも初期化します。
-- **`handlePlayback`**:
-    - 役割: レンダリングされた楽譜のクリックやキーボード操作に応じて、音楽再生を開始または停止する。
-    - 引数: `event` (MouseEvent | KeyboardEvent) - 発生したイベントオブジェクト。
-    - 戻り値: なし。
-    - 機能: イベントの発生源を特定し、`abcjs`の再生機能を呼び出して、対応する楽曲データを再生します。
-- **`cleanup`**:
-    - 役割: SPAナビゲーション時に、前のページで生成されたリソース（イベントリスナー、オーディオコンテキストなど）を適切に解放する。
-    - 引数: なし。
-    - 戻り値: なし。
-    - 機能: メモリリークを防ぎ、不要なリソースをクリアすることで、新しいページでの処理をスムーズに行えるようにします。
-- **`handleNavigation`**:
-    - 役割: QuartzのSPAナビゲーションイベントを監視し、ページ遷移が完了した際に楽譜の再初期化処理をトリガーする。
-    - 引数: なし。
-    - 戻り値: なし。
-    - 機能: `nav`カスタムイベントをリッスンし、`initializeMusicNotation`を呼び出すことで、遷移先のページの楽譜を確実にレンダリングします。
-- **`loadBrowserRuntime`**:
-    - 役割: Quartzのビルドプロセス中に、ブラウザ側で実行されるJavaScriptファイル (`browser-runtime.js`) の内容を読み込む。
-    - 引数: `path` (string) - `browser-runtime.js`ファイルへのパス。
-    - 戻り値: `string` - `browser-runtime.js`ファイルのテキスト内容。
-    - 機能: `fs`モジュールを使用してファイルの内容を同期的に読み込み、トランスフォーマー処理中に利用できるようにします。
-- **`escapeHtml`**:
-    - 役割: HTML特殊文字（`<`, `>`, `&`, `"`, `'`）を対応するHTMLエンティティに変換し、XSS攻撃を防ぐ。
-    - 引数: `text` (string) - エスケープする元の文字列。
-    - 戻り値: `string` - エスケープ処理後の安全なHTML文字列。
-    - 機能: ユーザー入力や動的に生成されるコンテンツをHTMLに挿入する際に、セキュリティリスクを低減します。
-- **`MMLABCTransformer`**:
-    - 役割: QuartzのMarkdownトランスフォーマーとして、Markdown内の`mml`、`chord`、`abc`コードブロックを、ブラウザで処理可能なカスタムHTML `div`要素に変換する。
-    - 引数: `options` (object, optional) - `enableMML`, `enableChord`, `enableABC`などのプラグイン設定オプション。
-    - 戻り値: `(tree: Node) => void` - Unified/Remarkプラグインのインターフェースに準拠した関数。
-    - 機能: `unist-util-visit`を使用してMarkdownの抽象構文木 (AST) を走査し、対応するコードブロックを検出。その言語と内容をデータ属性として持つ`<div class="mmlabc-notation">`に置き換え、ブラウザでのレンダリング準備をします。
-- **`markdownPlugins`**:
-    - 役割: Unified/Remarkエコシステムで使用されるMarkdown処理プラグインの配列を定義する。
-    - 引数: なし。
-    - 戻り値: `Array<Plugin>` - UnifiedがMarkdownの解析と変換に使用するプラグインのリスト。
-    - 機能: プロジェクトで必要とされる様々なMarkdown拡張機能や変換ロジックを構成します。
-- **`externalResources`**:
-    - 役割: `abcjs`、`mml2abc`、`chord2mml`など、CDN経由で動的に読み込まれる外部JavaScriptライブラリのURLとメタデータを定義する。
-    - 引数: なし。
-    - 戻り値: `Array<{ src: string, id: string, type?: string, integrity?: string }>` - 外部リソースの設定オブジェクトの配列。
-    - 機能: これらのライブラリをブラウザで効率的かつ安全に読み込むための情報を提供します。
-- **`media`**:
-    - 役割: （提供された情報だけでは具体的な実装内容は不明ですが、Quartzプラグインの文脈から）メディアアセット（画像、音声など）の処理や埋め込みに関連する設定やロジックを提供する。
-    - 引数: なし。
-    - 戻り値: 不明 (設定オブジェクト、またはプラグイン関数)。
-    - 機能: おそらく、Markdownファイル内のメディア参照を適切に処理し、HTML出力に組み込むためのメカニズムの一部です。
-- **`events`**:
-    - 役割: （テストファイル内で定義されているため）SPAナビゲーションテスト中に、手動でカスタムイベントを発火させるためのオブジェクト。
-    - 引数: なし。
-    - 戻り値: なし。
-    - 機能: テストハーネスがQuartzのナビゲーション挙動をシミュレートし、プラグインのSPA対応ロジックを検証するために使用されます。
-- **汎用的な制御フロー関数/キーワード**:
-    - **`if`**: 条件分岐を記述し、特定の条件が満たされた場合にのみコードブロックを実行します。
-    - **`for` / `forEach`**: 配列やコレクションの要素を順番に処理するために反復処理を行います。
-    - **`then` / `catch` / `finally`**: Promiseオブジェクトを用いた非同期処理の結果（成功、失敗、完了）を処理するためのメソッドです。
-    - **`addEventListener`**: 指定されたイベント（例: 'click', 'nav'）が発生したときに、特定の関数（イベントハンドラー）を実行するように登録します。
-    - **`MutationObserver`**: DOMツリーへの変更（ノードの追加/削除、属性の変更など）を非同期に監視し、変更が発生したときにコールバック関数を実行します。
-    - **`setTimeout`**: 指定されたミリ秒数が経過した後に、一度だけ関数を実行するようにスケジュールします。
+- **`wrapper`**: (dist/browser-runtime.js, src/browser-runtime.js)
+    - **役割**: ブラウザランタイムコード全体をカプセル化し、グローバルスコープを汚染せずにプラグインの機能を初期化します。
+    - **機能**: ページ読み込み後またはSPAナビゲーション時に、音楽記法ブロックの検出、レンダリング、再生機能のセットアップを行います。
+- **`logNavDebug`**: (dist/browser-runtime.js)
+    - **役割**: QuartzのSPAナビゲーションイベントに関連するデバッグ情報をコンソールに出力します。
+    - **機能**: ページ遷移時に発生するイベントや処理の状況を可視化し、デバッグを支援します。
+- **`updateNotationTheme`**: (dist/browser-runtime.js, src/browser-runtime.js, test/spa-navigation-runtime.js)
+    - **役割**: レンダリングされた楽譜の配色を現在のQuartzサイトのテーマ（ライト/ダークモードなど）に合わせて調整します。
+    - **機能**: サイト全体の見た目と楽譜の表示の一貫性を保ちます。
+- **`getQuartzTheme`**: (dist/browser-runtime.js, src/browser-runtime.js, test/spa-navigation-runtime.js)
+    - **役割**: 現在のQuartzサイトが使用しているテーマ（ライトまたはダーク）を検出します。
+    - **機能**: `document.documentElement`のクラス属性などを参照して、アクティブなテーマを特定します。
+- **`initializeMusicNotation`**: (dist/browser-runtime.js, src/browser-runtime.js, test/spa-navigation-runtime.js)
+    - **役割**: ページ内の音楽記法ブロック（MML, chord, abc）を検出し、それらを五線譜としてレンダリングし、演奏可能にします。
+    - **機能**: `abcjs`、`mml2abc`、`chord2mml`ライブラリを利用して、コードブロックの内容をSVGの五線譜に変換し、クリックイベントハンドラーを追加して音楽再生を可能にします。
+- **`handlePlayback`**: (dist/browser-runtime.js, src/browser-runtime.js, test/spa-navigation-runtime.js)
+    - **役割**: レンダリングされた楽譜がクリックされた際（またはキーボードで操作された際）の音楽再生を処理します。
+    - **機能**: AudioContextを用いて、指定された楽譜の音楽データを再生します。
+- **`cleanup`**: (dist/browser-runtime.js, src/browser-runtime.js, test/spa-navigation-runtime.js)
+    - **役割**: SPAナビゲーション時やページ離脱時に、登録されたイベントリスナーやリソースを解放します。
+    - **機能**: メモリリークを防ぎ、アプリケーションがクリーンな状態を維持できるようにします。
+- **`handleNavigation`**: (dist/browser-runtime.js, src/browser-runtime.js)
+    - **役割**: QuartzのSPAナビゲーションイベントを監視し、新しいページの内容に応じて音楽記法のレンダリングと初期化を再実行します。
+    - **機能**: ユーザーがページ間を移動しても、音楽記法が正しく表示され、機能するようにします。
+- **`loadBrowserRuntime`**: (dist/index.js, src/index.ts)
+    - **役割**: ブラウザで実行されるランタイムスクリプト（`browser-runtime.js`）をQuartzサイトの最終的なHTMLに注入します。
+    - **機能**: ビルド時に、動的な楽譜レンダリングと再生機能に必要なJavaScriptコードをページに追加します。
+- **`escapeHtml`**: (dist/index.js, src/index.ts)
+    - **役割**: HTML特殊文字を安全なHTMLエンティティに変換します。
+    - **機能**: Markdownの内容をHTMLに変換する際に、不正なHTML出力やクロスサイトスクリプティング（XSS）の脆弱性を防ぎます。
+- **`MMLABCTransformer`**: (dist/index.js, src/index.ts)
+    - **役割**: Quartzトランスフォーマープラグインの主要なエントリポイントです。
+    - **機能**: Quartzのビルドプロセス中、Markdownの抽象構文木を走査し、`mml`、`chord`、`abc`の言語タグを持つコードブロックを検出し、ブラウザで処理するための特別なHTML要素に変換します。
+- **`markdownPlugins`**: (dist/index.js, src/index.ts)
+    - **役割**: Markdownの解析と変換に使用されるunifiedJSプラグインのリストを定義します。
+    - **機能**: `MMLABCTransformer`を含むカスタムプラグインがMarkdown処理のパイプラインに組み込まれるようにします。
+- **`externalResources`**: (dist/index.js, src/index.ts)
+    - **役割**: 外部からCDN経由で読み込むJavaScriptやCSSリソースをQuartzサイトに登録します。
+    - **機能**: `abcjs`、`mml2abc`、`chord2mml`などのライブラリが動的にロードされるためのURLを提供します。
+- **`media`**: (dist/index.js)
+    - **役割**: 特定のメディア関連情報を処理する可能性があります。
+    - **機能**: 詳細な機能はプロジェクト情報から明確ではありませんが、ビルドプロセス中のメディアリソースの管理に関連する処理を行うことが推測されます。
+- **`events`**: (test/spa-navigation-runtime.js)
+    - **役割**: SPAナビゲーションテストのために、特定のイベントリスナーを登録します。
+    - **機能**: テスト環境において、Quartzの`nav`イベントなどのカスタムイベントを監視し、SPAナビゲーション時の動作を検証します。
 
 ## 関数呼び出し階層ツリー
 ```
 - wrapper (dist/browser-runtime.js)
   - logNavDebug ()
-  - updateNotationTheme ()
-    - getQuartzTheme ()
-  - initializeMusicNotation ()
-  - handlePlayback ()
-  - cleanup ()
-  - handleNavigation ()
-  - function ()
-  - forEach ()
-  - then ()
-  - catch ()
-  - addEventListener ()
-  - MutationObserver ()
-  - setTimeout ()
-  - finally ()
+    - updateNotationTheme ()
+      - getQuartzTheme ()
+      - initializeMusicNotation ()
+      - handlePlayback ()
+      - cleanup ()
+      - handleNavigation ()
+      - function ()
+      - forEach ()
+      - then ()
+      - catch ()
+      - addEventListener ()
+      - MutationObserver ()
+      - setTimeout ()
+      - finally ()
 - if (dist/browser-runtime.js)
   - loadBrowserRuntime (dist/index.js)
     - escapeHtml ()
-    - MMLABCTransformer ()
-    - markdownPlugins ()
-    - externalResources ()
+      - MMLABCTransformer ()
+      - markdownPlugins ()
+      - externalResources ()
 - for (dist/browser-runtime.js)
 - media (dist/index.js)
 - events (test/spa-navigation-runtime.js)
 
 ---
-Generated at: 2026-03-07 07:03:40 JST
+Generated at: 2026-03-08 07:02:01 JST
