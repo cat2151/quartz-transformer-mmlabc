@@ -1,50 +1,51 @@
-Last updated: 2026-03-08
+Last updated: 2026-04-07
 
 # Development Status
 
 ## 現在のIssues
-- プロジェクトを実際に利用して改善点を発見するドッグフーディング ([Issue #31](../issue-notes/31.md)) が重要な次のステップとして挙げられている。
-- ポップアップ表示時の五線譜描画不具合 ([Issue #81](../issue-notes/81.md)) に対する修正が最近適用されたが、さらなる安定性確認が必要である。
-- `browser-runtime.js` からデバッグコードが削除され ([Issue #84 (implied)](../issue-notes/84.md))、大規模ファイルの改善が進められているが、さらなる最適化の余地がある。
+- 現在オープン中のIssueは [Issue #31](../issue-notes/31.md) 「ドッグフーディングする」のみです。
+- これは、プロジェクト自身のツールやプロセスを実際に利用し、改善点を発見することを目指しています。
+- しかし、具体的なドッグフーディングの計画や対象ツールはIssue内にまだ明記されていません。
 
 ## 次の一手候補
-1. [Issue #31](../issue-notes/31.md): ドッグフーディングによる初期フィードバック収集
-   - 最初の小さな一歩: MML記譜法を簡単なスコアで変換し、ブラウザで表示する基本的なフローを実際に試し、UI/UX上の問題点を洗い出す。
+1. [Issue #31](../issue-notes/31.md) ドッグフーディングの具体的な計画を策定する
+   - 最初の小さな一歩: ドッグフーディングの対象とするワークフロー（例: Daily Project Summaryの生成）を一つ選定し、どのように実施するかを `issue-notes/31.md` に追記する。
    - Agent実行プロンプト:
      ```
-     対象ファイル: src/browser-runtime.js, test/spa-navigation-test.html, test/playback-simple.spec.js
+     対象ファイル: issue-notes/31.md
 
-     実行内容: `test/spa-navigation-test.html` を利用してMML記譜を変換し、表示する一連のユーザー操作をシミュレートするPlaywrightテストケースを新規作成または既存を拡張してください。特に、簡単なMML入力から五線譜表示までのUXフローに焦点を当て、潜在的なボトルネックや不具合がないかを確認します。
+     実行内容: [Issue #31](../issue-notes/31.md) の具体的なドッグフーディング計画を策定し、`issue-notes/31.md` に追記してください。特に、どのワークフロー/スクリプト（例: Daily Project Summary生成）を「ドッグフーディング」の対象とするか、そのテスト方法、および期待する改善点を具体的に記述してください。
 
-     確認事項: 既存のテストスイートとの整合性、およびユーザーインターフェースが変更された場合のテストケースの維持容易性を考慮してください。
+     確認事項: 既存のワークフロー（例: `.github/workflows/call-daily-project-summary.yml`, `.github/workflows/call-issue-note.yml`）の現在の機能と設定を確認し、それらがドッグフーディングの対象として適切か検討してください。
 
-     期待する出力: `test/dogfooding.test.ts` という名前で新しいPlaywrightテストファイルを作成し、MMLから五線譜表示までの基本フローを検証するテストコードを記述してください。
+     期待する出力: `issue-notes/31.md` に、選択したドッグフーディング対象、実施方法、期待する結果が追記されたmarkdown形式のファイル変更。
      ```
 
-2. [Issue #81](../issue-notes/81.md): ポップアップ時の五線譜描画安定性向上のためのテスト強化
-   - 最初の小さな一歩: ポップアップ表示時に五線譜が正しく描画されることを保証するため、`MutationObserver` の挙動とSVG描画の確認に特化した単体テストを追加する。
+2. [Issue #31](../issue-notes/31.md) Daily Project Summary 生成ワークフローのドッグフーディングを実施し、出力内容を評価する
+   - 最初の小さな一歩: `.github/workflows/call-daily-project-summary.yml` を手動で実行し、生成された `generated-docs/development-status.md` および `generated-docs/project-overview.md` の内容を確認する。
    - Agent実行プロンプト:
      ```
-     対象ファイル: src/browser-runtime.js, test/spa-navigation-runtime.js, test/spa-navigation-test.html
+     対象ファイル: .github/workflows/call-daily-project-summary.yml, generated-docs/development-status.md, generated-docs/project-overview.md, .github/actions-tmp/.github_automation/project_summary/scripts/generate-project-summary.cjs
 
-     実行内容: `src/browser-runtime.js` 内のMutationObserverによるDOM変更監視と、その後のSVG描画ロジックについて、特にIssue #81で修正された箇所の回帰を防ぐためのテストケースを `test/playback-fix.test.ts` に追加してください。具体的には、特定のDOM要素が変更された後にSVGが期待通りに生成・更新されることを検証するテストを記述します。
+     実行内容: `call-daily-project-summary.yml` ワークフローの実行結果として生成される `generated-docs/development-status.md` と `generated-docs/project-overview.md` の内容を分析してください。特に、本プロンプトの指示との整合性、情報の正確性、および改善点を洗い出し、その評価をmarkdown形式で出力してください。
 
-     確認事項: 既存の`playback-fix.test.ts`内のテスト構造との整合性、および`MutationObserver`と非同期処理を適切にモックまたは待機させる方法を考慮してください。
+     確認事項: `call-daily-project-summary.yml` が最新のコミット状況を反映して実行されているか、また、`generated-docs` ディレクトリに最新の結果が生成されているかを確認してください。
 
-     期待する出力: `test/playback-fix.test.ts` に、Issue #81の修正に関連するシナリオ（例: ポップアップ要素が動的に追加された際の五線譜描画）を検証する新しいテスト関数を追加してください。
+     期待する出力: `daily-project-summary` の現在の出力に対する詳細な評価レポート（markdown形式）。改善提案や、生成ロジック（`.github/actions-tmp/.github_automation/project_summary/scripts/generate-project-summary.cjs` など）の修正が必要な箇所を特定してください。
      ```
 
-3. [Issue #84 (implied)](../issue-notes/84.md): `browser-runtime.js` のコード品質と保守性向上
-   - 最初の小さな一歩: `src/browser-runtime.js` のファイルサイズと複雑性をさらに評価し、特に肥大化している関数や重複コードを特定する。
+3. [Issue #31](../issue-notes/31.md) Issue Note 生成ワークフローのドッグフーディングを実施し、生成されるノートの品質を評価する
+   - 最初の小さな一歩: 新しいテスト用Issueを作成し、`.github/workflows/call-issue-note.yml` ワークフローを手動で実行、生成されたIssue Note (`issue-notes/<新issue番号>.md`) の内容を確認する。
    - Agent実行プロンプト:
      ```
-     対象ファイル: src/browser-runtime.js
+     対象ファイル: .github/workflows/call-issue-note.yml, issue-notes/, .github/actions-tmp/.github_automation/project_summary/scripts/development/IssueTracker.cjs
 
-     実行内容: `src/browser-runtime.js` のコードベースを分析し、特に50行を超える関数、ネストが深いロジック、または他のファイルに抽出可能なユーティリティ関数候補を特定してください。分析結果は、モジュール化やリファクタリングの候補としてmarkdown形式でリストアップしてください。
+     実行内容: `call-issue-note.yml` ワークフローを実行し、新規Issueに対するIssue Noteの生成プロセスと、その結果として生成されるMarkdownファイルの内容を分析してください。生成されたノートが適切にIssue情報を反映しているか、記述が十分か、また追加すべき情報はないかを評価し、改善点を提案してください。
 
-     確認事項: 既存の機能への影響を最小限に抑えることを考慮し、変更が既存のテストスイートによって適切にカバーされるかを確認してください。
+     確認事項: `call-issue-note.yml` が正しく設定されており、新規Issue作成時にトリガーされることを確認してください。また、既存の `issue-notes/` 構造との整合性を確認してください。
 
-     期待する出力: `browser-runtime-refactor-analysis.md` というファイルに、`src/browser-runtime.js` のリファクタリングが必要な領域（関数名、行数、簡単な理由）を詳細に記述したmarkdown形式の分析レポートを生成してください。
+     期待する出力: `call-issue-note.yml` によって生成されたIssue Noteの品質評価レポート（markdown形式）。具体的な改善提案や、関連スクリプト（`.github/actions-tmp/.github_automation/project_summary/scripts/development/IssueTracker.cjs` など）の修正案を含めてください。
+     ```
 
 ---
-Generated at: 2026-03-08 07:01:37 JST
+Generated at: 2026-04-07 07:06:52 JST

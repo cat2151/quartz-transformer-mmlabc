@@ -1,4 +1,4 @@
-Last updated: 2026-03-08
+Last updated: 2026-04-07
 
 # 開発状況生成プロンプト（開発者向け）
 
@@ -107,6 +107,8 @@ Last updated: 2026-03-08
 - .github/actions-tmp/.github/workflows/call-check-large-files.yml
 - .github/actions-tmp/.github/workflows/call-daily-project-summary.yml
 - .github/actions-tmp/.github/workflows/call-issue-note.yml
+- .github/actions-tmp/.github/workflows/call-rust-fmt-commit.yml
+- .github/actions-tmp/.github/workflows/call-rust-windows-cargo-check.yml
 - .github/actions-tmp/.github/workflows/call-rust-windows-check.yml
 - .github/actions-tmp/.github/workflows/call-translate-readme.yml
 - .github/actions-tmp/.github/workflows/callgraph.yml
@@ -114,6 +116,8 @@ Last updated: 2026-03-08
 - .github/actions-tmp/.github/workflows/check-recent-human-commit.yml
 - .github/actions-tmp/.github/workflows/daily-project-summary.yml
 - .github/actions-tmp/.github/workflows/issue-note.yml
+- .github/actions-tmp/.github/workflows/rust-fmt-commit.yml
+- .github/actions-tmp/.github/workflows/rust-windows-cargo-check.yml
 - .github/actions-tmp/.github/workflows/rust-windows-check.yml
 - .github/actions-tmp/.github/workflows/translate-readme.yml
 - .github/actions-tmp/.github_automation/callgraph/codeql-queries/callgraph.ql
@@ -157,6 +161,7 @@ Last updated: 2026-03-08
 - .github/actions-tmp/.github_automation/translate/scripts/translate-readme.cjs
 - .github/actions-tmp/.gitignore
 - .github/actions-tmp/.vscode/settings.json
+- .github/actions-tmp/AGENTS.md
 - .github/actions-tmp/LICENSE
 - .github/actions-tmp/README.ja.md
 - .github/actions-tmp/README.md
@@ -197,7 +202,8 @@ Last updated: 2026-03-08
 - .github/actions-tmp/issue-notes/4.md
 - .github/actions-tmp/issue-notes/40.md
 - .github/actions-tmp/issue-notes/44.md
-- .github/actions-tmp/issue-notes/52.md
+- .github/actions-tmp/issue-notes/57.md
+- .github/actions-tmp/issue-notes/67.md
 - .github/actions-tmp/issue-notes/7.md
 - .github/actions-tmp/issue-notes/8.md
 - .github/actions-tmp/issue-notes/9.md
@@ -283,18 +289,10 @@ Last updated: 2026-03-08
 
 ## 最近の変更（過去7日間）
 ### コミット履歴:
-d5fc777 Merge pull request #84 from cat2151/copilot/refactor-large-file-in-browser-runtime
-3f9426f refactor: browser-runtime.jsのデバッグコード削除（514行→477行）
-06a6370 Initial plan
-8aef1ef Update project summaries (overview & development status) [auto]
-5985419 Merge pull request #82 from cat2151/copilot/fix-recent-notes-popup
-041fcc7 fix: MutationObserver の重複実行防止とSVG書き込み対策を追加
-9e6fe5c fix: ポップアップ表示時に五線譜が描画されない問題を修正 (Issue #81)
-eadd033 Initial plan
-34828b9 Update issue notes for #81 with debugging suggestions
-0627f1f Add issue note for #81 [auto]
+6fed2e6 Jekyll設定
 
 ### 変更されたファイル:
+_config.yml
 dist/browser-runtime.js
 generated-docs/development-status-generated-prompt.md
 generated-docs/development-status.md
@@ -329,14 +327,9 @@ issue-notes/72.md
 issue-notes/75.md
 issue-notes/77.md
 issue-notes/81.md
-package-lock.json
-src/ast-abc-multiple.test.ts
-src/ast-mml-chord.test.ts
 src/browser-runtime.js
 src/index.test.ts
-test/spa-navigation-runtime.js
-test/spa-navigation-test.html
 
 
 ---
-Generated at: 2026-03-08 07:01:24 JST
+Generated at: 2026-04-07 07:06:36 JST

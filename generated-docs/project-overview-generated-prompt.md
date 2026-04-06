@@ -1,4 +1,4 @@
-Last updated: 2026-03-08
+Last updated: 2026-04-07
 
 
 # プロジェクト概要生成プロンプト（来訪者向け）
@@ -638,4 +638,4 @@ tsconfig.json
 
 
 ---
-Generated at: 2026-03-08 07:01:24 JST
+Generated at: 2026-04-07 07:06:36 JST
